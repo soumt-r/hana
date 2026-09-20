@@ -43,6 +43,7 @@ import (
 	"github.com/soumt-r/hana/errs"
 	"github.com/soumt-r/hana/pkg"
 	"github.com/soumt-r/hana/std/stdimpl"
+	"github.com/soumt-r/hana/value"
 )
 
 // Host is the engine side of a native call.
@@ -224,7 +225,7 @@ func (l *Library) Lookup(name string) (Func, bool) {
 }
 
 func (l *Library) callFunction(fn uintptr, name string, host Host, args []interface{}) (interface{}, error) {
-	payload, err := stdimpl.ToJSON(wrap(host, args))
+	payload, err := stdimpl.ToJSON(wrap(host, value.NewList(args)))
 	if err != nil {
 		return nil, err
 	}
@@ -263,12 +264,12 @@ func wrap(host Host, v interface{}) interface{} {
 		return map[interface{}]interface{}{"$fn": register(host, key, v)}
 	}
 	switch x := v.(type) {
-	case []interface{}:
-		out := make([]interface{}, len(x))
-		for i, el := range x {
+	case *value.List:
+		out := make([]interface{}, len(x.Items))
+		for i, el := range x.Items {
 			out[i] = wrap(host, el)
 		}
-		return out
+		return value.NewList(out)
 	case map[interface{}]interface{}:
 		out := make(map[interface{}]interface{}, len(x))
 		for k, el := range x {
@@ -314,13 +315,16 @@ func (l *Library) handleHostCall(idPtr, argsPtr uintptr) (result uintptr) {
 	if err != nil {
 		return l.allocString(envelopeError(errs.Message(errs.English, err)))
 	}
-	args, _ := parsed.([]interface{})
+	var args []interface{}
+	if list, ok := parsed.(*value.List); ok {
+		args = list.Items
+	}
 
-	value, err := cb.host.Call(cb.fn, args)
+	ret, err := cb.host.Call(cb.fn, args)
 	if err != nil {
 		return l.allocString(envelopeError(errs.Message(errs.English, err)))
 	}
-	text, err := stdimpl.ToJSON(map[interface{}]interface{}{"ok": value})
+	text, err := stdimpl.ToJSON(map[interface{}]interface{}{"ok": ret})
 	if err != nil {
 		return l.allocString(envelopeError(errs.Message(errs.English, err)))
 	}

@@ -14,6 +14,7 @@ import (
 	"github.com/soumt-r/hana/pkg"
 	"github.com/soumt-r/hana/strcat"
 	"github.com/soumt-r/hana/typecheck"
+	"github.com/soumt-r/hana/value"
 	"sort"
 	"strconv"
 	"strings"
@@ -52,6 +53,7 @@ type VM struct {
 	moduleReady  map[string]bool        // the modules whose top-level code has run
 	staticFields map[string]interface{} // "ClassName.field" -> value
 	framePool    []*frame
+	formatDepth  int                                       // how deep FormatValue is inside lists (a list may contain itself)
 	members      map[string]map[symbol.Symbol]*memberEntry // see object.go: class member lookups, memoized
 	Output       []string
 
@@ -206,6 +208,9 @@ func (vm *VM) Run() error {
 // catchable RecursionError instead of Go's fatal stack overflow. Same number as
 // vm.MaxCallDepth in the tree-walker.
 const maxExecDepth = 10000
+
+// maxFormatDepth stops FormatValue on a list that contains itself.
+const maxFormatDepth = 100
 
 // evalIndex runs an index/property expression chunk (`<expr> RETURN`). The
 // overwhelmingly common ones are a lone variable or constant, which are read
@@ -413,13 +418,15 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 			push(!b)
 		case bytecode.TO_ITERABLE:
 			switch v := stack[len(stack)-1].(type) {
-			case []interface{}:
+			case *value.List:
+				// a loop walks the list as it was when the loop began
+				stack[len(stack)-1] = value.NewList(append([]interface{}(nil), v.Items...))
 			case string:
 				chars := make([]interface{}, 0, len(v))
 				for _, r := range v {
 					chars = append(chars, string(r))
 				}
-				stack[len(stack)-1] = chars
+				stack[len(stack)-1] = value.NewList(chars)
 			default:
 				np, handled, rerr := raise(errs.New(errs.NotIterable))
 				if handled {
@@ -446,8 +453,31 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 			}
 		case bytecode.SET_LIST_VAR:
 			op := instr.Operand.(*bytecode.ListSetOperand)
-			list, _ := pop().([]interface{})
-			if err := vm.assignListWrite(locals, syms[op.NameIndex], list, op.Change); err != nil {
+			list, _ := pop().(*value.List)
+			if err := vm.checkListVar(locals, syms[op.NameIndex], list, op.Change); err != nil {
+				list.Unpush(op.Change == bytecode.ListPushedFront)
+				np, handled, rerr := raise(err)
+				if handled {
+					pc = np
+					continue
+				}
+				return nil, rerr
+			}
+		case bytecode.CHECK_CONST_VAR:
+			if err := vm.requireMutable(locals, syms[instr.Operand.(int)]); err != nil {
+				np, handled, rerr := raise(err)
+				if handled {
+					pc = np
+					continue
+				}
+				return nil, rerr
+			}
+		case bytecode.CHECK_LIST_FIELD:
+			op := instr.Operand.(*bytecode.ListSetOperand)
+			obj := pop()
+			list, _ := pop().(*value.List)
+			if err := vm.checkListField(obj, chunk.Names[op.NameIndex], list, op.Change); err != nil {
+				list.Unpush(op.Change == bytecode.ListPushedFront)
 				np, handled, rerr := raise(err)
 				if handled {
 					pc = np
@@ -557,7 +587,7 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 			for i := n - 1; i >= 0; i-- {
 				elems[i] = pop()
 			}
-			push(elems)
+			push(value.NewList(elems))
 
 		case bytecode.NEW_DICT:
 			n := instr.Operand.(int)
@@ -575,7 +605,7 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 			position := instr.Operand.(string)
 			val := pop()
 			listVal := pop()
-			list, ok := listVal.([]interface{})
+			list, ok := listVal.(*value.List)
 			if !ok {
 				np, handled, rerr := raise(errs.New(errs.NotAList))
 				if handled {
@@ -584,16 +614,13 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 				}
 				return nil, rerr
 			}
-			if position == "front" {
-				push(append([]interface{}{val}, list...))
-			} else {
-				push(append(list, val))
-			}
+			list.Push(val, position == "front")
+			push(list)
 
 		case bytecode.LIST_POP:
 			position := instr.Operand.(string)
 			listVal := pop()
-			list, ok := listVal.([]interface{})
+			list, ok := listVal.(*value.List)
 			if !ok {
 				np, handled, rerr := raise(errs.New(errs.NotAList))
 				if handled {
@@ -602,7 +629,7 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 				}
 				return nil, rerr
 			}
-			if len(list) == 0 {
+			if len(list.Items) == 0 {
 				np, handled, rerr := raise(errs.New(errs.ListEmpty))
 				if handled {
 					pc = np
@@ -610,15 +637,7 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 				}
 				return nil, rerr
 			}
-			var popped interface{}
-			var rest []interface{}
-			if position == "front" {
-				popped, rest = list[0], list[1:]
-			} else {
-				popped, rest = list[len(list)-1], list[:len(list)-1]
-			}
-			push(rest)
-			push(popped)
+			push(list.Pop(position))
 
 		case bytecode.INPUT:
 			typeName, _ := instr.Operand.(string)
@@ -638,8 +657,8 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 			push(val)
 
 		case bytecode.LIST_CLEAR:
-			listVal := pop()
-			if _, ok := listVal.([]interface{}); !ok {
+			list, ok := pop().(*value.List)
+			if !ok {
 				np, handled, rerr := raise(errs.New(errs.ListOnlyMethod))
 				if handled {
 					pc = np
@@ -647,12 +666,12 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 				}
 				return nil, rerr
 			}
-			push([]interface{}{})
+			list.Items = []interface{}{}
 
 		case bytecode.GET_INDEX:
 			idxVal := pop()
 			listVal := pop()
-			list, ok := listVal.([]interface{})
+			list, ok := listVal.(*value.List)
 			if !ok {
 				np, handled, rerr := raise(errs.New(errs.NotAList))
 				if handled {
@@ -671,7 +690,7 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 				return nil, rerr
 			}
 			idx := int(num) - 1 // 1-based -> 0-based
-			if idx < 0 || idx >= len(list) {
+			if idx < 0 || idx >= len(list.Items) {
 				np, handled, rerr := raise(errs.New(errs.ListIndexOutOfRange))
 				if handled {
 					pc = np
@@ -679,9 +698,9 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 				}
 				return nil, rerr
 			}
-			push(list[idx])
+			push(list.Items[idx])
 		case bytecode.GET_LENGTH:
-			list, ok := pop().([]interface{})
+			list, ok := pop().(*value.List)
 			if !ok {
 				np, handled, rerr := raise(errs.New(errs.NotAList))
 				if handled {
@@ -690,7 +709,7 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 				}
 				return nil, rerr
 			}
-			push(num.Box(float64(len(list))))
+			push(num.Box(float64(len(list.Items))))
 
 		case bytecode.NEW_OBJECT:
 			op := instr.Operand.(*bytecode.NewObjectOperand)
@@ -1077,12 +1096,12 @@ func (vm *VM) getMember(objVal interface{}, propName string, sym symbol.Symbol, 
 		}
 		return nil, errs.New(errs.StaticMemberNotFound, propName)
 
-	case []interface{}:
+	case *value.List:
 		if isFunc {
 			return nil, errs.New(errs.MethodNotFound, propName)
 		}
 		if propName == vm.LengthWord {
-			return float64(len(v)), nil
+			return num.Box(float64(len(v.Items))), nil
 		}
 		idxVal, err := vm.evalIndex(indexChunk, locals)
 		if err != nil {
@@ -1093,10 +1112,10 @@ func (vm *VM) getMember(objVal interface{}, propName string, sym symbol.Symbol, 
 			return nil, errs.New(errs.ListIndexMustBeNumber)
 		}
 		idx := int(num) - 1
-		if idx < 0 || idx >= len(v) {
+		if idx < 0 || idx >= len(v.Items) {
 			return nil, errs.New(errs.ListIndexOutOfRange)
 		}
-		return v[idx], nil
+		return v.Items[idx], nil
 
 	case map[interface{}]interface{}:
 		// The property is evaluated as an expression to get the key (a plain
@@ -1161,15 +1180,15 @@ func (vm *VM) setMember(objVal interface{}, propName string, sym symbol.Symbol, 
 		v.Props[propName] = val
 		return nil
 
-	case []interface{}:
+	case *value.List:
 		idxVal, err := vm.evalIndex(indexChunk, locals)
 		if err != nil {
 			return err
 		}
 		if num, ok := idxVal.(float64); ok {
 			idx := int(num) - 1
-			if idx >= 0 && idx < len(v) {
-				v[idx] = val
+			if idx >= 0 && idx < len(v.Items) {
+				v.Items[idx] = val
 			}
 		}
 		return nil
@@ -1306,7 +1325,7 @@ func (vm *VM) callStringMethod(bm *boundStringMethod, args []interface{}) (inter
 		for i, p := range parts {
 			res[i] = p
 		}
-		return res, nil
+		return value.NewList(res), nil
 
 	case vm.StringContainsMethod:
 		if len(args) != 1 {
@@ -1555,7 +1574,7 @@ func (vm *VM) declaringFrame(locals *frame) *frame {
 //
 // A name declared with isConst (고정하자) is remembered on the frame that
 // holds it, and any later reassignment of that binding — through SET_VAR
-// too, so list push/pop write-backs and plain 정하자 are covered — is a
+// too, so plain 정하자 is covered — is a
 // ConstantAssignmentError, exactly like vm.Environment.Assign.
 func (vm *VM) assignOrDeclare(locals *frame, sym symbol.Symbol, val interface{}, isConst bool, annotation string) error {
 	if annotation != "" {
@@ -1601,10 +1620,27 @@ func (vm *VM) assignOrDeclare(locals *frame, sym symbol.Symbol, val interface{},
 	return nil
 }
 
-// assignListWrite writes back a list that was changed at an end: like assignOrDeclare, but
-// a declared list type is only checked against the element that was added (nothing, when
-// the list only got shorter), because the rest of it fitted before.
-func (vm *VM) assignListWrite(locals *frame, sym symbol.Symbol, list []interface{}, change bytecode.ListChange) error {
+// requireMutable refuses to change the list a constant variable holds.
+func (vm *VM) requireMutable(locals *frame, sym symbol.Symbol) error {
+	if locals != nil {
+		if i := locals.find(sym); i >= 0 {
+			if locals.slots[i].isConst {
+				return errs.New(errs.ConstantAssignment, sym.String())
+			}
+			return nil
+		}
+	}
+	if g := vm.globalsFor(locals); g != nil {
+		if i := g.find(sym); i >= 0 && g.slots[i].isConst {
+			return errs.New(errs.ConstantAssignment, sym.String())
+		}
+	}
+	return nil
+}
+
+// checkListVar tests the value just pushed on list against the type the variable it is
+// kept in was declared with: only that value, because the rest of the list fitted before.
+func (vm *VM) checkListVar(locals *frame, sym symbol.Symbol, list *value.List, change bytecode.ListChange) error {
 	var s *varSlot
 	if locals != nil {
 		if i := locals.find(sym); i >= 0 {
@@ -1618,18 +1654,21 @@ func (vm *VM) assignListWrite(locals *frame, sym symbol.Symbol, list []interface
 			}
 		}
 	}
-	if s == nil {
-		return vm.assignOrDeclare(locals, sym, list, false, "")
+	if s == nil || s.typ == "" {
+		return nil
 	}
-	if s.typ != "" && change != bytecode.ListShrunk {
-		if err := typecheck.CheckAppended(&vm.Types, s.typ, sym.String(), list, change == bytecode.ListPushedFront, vm.host()); err != nil {
-			return err
-		}
+	return typecheck.CheckAppended(&vm.Types, s.typ, sym.String(), list, change == bytecode.ListPushedFront, vm.host())
+}
+
+// checkListField is checkListVar for a list kept in an object's field.
+func (vm *VM) checkListField(obj interface{}, prop string, list *value.List, change bytecode.ListChange) error {
+	o, ok := obj.(*Object)
+	if !ok {
+		return nil
 	}
-	if s.isConst {
-		return errs.New(errs.ConstantAssignment, sym.String())
+	if annotation := vm.fieldType(o.ClassName, prop); annotation != "" {
+		return typecheck.CheckAppended(&vm.Types, annotation, prop, list, change == bytecode.ListPushedFront, vm.host())
 	}
-	s.val = list
 	return nil
 }
 
@@ -1734,11 +1773,16 @@ func (vm *VM) FormatValue(val interface{}) string {
 			return vm.TrueString
 		}
 		return vm.FalseString
-	case []interface{}:
-		elems := make([]string, len(v))
-		for i, el := range v {
+	case *value.List:
+		if vm.formatDepth > maxFormatDepth {
+			return "[...]"
+		}
+		vm.formatDepth++
+		elems := make([]string, len(v.Items))
+		for i, el := range v.Items {
 			elems[i] = vm.FormatValue(el)
 		}
+		vm.formatDepth--
 		return "[" + strings.Join(elems, ", ") + "]"
 	case map[interface{}]interface{}:
 		// {키: 값, ...} — Go maps have no insertion order, so entries are

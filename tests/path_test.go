@@ -11,6 +11,7 @@ import (
 
 	"github.com/soumt-r/hana/std"
 	"github.com/soumt-r/hana/std/stdimpl"
+	"github.com/soumt-r/hana/value"
 )
 
 func TestPathFunctionsEdgeCases(t *testing.T) {
@@ -22,6 +23,7 @@ func TestPathFunctionsEdgeCases(t *testing.T) {
 		return out
 	}
 	str := func(args ...string) []interface{} { return list(args...) }
+	vl := func(items ...string) *value.List { return value.NewList(list(items...)) }
 	cases := []struct {
 		fn   string
 		args []interface{}
@@ -83,11 +85,11 @@ func TestPathFunctionsEdgeCases(t *testing.T) {
 		{std.PathIsAbs, str("C:a"), false},
 		{std.PathIsAbs, str(""), false},
 
-		{std.PathParts, str("/a/b"), list("/", "a", "b")},
-		{std.PathParts, str("a/./b//c/.."), list("a", "b", "c", "..")},
-		{std.PathParts, str("C:\\a\\b"), list("C:/", "a", "b")},
-		{std.PathParts, str("C:a"), list("C:", "a")},
-		{std.PathParts, str(""), list()},
+		{std.PathParts, str("/a/b"), vl("/", "a", "b")},
+		{std.PathParts, str("a/./b//c/.."), vl("a", "b", "c", "..")},
+		{std.PathParts, str("C:\\a\\b"), vl("C:/", "a", "b")},
+		{std.PathParts, str("C:a"), vl("C:", "a")},
+		{std.PathParts, str(""), vl()},
 	}
 	for _, c := range cases {
 		got, err := stdimpl.Impls[c.fn](c.args)

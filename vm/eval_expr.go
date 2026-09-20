@@ -6,6 +6,7 @@ import (
 	"github.com/soumt-r/hana/num"
 	"github.com/soumt-r/hana/strcat"
 	"github.com/soumt-r/hana/typecheck"
+	"github.com/soumt-r/hana/value"
 	"strings"
 	"unicode/utf8"
 
@@ -375,7 +376,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 				for i, p := range parts {
 					res[i] = p
 				}
-				return res, nil
+				return value.NewList(res), nil
 			} else if bsm.FuncName == i.Config.StringContainsMethod {
 				if len(args) != 1 {
 					return nil, errs.New(errs.ArgCountExact, 1)
@@ -395,11 +396,10 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 				if len(args) != 0 {
 					return nil, errs.New(errs.ArgCountExact, 0)
 				}
-				if blm.Target != nil {
-					if err := i.assignListBack(blm.Target, []interface{}{}, env, listShrunk); err != nil {
-						return nil, err
-					}
+				if err := i.requireMutable(blm.Target, env); err != nil {
+					return nil, err
 				}
+				blm.List.Items = []interface{}{}
 				return nil, nil
 			}
 			return nil, errs.New(errs.MethodNotFound, blm.FuncName)
@@ -473,24 +473,23 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 			}
 			elements = append(elements, val)
 		}
-		return elements, nil
+		return value.NewList(elements), nil
 	case *ast.ListPopExpression:
 		targetVal, err := i.Evaluate(e.Target, env)
 		if err != nil {
 			return nil, err
 		}
-		list, ok := targetVal.([]interface{})
+		list, ok := targetVal.(*value.List)
 		if !ok {
 			return nil, errs.New(errs.NotAList)
 		}
-		if len(list) == 0 {
-			return nil, errs.New(errs.ListEmpty)
-		}
-		popped, newList := popFromList(list, e.Position)
-		if err := i.assignListBack(e.Target, newList, env, listShrunk); err != nil {
+		if err := i.requireMutable(e.Target, env); err != nil {
 			return nil, err
 		}
-		return popped, nil
+		if len(list.Items) == 0 {
+			return nil, errs.New(errs.ListEmpty)
+		}
+		return list.Pop(e.Position), nil
 	case *ast.DictLiteral:
 		dict := make(map[interface{}]interface{})
 		for _, prop := range e.Properties {
@@ -581,7 +580,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 				return nil, nil // Or throw error if no return?
 			}
 			return hajaObj.Props[propName], nil
-		} else if list, ok := obj.([]interface{}); ok {
+		} else if list, ok := obj.(*value.List); ok {
 			propName := ""
 			isFunc := false
 			if fr, ok := e.Property.(*ast.FunctionReference); ok {
@@ -595,17 +594,17 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 				return &BoundListMethod{List: list, FuncName: propName, Target: e.Object}, nil
 			}
 			if propName == i.Config.LengthWord {
-				return float64(len(list)), nil
+				return num.Box(float64(len(list.Items))), nil
 			}
 
 			idxObj, err := i.Evaluate(e.Property, env)
 			if err == nil {
 				if numVal, isNum := idxObj.(float64); isNum {
 					idx := int(numVal) - 1 // 1-based to 0-based
-					if idx < 0 || idx >= len(list) {
+					if idx < 0 || idx >= len(list.Items) {
 						return nil, errs.New(errs.ListIndexOutOfRange)
 					}
-					return list[idx], nil
+					return list.Items[idx], nil
 				}
 			}
 			return nil, errs.New(errs.ListIndexMustBeNumber)

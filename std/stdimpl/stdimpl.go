@@ -12,6 +12,7 @@ import (
 
 	"github.com/soumt-r/hana/errs"
 	"github.com/soumt-r/hana/std"
+	"github.com/soumt-r/hana/value"
 )
 
 // Func is one native function's behavior.
@@ -183,8 +184,8 @@ func integerArg(args []interface{}, i int) (int64, error) {
 }
 
 func listArg(args []interface{}, i int) ([]interface{}, error) {
-	if l, ok := args[i].([]interface{}); ok {
-		return l, nil
+	if l, ok := args[i].(*value.List); ok {
+		return l.Items, nil
 	}
 	return nil, errs.New(errs.NativeArgList, i+1)
 }

@@ -194,26 +194,23 @@ DelimLen, TypeOpen/TypeClose.
 조작합니다. 예외가 딱 하나 있는데, TS 참조 구현(haja-docs)에도 있는 `<비우기>()`(카나데:
 `<空にする>()`, 목록을 즉석에서 비움, 인자 없음, 반환값 없음)입니다.
 
-트리워커는 이게 **실제로 버그였습니다**: `vm/eval_expr.go`가 리스트에 대한 `FunctionReference`
-프로퍼티 접근을 `BoundListMethod`로 이미 만들고는 있었는데, `CallExpression` 처리 쪽
-switch에 `*BoundListMethod` 케이스가 아예 없어서 무슨 메서드를 불러도 예외 없이
-`TypeError: Not callable.`로 떨어졌습니다. `vm/eval_expr.go`에 케이스 추가 +
-`vm/object.go`의 `BoundListMethod`에 `Target ast.Expression` 필드 추가(뭘 비웠는지
-다시 써넣을 곳을 기억해야 해서 — `assignListBack`으로 재사용, `list_ops.go`에서 push/pop이
-이미 쓰던 것과 동일)로 고쳤습니다.
+트리워커는 `vm/eval_expr.go`가 리스트에 대한 `FunctionReference` 접근을 `BoundListMethod`로 만들고
+`CallExpression`에서 `비우기`만 받아 그 목록을 제자리에서 비웁니다(`Target`은 상수 변수 검사용).
+바이트코드는 컴파일러가 `X의 <비우기>()` 패턴(메서드 이름이 `c.lang.listClearMethod`이고 인자 0개)을 감지해
+`compileConstCheck → compileExpression(목록) → LIST_CLEAR → PUSH_NULL`로 컴파일합니다. 메서드 *이름*으로
+컴파일 타임에 감지하지만 `LIST_CLEAR` 자체가 런타임에 값 타입을 다시 확인하므로, 목록이 아닌 값에 대해서는
+조용히 오작동하는 대신 TypeError로 떨어집니다(같은 이름의 메서드를 가진 커스텀 클래스의 `<비우기>`가 가려지는 것이
+알려진 트레이드오프이고, TS 참조 구현은 애초에 이 경우가 생기지 않습니다).
 
-바이트코드 쪽은 `GET_MEMBER`+`CALL_METHOD`의 일반 메서드 호출 경로로는 못 만듭니다 —
-그 경로가 끝나는 시점엔 이 값이 "어느 변수/필드에서 왔는지" 기억할 방법이 스택에 전혀
-없어서(리스트가 값 타입이라 제자리 변경도 불가능), LIST_PUSH/LIST_POP과 똑같은 처리를
-새로 만들었습니다: 새 무피연산 opcode `LIST_CLEAR`(리스트면 빈 리스트를 푸시, 아니면
-TypeError) + 컴파일러가 `X의 <비우기>()` 패턴(메서드 이름이 `c.lang.listClearMethod`이고
-인자 0개)을 감지해 `compileExpression(read) → LIST_CLEAR → compileAssignTarget(write) →
-PUSH_NULL`로 컴파일. 메서드 *이름*으로 컴파일 타임에 감지하지만 `LIST_CLEAR` 자체가
-런타임에 값 타입을 다시 확인하므로, 리스트가 아닌 값(우연히 같은 이름의 메서드를 가진
-커스텀 클래스 등)에 대해서는 조용히 오작동하는 대신 깔끔한 TypeError로 떨어집니다 —
-이 경우 커스텀 `<비우기>` 메서드가 그림자로 가려지는 게 알려진 트레이드오프입니다
-(TS 참조 구현도 배열/문자열에만 반응하고 커스텀 객체는 아예 다른 경로로 처리해서 이
-케이스 자체가 애초에 생기지 않습니다).
+## 목록은 참조 타입(`value.List`)입니다 (런타임 스펙 1.2)
+
+목록 값은 `[]interface{}`가 아니라 `*value.List`(`value/list.go`, `Items` 슬라이스 하나)입니다. 목록은 객체라서 변수·매개변수·필드가 같은 목록을 가지면 하나를 공유합니다: 함수 안에서 `추가하자`/`꺼내자`/`<비우기>()`/`'목'의 1번째를 …로 정하자`를 하면 부른 쪽의 목록이 바뀝니다(사전·객체는 원래 참조). 목록은 `List.Push/Pop`으로 제자리에서 바꾸고, 예전의 "새 목록을 만들어 원래 자리에 되쓰기"(`assignListBack`, `SET_LIST_VAR`가 값을 저장하던 것)는 없어졌습니다. 새 목록을 만드는 표준 라이브러리 함수는 `value.NewList(out)`를 돌려주고 `listArg`는 `Items`를 줍니다(목록 안의 목록은 `*value.List`로 그대로 두어야 별칭이 유지됩니다). `==`는 목록의 참조가 같은지를 봅니다(객체와 같음). 목록이 자기 자신을 담을 수 있으므로 `FormatValue`와 JSON 쓰기는 깊이 한도(`maxFormatDepth`, `maxJSONDepth`)가 있습니다.
+
+- **선언한 타입과 추가**: 추가는 먼저 목록을 바꾸고, 그 목록을 담은 변수·필드의 선언 타입에 맞는지 **새 원소만** 검사하며(`CheckAppended`), 안 맞으면 되돌리고(`Unpush`) 오류를 냅니다. 트리워커는 `checkListPush`, 바이트코드는 `LIST_PUSH`가 목록을 스택에 남기고 `SET_LIST_VAR`(변수)/`CHECK_LIST_FIELD`(객체 필드)가 검사·되돌리기를 합니다. 별칭으로 추가하면 그 이름의 타입만 검사됩니다.
+- **상수**: `고정하자` 변수가 든 목록의 추가·꺼내기·비우기는 `ConstantAssignmentError`(스펙 2.1)입니다 — 트리워커 `requireMutable`, 바이트코드 `CHECK_CONST_VAR`(대상이 변수일 때만, 컴파일러의 `compileConstCheck`). 원소 대입(`'상수목록'의 1번째를 …`)은 막지 않습니다.
+- **반복**: `마다 반복하자`는 시작할 때의 목록을 복사해 돕니다(트리워커·`TO_ITERABLE`·브라우저 엔진 모두). 반복 중에 추가해도 끝나지 않는 반복이 생기지 않습니다.
+- `.hn` 형식은 `LIST_PUSH`/`LIST_POP`/`LIST_CLEAR`의 뜻이 바뀌어 버전 3입니다. 네이티브 라이브러리 ABI(JSON)는 그대로이고 `native`가 목록과 JSON 배열을 오갑니다.
+- 브라우저 엔진(TS)은 JS 배열이 원래 참조라 같은 규칙으로 맞췄습니다(`listOps.ts`: `pushOnto`/`takeBack`/`popFromList`/`requireMutable`/`checkListPush`, 반복은 `Array.from`으로 복사). `tests/list_reference_test.go`와 `compare_tests.ts`의 '반복: 목록 참조:'가 지킵니다.
 
 ## 바이트코드 VM은 이름을 `Symbol`로 찾음
 
@@ -358,7 +355,7 @@ docs 저장소의 브라우저 에디터용 `lspKeywords.ts`는 `go run ./cmd/ls
 
 - **`num.Box`**: 작은 정수 float64를 `interface{}`로 만들 때마다 8바이트를 할당하던 것을 [-1024, 1<<20)의 값은 미리 만든 표에서 돌려줍니다. 산술 결과·`NumberLiteral.Boxed`·범위 반복 변수가 씁니다.
 - **트리워커**: 리터럴은 노드에 미리 계산해 둡니다(`NumberLiteral.Boxed`, `StringLiteral.Cooked`, `TemplateLiteral.Parts`). 함수·반복 범위는 `newScope`/`freeScope`(작은 free list)로 재사용하므로, **범위를 만든 뒤 아무도 그 `Environment`를 붙잡지 않아야** 합니다(클로저 값이 없는 지금은 성립). 호출 인자는 `Interpreter.argStack`에 쌓고 프로그램 안에서 선언한 함수(`*ast.FunctionDeclaration`)에만 뷰로 넘깁니다(매개변수 바인딩이 복사) — 다른 호출 대상은 인자를 붙잡을 수 있어 복사본을 받습니다. 최상위 함수는 `topFunction`(이름 색인), 클래스 멤버는 클래스별 Symbol 표(`classMembers`)로 찾고, `evaluate`/`Execute`에 `defer`를 넣지 마세요(모든 식 평가가 느려집니다).
-- **바이트코드**: `bytecode/peephole.go`의 `Optimize`가 컴파일 끝에 `LOAD_VAR/PUSH_CONST + 산술·비교 (+ SET_VAR / JUMP_IF_FALSE)`를 `BIN` 하나로 합칩니다(피연산자 `BinOperand`, 못 빠르게 하는 경우는 합치지 않은 명령과 같은 결과·에러로 처리). 점프 목표가 가운데에 있으면 합치지 않고, 합친 뒤 점프 목표를 옮깁니다. `SET_LIST_VAR`는 `목록에 추가` 같은 쓰기-되쓰기, `Instruction.Hint`는 실행 중 채우는 캐시(직렬화 안 함), `CallOperand.CachedFunction`은 호출 대상 캐시입니다. 새 옵코드가 점프나 변수 슬롯을 다루면 `jumpTargets`/`optimizeChunk`를 같이 고치세요. `run`/`exec` 분리는 `defer` 없이 프레임을 정리하기 위한 것입니다. 프로그램 안의 함수·메서드·생성자를 부르는 `CALL`/`CALL_METHOD`/`NEW_OBJECT`는 인자를 새 슬라이스에 옮기지 않고 피연산자 스택 위의 뷰로 넘깁니다(매개변수 바인딩이 프레임으로 복사하므로 안전하고 피보나치가 25% 빨라짐, 네이티브·문자열 메서드는 인자를 붙잡을 수 있어 복사본을 받습니다). `op, SET_VAR`/`op, JUMP_IF_FALSE`도 `BIN`으로 합칩니다. 피연산자 스택을 풀에서 재사용해 보았지만 할당보다 이득이 없어 넣지 않았습니다.
+- **바이트코드**: `bytecode/peephole.go`의 `Optimize`가 컴파일 끝에 `LOAD_VAR/PUSH_CONST + 산술·비교 (+ SET_VAR / JUMP_IF_FALSE)`를 `BIN` 하나로 합칩니다(피연산자 `BinOperand`, 못 빠르게 하는 경우는 합치지 않은 명령과 같은 결과·에러로 처리). 점프 목표가 가운데에 있으면 합치지 않고, 합친 뒤 점프 목표를 옮깁니다. `SET_LIST_VAR`/`CHECK_LIST_FIELD`는 추가한 원소의 선언 타입 검사, `Instruction.Hint`는 실행 중 채우는 캐시(직렬화 안 함), `CallOperand.CachedFunction`은 호출 대상 캐시입니다. 새 옵코드가 점프나 변수 슬롯을 다루면 `jumpTargets`/`optimizeChunk`를 같이 고치세요. `run`/`exec` 분리는 `defer` 없이 프레임을 정리하기 위한 것입니다. 프로그램 안의 함수·메서드·생성자를 부르는 `CALL`/`CALL_METHOD`/`NEW_OBJECT`는 인자를 새 슬라이스에 옮기지 않고 피연산자 스택 위의 뷰로 넘깁니다(매개변수 바인딩이 프레임으로 복사하므로 안전하고 피보나치가 25% 빨라짐, 네이티브·문자열 메서드는 인자를 붙잡을 수 있어 복사본을 받습니다). `op, SET_VAR`/`op, JUMP_IF_FALSE`도 `BIN`으로 합칩니다. 피연산자 스택을 풀에서 재사용해 보았지만 할당보다 이득이 없어 넣지 않았습니다.
 - **typecheck**: 타입 표기의 분해 결과를 `Spec`으로 캐시하고(`parsed`) 공개 함수가 `*Names`를 받습니다(값 복사 비용 제거). 흔한 경우(`[숫자]`에 float64 등)는 `QuickAccepts`가 바로 답합니다.
 
 ## 문자열 `+`는 `strcat.Join`으로

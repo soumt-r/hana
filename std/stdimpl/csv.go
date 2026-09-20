@@ -5,6 +5,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/soumt-r/hana/errs"
+	"github.com/soumt-r/hana/value"
 )
 
 // [CSV] reads and writes comma-separated text (RFC 4180): a value is a list of
@@ -63,7 +64,7 @@ func parseCSV(text string, delim rune) (interface{}, error) {
 	}
 	endRow := func() {
 		endField()
-		rows = append(rows, row)
+		rows = append(rows, value.NewList(row))
 		row = []interface{}{}
 	}
 
@@ -101,7 +102,7 @@ func parseCSV(text string, delim rune) (interface{}, error) {
 	if started || quoted || len(row) > 0 {
 		endRow()
 	}
-	return rows, nil
+	return value.NewList(rows), nil
 }
 
 // csvStringify(행들[, 구분자]) → text. Rows are separated by a line break (none
@@ -121,14 +122,14 @@ func csvStringify(args []interface{}) (interface{}, error) {
 	}
 	var out strings.Builder
 	for n, r := range rows {
-		cells, ok := r.([]interface{})
-		if !ok || len(cells) == 0 {
+		row, ok := r.(*value.List)
+		if !ok || len(row.Items) == 0 {
 			return nil, errs.New(errs.CSVUnsupported)
 		}
 		if n > 0 {
 			out.WriteByte('\n')
 		}
-		for k, cell := range cells {
+		for k, cell := range row.Items {
 			if k > 0 {
 				out.WriteRune(delim)
 			}
@@ -136,7 +137,7 @@ func csvStringify(args []interface{}) (interface{}, error) {
 			if err != nil {
 				return nil, err
 			}
-			needsQuotes := strings.ContainsAny(text, "\"\r\n") || strings.ContainsRune(text, delim) || (text == "" && len(cells) == 1)
+			needsQuotes := strings.ContainsAny(text, "\"\r\n") || strings.ContainsRune(text, delim) || (text == "" && len(row.Items) == 1)
 			if needsQuotes {
 				out.WriteByte('"')
 				out.WriteString(strings.ReplaceAll(text, "\"", "\"\""))

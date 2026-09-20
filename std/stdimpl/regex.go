@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/soumt-r/hana/errs"
+	"github.com/soumt-r/hana/value"
 )
 
 // Regular expressions use the syntax Go's regexp and JavaScript share (the
@@ -74,7 +75,7 @@ func regexGroups(args []interface{}) (interface{}, error) {
 	if loc == nil {
 		return nil, nil
 	}
-	return groupList(text, loc), nil
+	return value.NewList(groupList(text, loc)), nil
 }
 
 func groupList(text string, loc []int) []interface{} {
@@ -110,7 +111,7 @@ func regexFindAll(args []interface{}) (interface{}, error) {
 	for _, loc := range matches(re, text) {
 		out = append(out, text[loc[0]:loc[1]])
 	}
-	return out, nil
+	return value.NewList(out), nil
 }
 
 // regexReplace swaps every match for the replacement, where $1..$9 (or $10...)
@@ -191,5 +192,5 @@ func regexSplit(args []interface{}) (interface{}, error) {
 		last = loc[1]
 	}
 	out = append(out, text[last:])
-	return out, nil
+	return value.NewList(out), nil
 }

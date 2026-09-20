@@ -5,6 +5,7 @@ import (
 
 	"github.com/soumt-r/hana/errs"
 	"github.com/soumt-r/hana/std"
+	"github.com/soumt-r/hana/value"
 )
 
 // Caller runs a function the program passed in (`<이름>`) with the given
@@ -64,7 +65,7 @@ func listMap(call Caller, args []interface{}) (interface{}, error) {
 			return nil, err
 		}
 	}
-	return out, nil
+	return value.NewList(out), nil
 }
 
 func listFilter(call Caller, args []interface{}) (interface{}, error) {
@@ -82,7 +83,7 @@ func listFilter(call Caller, args []interface{}) (interface{}, error) {
 			out = append(out, item)
 		}
 	}
-	return out, nil
+	return value.NewList(out), nil
 }
 
 // listReduce folds the list into one value: fn(누적값, 항목), starting from the
@@ -196,5 +197,5 @@ func listSortBy(call Caller, args []interface{}) (interface{}, error) {
 	for i, at := range order {
 		out[i] = list[at]
 	}
-	return out, nil
+	return value.NewList(out), nil
 }

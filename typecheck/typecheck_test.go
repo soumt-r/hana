@@ -1,6 +1,10 @@
 package typecheck
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/soumt-r/hana/value"
+)
 
 var ko = Names{Number: "숫자", String: "문자열", Boolean: "논리", Any: "아무거나", List: "목록", Dict: "사전", Null: "비어있음"}
 
@@ -59,8 +63,8 @@ func TestPrimitivesNullAndAny(t *testing.T) {
 		{"숫자", nil, true}, {"문자열", nil, true}, {"자동차", nil, true}, // Nullable by default
 		{"아무거나", "무엇이든", true}, {"", 3.0, true},
 		{"비어있음", nil, true}, {"비어있음", 1.0, false},
-		{"목록", []interface{}{}, true}, {"목록", "x", false},
-		{"사전", map[interface{}]interface{}{}, true}, {"사전", []interface{}{}, false},
+		{"목록", value.NewList(nil), true}, {"목록", "x", false},
+		{"사전", map[interface{}]interface{}{}, true}, {"사전", value.NewList(nil), false},
 	} {
 		if got := Parse(x.typ).Accepts(&ko, x.v, nil); got != x.want {
 			t.Errorf("[%s] accepts %#v = %v, want %v", x.typ, x.v, got, x.want)
@@ -69,12 +73,12 @@ func TestPrimitivesNullAndAny(t *testing.T) {
 }
 
 func TestGenericsAreCheckedElementByElement(t *testing.T) {
-	nums := []interface{}{1.0, 2.0}
-	mixed := []interface{}{1.0, "둘"}
+	nums := value.NewList([]interface{}{1.0, 2.0})
+	mixed := value.NewList([]interface{}{1.0, "둘"})
 	if !Parse("(숫자)목록").Accepts(&ko, nums, nil) || Parse("(숫자)목록").Accepts(&ko, mixed, nil) {
 		t.Error("[(숫자)목록] must accept only all-number lists")
 	}
-	if !Parse("(숫자)목록").Accepts(&ko, []interface{}{1.0, nil}, nil) {
+	if !Parse("(숫자)목록").Accepts(&ko, value.NewList([]interface{}{1.0, nil}), nil) {
 		t.Error("a null element is allowed")
 	}
 	d := map[interface{}]interface{}{"a": 1.0}
@@ -108,7 +112,7 @@ func TestClassesUpcastingAndInterfaces(t *testing.T) {
 }
 
 func TestDescribeAndErrors(t *testing.T) {
-	if Describe(&ko, 3.0, nil) != "숫자" || Describe(&ko, nil, nil) != "비어있음" || Describe(&ko, []interface{}{}, nil) != "목록" {
+	if Describe(&ko, 3.0, nil) != "숫자" || Describe(&ko, nil, nil) != "비어있음" || Describe(&ko, value.NewList(nil), nil) != "목록" {
 		t.Error("Describe should use the language's names")
 	}
 	if err := Check(&ko, "숫자", "나이", "스물", nil); err == nil {

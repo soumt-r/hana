@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/soumt-r/hana/errs"
+	"github.com/soumt-r/hana/value"
 )
 
 // FileAccess is asked before every file operation. op names it ("read",
@@ -86,7 +87,7 @@ func fileLines(args []interface{}) (interface{}, error) {
 	}
 	out := []interface{}{}
 	if text == "" {
-		return out, nil
+		return value.NewList(out), nil
 	}
 	parts := strings.Split(text, "\n")
 	if parts[len(parts)-1] == "" {
@@ -95,7 +96,7 @@ func fileLines(args []interface{}) (interface{}, error) {
 	for _, line := range parts {
 		out = append(out, strings.TrimSuffix(line, "\r"))
 	}
-	return out, nil
+	return value.NewList(out), nil
 }
 
 // writeText writes text to path, replacing the file or (append) adding to it.
@@ -189,7 +190,7 @@ func fileList(args []interface{}) (interface{}, error) {
 	for i, e := range entries {
 		out[i] = e.Name()
 	}
-	return out, nil
+	return value.NewList(out), nil
 }
 
 // fileMkdir makes a folder and any missing folders above it; an existing

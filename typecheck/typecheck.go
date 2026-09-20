@@ -1,7 +1,7 @@
 // Package typecheck is hana's dynamic type checker (Runtime spec 2.2): does a
 // runtime value satisfy a declared type such as [숫자], [(숫자)목록] or [자동차]?
 // It is engine-neutral — the tree-walker and the bytecode VM both hand it plain
-// Go values (float64, string, bool, []interface{}, map[interface{}]interface{},
+// Go values (float64, string, bool, *value.List, map[interface{}]interface{},
 // nil) and, for user classes, a Host that knows the class hierarchy. The browser
 // engines mirror the same rules by hand (compare_tests.ts keeps them honest).
 package typecheck
@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	"github.com/soumt-r/hana/errs"
+	"github.com/soumt-r/hana/value"
 )
 
 // Names are a language's names for the built-in types (하자: 숫자, 문자열, 논리,
@@ -88,12 +89,12 @@ func (s *Spec) accepts(n *Names, v interface{}, h Host) bool {
 	case n.Null:
 		return false // v is not null here
 	case n.List:
-		list, ok := v.([]interface{})
+		list, ok := v.(*value.List)
 		if !ok {
 			return false
 		}
 		if len(s.Args) > 0 {
-			return acceptsAll(n, s.Args[0], list, h)
+			return acceptsAll(n, s.Args[0], list.Items, h)
 		}
 		return true
 	case n.Dict:
@@ -180,7 +181,7 @@ func Describe(n *Names, v interface{}, h Host) string {
 		return n.String
 	case bool:
 		return n.Boolean
-	case []interface{}:
+	case *value.List:
 		return n.List
 	case map[interface{}]interface{}:
 		return n.Dict
@@ -245,12 +246,12 @@ func CheckArgument(n *Names, annotation, name string, v interface{}, h Host) err
 // (with front false) the back — where the list before was already known to fit: only
 // the new element needs testing. An annotation that is not a list of some type is
 // checked as a whole, like Check.
-func CheckAppended(n *Names, annotation, name string, list []interface{}, front bool, h Host) error {
+func CheckAppended(n *Names, annotation, name string, list *value.List, front bool, h Host) error {
 	spec := parsed(annotation)
-	if spec.Name == n.List && len(spec.Args) > 0 && len(list) > 0 {
-		e := list[len(list)-1]
+	if spec.Name == n.List && len(spec.Args) > 0 && len(list.Items) > 0 {
+		e := list.Items[len(list.Items)-1]
 		if front {
-			e = list[0]
+			e = list.Items[0]
 		}
 		elem := Spec{Name: spec.Args[0]}
 		if elem.accepts(n, e, h) {

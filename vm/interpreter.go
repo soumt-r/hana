@@ -3,6 +3,7 @@ package vm
 import (
 	"fmt"
 	"github.com/soumt-r/hana/errs"
+	"github.com/soumt-r/hana/value"
 	"sort"
 	"strconv"
 	"strings"
@@ -19,6 +20,7 @@ type Interpreter struct {
 	memberCache   map[*ast.ClassDeclaration]*classMembers // see class_lookup.go
 	lastMembers   *classMembers
 	scopePool     []*Environment // see newScope in env.go
+	formatDepth   int            // how deep FormatValue is inside lists (a list may contain itself)
 	argStack      []interface{}  // the arguments of the calls in flight, see CallExpression
 	funcIndex     *funcIndex     // see topFunction in module_scope.go
 	Interfaces    map[string]*ast.InterfaceDeclaration
@@ -267,11 +269,16 @@ func (i *Interpreter) FormatValue(val interface{}) string {
 			return i.Config.TrueString
 		}
 		return i.Config.FalseString
-	case []interface{}:
-		elements := make([]string, len(v))
-		for idx, el := range v {
+	case *value.List:
+		if i.formatDepth > maxFormatDepth {
+			return "[...]"
+		}
+		i.formatDepth++
+		elements := make([]string, len(v.Items))
+		for idx, el := range v.Items {
 			elements[idx] = i.FormatValue(el)
 		}
+		i.formatDepth--
 		return "[" + strings.Join(elements, ", ") + "]"
 	case map[interface{}]interface{}:
 		// {키: 값, ...} — Go maps have no insertion order, so entries are

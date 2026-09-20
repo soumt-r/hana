@@ -649,20 +649,21 @@ func (c *Compiler) compileStatement(chunk *Chunk, stmt ast.Statement) {
 		c.emitBuiltinImport(chunk, s)
 
 	case *ast.ListPushStatement:
+		c.compileConstCheck(chunk, s.Target)
 		c.compileExpression(chunk, s.Target) // 현재 목록 값
 		c.compileExpression(chunk, s.Value)
-		chunk.emit(LIST_PUSH, s.Position)
+		chunk.emit(LIST_PUSH, s.Position) // 목록 자체가 바뀌고, 목록이 다시 스택에 남는다
 		change := ListPushedBack
 		if s.Position == "front" {
 			change = ListPushedFront
 		}
-		c.compileListWriteBack(chunk, s.Target, change) // 새 목록을 원래 자리(변수든 객체 필드든)에 다시 씀
+		c.compileListCheck(chunk, s.Target, change) // 선언된 타입에 맞는지 (안 맞으면 되돌림)
 
 	case *ast.ListPopStatement:
-		c.compileExpression(chunk, s.Target)                // 현재 목록 값
-		chunk.emit(LIST_POP, s.Position)                    // -> ..., 나머지, 꺼낸값
-		chunk.emit(POP, nil)                                // 문장형은 꺼낸 값을 버림 (AST 스펙: 반환값 없음)
-		c.compileListWriteBack(chunk, s.Target, ListShrunk) // 나머지를 다시 씀
+		c.compileConstCheck(chunk, s.Target)
+		c.compileExpression(chunk, s.Target) // 현재 목록 값
+		chunk.emit(LIST_POP, s.Position)     // 목록에서 꺼내고 그 값이 남는다
+		chunk.emit(POP, nil)                 // 문장형은 꺼낸 값을 버림 (AST 스펙: 반환값 없음)
 
 	case *ast.InputStatement:
 		// vm/exec_stmt.go와 같은 규칙: 한 줄을 읽어 [타입]으로 변환(타입이 없으면
@@ -683,16 +684,32 @@ func (c *Compiler) compileStatement(chunk *Chunk, stmt ast.Statement) {
 	}
 }
 
-// compileListWriteBack is compileAssignTarget for a list that was changed at an end (see
-// ListChange): a plain variable gets SET_LIST_VAR, which checks a declared type cheaply.
-func (c *Compiler) compileListWriteBack(chunk *Chunk, target ast.Expression, change ListChange) {
-	if _, isMember := target.(*ast.MemberExpression); !isMember {
-		if nameIdx, ok := c.identifierNameIndex(chunk, target); ok {
-			chunk.emit(SET_LIST_VAR, &ListSetOperand{NameIndex: nameIdx, Change: change})
+// compileConstCheck refuses, at run time, to change the list a constant variable holds.
+func (c *Compiler) compileConstCheck(chunk *Chunk, target ast.Expression) {
+	if _, isMember := target.(*ast.MemberExpression); isMember {
+		return
+	}
+	if nameIdx, ok := c.identifierNameIndex(chunk, target); ok {
+		chunk.emit(CHECK_CONST_VAR, nameIdx)
+	}
+}
+
+// compileListCheck ends a push: the list LIST_PUSH left on the stack was put in the variable
+// or field target names, whose declared type the new element has to fit. Nothing is
+// written back (the list is the same object); anything else the target could be just
+// drops the list.
+func (c *Compiler) compileListCheck(chunk *Chunk, target ast.Expression, change ListChange) {
+	if mem, isMember := target.(*ast.MemberExpression); isMember {
+		if id, ok := mem.Property.(*ast.Identifier); ok {
+			c.compileExpression(chunk, mem.Object)
+			chunk.emit(CHECK_LIST_FIELD, &ListSetOperand{NameIndex: chunk.addName(id.Value), Change: change})
 			return
 		}
+	} else if nameIdx, ok := c.identifierNameIndex(chunk, target); ok {
+		chunk.emit(SET_LIST_VAR, &ListSetOperand{NameIndex: nameIdx, Change: change})
+		return
 	}
-	c.compileAssignTarget(chunk, target)
+	chunk.emit(POP, nil)
 }
 
 func (c *Compiler) compileAssignTarget(chunk *Chunk, target ast.Expression) {
@@ -1337,17 +1354,9 @@ func (c *Compiler) compileExpression(chunk *Chunk, expr ast.Expression) {
 		chunk.emit(NEW_DICT, len(e.Properties))
 
 	case *ast.ListPopExpression:
-		// 꺼낸 값 자체가 이 식의 결과여야 하는데, LIST_POP은 나머지 목록과
-		// 꺼낸 값을 둘 다 스택에 남긴다. 나머지를 compileAssignTarget으로
-		// 되쓰는 동안(대상이 MemberExpression이면 추가로 명령을 더 내보냄)
-		// 꺼낸 값이 스택 맨 위 자리를 지키게 하기 위해 임시 변수에 잠깐
-		// 옮겨뒀다가 마지막에 다시 불러온다.
-		tmp := c.newTempName()
+		c.compileConstCheck(chunk, e.Target)
 		c.compileExpression(chunk, e.Target) // 현재 목록 값
-		chunk.emit(LIST_POP, e.Position)     // -> ..., 나머지, 꺼낸값
-		chunk.emit(SET_VAR, chunk.addName(tmp))
-		c.compileListWriteBack(chunk, e.Target, ListShrunk) // 나머지를 다시 씀
-		chunk.emit(LOAD_VAR, chunk.addName(tmp))
+		chunk.emit(LIST_POP, e.Position)     // 목록에서 꺼내고 그 값이 이 식의 결과
 
 	case *ast.MemberExpression:
 		c.compileMemberExpression(chunk, e)
@@ -1390,10 +1399,10 @@ func (c *Compiler) compileExpression(chunk *Chunk, expr ast.Expression) {
 			// re-checks the runtime value's type, so this can never silently
 			// misfire on some other callee that merely evaluates to a list.
 			if fr, ok := callee.Property.(*ast.FunctionReference); ok && fr.Name == c.lang.listClearMethod && len(e.Arguments) == 0 {
+				c.compileConstCheck(chunk, callee.Object)
 				c.compileExpression(chunk, callee.Object) // 현재 목록 값
-				chunk.emit(LIST_CLEAR, nil)               // -> 빈 목록
-				c.compileListWriteBack(chunk, callee.Object, ListShrunk)
-				chunk.emit(PUSH_NULL, nil) // 이 식 자체의 결과값 (비우기는 반환값 없음)
+				chunk.emit(LIST_CLEAR, nil)               // 목록을 비움
+				chunk.emit(PUSH_NULL, nil)                // 이 식 자체의 결과값 (비우기는 반환값 없음)
 				return
 			}
 			// X의 <메서드>(...): compiling the MemberExpression itself (its

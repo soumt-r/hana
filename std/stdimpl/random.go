@@ -4,6 +4,7 @@ import (
 	"math/rand"
 
 	"github.com/soumt-r/hana/errs"
+	"github.com/soumt-r/hana/value"
 )
 
 // randomFloat is a number in [0, 1).
@@ -59,5 +60,5 @@ func randomShuffle(args []interface{}) (interface{}, error) {
 	out := make([]interface{}, len(list))
 	copy(out, list)
 	rand.Shuffle(len(out), func(i, j int) { out[i], out[j] = out[j], out[i] })
-	return out, nil
+	return value.NewList(out), nil
 }

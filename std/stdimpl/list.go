@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/soumt-r/hana/errs"
+	"github.com/soumt-r/hana/value"
 )
 
 // listSort returns a sorted copy: all numbers (ascending) or all strings
@@ -20,7 +21,7 @@ func listSort(args []interface{}) (interface{}, error) {
 	out := make([]interface{}, len(list))
 	copy(out, list)
 	if len(out) == 0 {
-		return out, nil
+		return value.NewList(out), nil
 	}
 	switch out[0].(type) {
 	case float64:
@@ -52,7 +53,7 @@ func listSort(args []interface{}) (interface{}, error) {
 	default:
 		return nil, errs.New(errs.ListNotSortable)
 	}
-	return out, nil
+	return value.NewList(out), nil
 }
 
 func listReverse(args []interface{}) (interface{}, error) {
@@ -67,7 +68,7 @@ func listReverse(args []interface{}) (interface{}, error) {
 	for i, v := range list {
 		out[len(list)-1-i] = v
 	}
-	return out, nil
+	return value.NewList(out), nil
 }
 
 // listUnique keeps the first of each equal value, in order; only numbers,
@@ -94,7 +95,7 @@ func listUnique(args []interface{}) (interface{}, error) {
 		seen[v] = true
 		out = append(out, v)
 	}
-	return out, nil
+	return value.NewList(out), nil
 }
 
 // listRange is the whole numbers from start to end, both included. The step
@@ -126,7 +127,7 @@ func listRange(args []interface{}) (interface{}, error) {
 	}
 	out := []interface{}{}
 	if (step > 0 && start > end) || (step < 0 && start < end) {
-		return out, nil
+		return value.NewList(out), nil
 	}
 	count := (end-start)/step + 1
 	if count > maxResultRunes {
@@ -135,7 +136,7 @@ func listRange(args []interface{}) (interface{}, error) {
 	for n := int64(0); n < count; n++ {
 		out = append(out, float64(start+n*step))
 	}
-	return out, nil
+	return value.NewList(out), nil
 }
 
 // listFlatten opens one level of nested lists.
@@ -149,13 +150,13 @@ func listFlatten(args []interface{}) (interface{}, error) {
 	}
 	out := []interface{}{}
 	for _, v := range list {
-		if inner, ok := v.([]interface{}); ok {
-			out = append(out, inner...)
+		if inner, ok := v.(*value.List); ok {
+			out = append(out, inner.Items...)
 		} else {
 			out = append(out, v)
 		}
 	}
-	return out, nil
+	return value.NewList(out), nil
 }
 
 // listChunk cuts a list into lists of n (the last may be shorter).
@@ -179,9 +180,9 @@ func listChunk(args []interface{}) (interface{}, error) {
 		end := int64(math.Min(float64(i+n), float64(len(list))))
 		piece := make([]interface{}, end-i)
 		copy(piece, list[i:end])
-		out = append(out, piece)
+		out = append(out, value.NewList(piece))
 	}
-	return out, nil
+	return value.NewList(out), nil
 }
 
 // listZip pairs up two lists element by element, up to the shorter one.
@@ -203,7 +204,7 @@ func listZip(args []interface{}) (interface{}, error) {
 	}
 	out := make([]interface{}, n)
 	for i := 0; i < n; i++ {
-		out[i] = []interface{}{a[i], b[i]}
+		out[i] = value.NewList([]interface{}{a[i], b[i]})
 	}
-	return out, nil
+	return value.NewList(out), nil
 }

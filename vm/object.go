@@ -3,6 +3,7 @@ package vm
 import (
 	"github.com/soumt-r/hana/ast"
 	"github.com/soumt-r/hana/symbol"
+	"github.com/soumt-r/hana/value"
 )
 
 type HajaObject struct {
@@ -36,14 +37,10 @@ type BoundStringMethod struct {
 }
 
 type BoundListMethod struct {
-	List     []interface{}
+	List     *value.List
 	FuncName string
-	// Target is the MemberExpression's Object expression the list came
-	// from (a plain variable or an object field) — needed because a
-	// mutating list method (비우기) can't mutate List in place (Go slices
-	// aren't stable references the way a JS array is) and has to write the
-	// result back to wherever it came from instead, same as
-	// ListPushStatement/ListPopStatement already do via assignListBack.
+	// Target is the expression the list came from; a list held by a constant
+	// variable cannot be emptied.
 	Target ast.Expression
 }
 

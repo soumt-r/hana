@@ -9,6 +9,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/soumt-r/hana/errs"
+	"github.com/soumt-r/hana/value"
 )
 
 // jsonParse turns JSON text into hana values: objects become dictionaries,
@@ -41,7 +42,7 @@ func fromJSON(v interface{}) interface{} {
 		for i, el := range x {
 			list[i] = fromJSON(el)
 		}
-		return list
+		return value.NewList(list)
 	}
 	return v
 }
@@ -71,6 +72,9 @@ func jsonStringify(args []interface{}) (interface{}, error) {
 	return out.String(), nil
 }
 
+// maxJSONDepth stops a list that contains itself from being written for ever.
+const maxJSONDepth = 1000
+
 func writeJSON(out *strings.Builder, v interface{}, indent, depth int) error {
 	switch x := v.(type) {
 	case nil:
@@ -84,13 +88,16 @@ func writeJSON(out *strings.Builder, v interface{}, indent, depth int) error {
 		out.WriteString(jsonNumber(x))
 	case string:
 		out.WriteString(jsonString(x))
-	case []interface{}:
-		if len(x) == 0 {
+	case *value.List:
+		if depth > maxJSONDepth {
+			return errs.New(errs.JSONUnsupported)
+		}
+		if len(x.Items) == 0 {
 			out.WriteString("[]")
 			return nil
 		}
 		out.WriteByte('[')
-		for i, el := range x {
+		for i, el := range x.Items {
 			if i > 0 {
 				out.WriteByte(',')
 			}

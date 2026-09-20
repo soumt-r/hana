@@ -1,6 +1,10 @@
 package stdimpl
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/soumt-r/hana/value"
+)
 
 // [경로] works on the text of a path only — it never looks at the disk, so the
 // browser engines can do the same. Paths are written with "/" (a "\" in the
@@ -183,5 +187,5 @@ var pathParts = pathFunc1(func(p string) interface{} {
 			parts = append(parts, seg)
 		}
 	}
-	return parts
+	return value.NewList(parts)
 })

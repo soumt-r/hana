@@ -4,6 +4,7 @@ import (
 	"github.com/soumt-r/hana/ast"
 	"github.com/soumt-r/hana/errs"
 	"github.com/soumt-r/hana/typecheck"
+	"github.com/soumt-r/hana/value"
 )
 
 // typeHost lets the engine-neutral type checker ask about user classes.
@@ -100,24 +101,18 @@ func (i *Interpreter) checkDeclaredType(env *Environment, id *ast.Identifier, va
 	return nil
 }
 
-// checkListWrite is checkDeclaredType for a list that was changed at an end (see listChange).
-func (i *Interpreter) checkListWrite(env *Environment, id *ast.Identifier, list []interface{}, change listChange) error {
-	if change == listShrunk {
-		return nil
-	}
+// checkListWrite is checkDeclaredType for a list that got a value at one end.
+func (i *Interpreter) checkListWrite(env *Environment, id *ast.Identifier, list *value.List, front bool) error {
 	if declared, ok := i.declaredTypeOf(env, id); ok {
-		return typecheck.CheckAppended(&i.Config.Types, declared, id.Value, list, change == listPushedFront, i.host())
+		return typecheck.CheckAppended(&i.Config.Types, declared, id.Value, list, front, i.host())
 	}
 	return nil
 }
 
-// checkFieldListWrite is checkField for a list that was changed at an end.
-func (i *Interpreter) checkFieldListWrite(obj *HajaObject, prop string, list []interface{}, change listChange) error {
-	if change == listShrunk {
-		return nil
-	}
+// checkFieldListWrite is checkField for a list that got a value at one end.
+func (i *Interpreter) checkFieldListWrite(obj *HajaObject, prop string, list *value.List, front bool) error {
 	if annotation, ok := i.fieldAnnotation(obj.ClassName, prop); ok {
-		return typecheck.CheckAppended(&i.Config.Types, annotation, prop, list, change == listPushedFront, i.host())
+		return typecheck.CheckAppended(&i.Config.Types, annotation, prop, list, front, i.host())
 	}
 	return nil
 }

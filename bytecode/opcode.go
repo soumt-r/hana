@@ -48,26 +48,19 @@ const (
 	// over already-string operands does real concatenation.
 
 	NEW_LIST  // Operand: int (element count) — pop that many values, push a list
-	LIST_PUSH // Operand: string ("front"/"back") — pop a value, pop a list,
-	// push the resulting (longer) list (Runtime spec 5.1). Purely a value
-	// operation — the compiler is responsible for pushing the list to start
-	// from and writing the result back to wherever it came from (a plain
-	// variable or an object field), same as any other expression/assignment,
-	// which is what lets this work on an object's list field, not just a
-	// bare variable.
-	LIST_POP // Operand: string ("front"/"back") — pop a list, push the
-	// resulting (shorter) list, then push its removed front/back element on
-	// top (IndexOutOfBoundsError if empty). Same "compiler owns read/write
-	// back" split as LIST_PUSH.
-	LIST_CLEAR // no operand — pop a value, push an empty list if it was a
-	// list (TypeError otherwise). Compiles 하자/카나데's one mutating list
-	// pseudo-method (비우기/空にする — see bcLang.listClearMethod), same
-	// "compiler owns read/write back" split as LIST_PUSH/LIST_POP. Handled
-	// as its own opcode (not through GET_MEMBER/CALL_METHOD's generic bound-
-	// method dispatch) specifically because it's the one list operation that
-	// needs to write its result back to wherever the list came from, which
-	// only the compiler — not a runtime value with no memory of its own
-	// origin — can do.
+	LIST_PUSH // Operand: string ("front"/"back") — pop a value, pop a list, put the
+	// value on that end of the list (Runtime spec 5.1) and push the same list again.
+	// A list is an object, so the list itself changes, whoever else holds it. What is
+	// left on the stack is for SET_LIST_VAR/CHECK_LIST_FIELD, which test the declared
+	// type of the variable or field the list is kept in (and take the push back when
+	// it does not fit).
+	LIST_POP // Operand: string ("front"/"back") — pop a list, take its front/back
+	// element off it and push that element (IndexOutOfBoundsError if it is empty).
+	LIST_CLEAR // no operand — pop a list and empty it (TypeError if it is not a
+	// list); pushes nothing. Compiles 하자/카나데's one mutating list pseudo-method
+	// (비우기/空にする — see bcLang.listClearMethod). Handled as its own opcode (not
+	// through GET_MEMBER/CALL_METHOD's generic bound-method dispatch) so a list method
+	// stays a plain native operation.
 	GET_INDEX  // pop index, pop list; push list[index] (1-based, IndexOutOfBoundsError)
 	GET_LENGTH // pop list; push float64(len(list))
 
@@ -200,14 +193,23 @@ const (
 	// 마다 반복하자 walks: a list stays, a string becomes the list of its characters
 	// (one-character strings), anything else raises NotIterable. Appended after POP_SCOPE.
 
+	CHECK_LIST_FIELD // Operand: *ListSetOperand (NameIndex: the field's name) — SET_LIST_VAR
+	// for a list kept in an object's field: pops the object, then the list LIST_PUSH left,
+	// and tests the pushed value against the field's declared type. Appended after BIN.
+
+	CHECK_CONST_VAR // Operand: int (index into Chunk.Names) — raise ConstantAssignmentError if
+	// that variable was declared constant (고정하자). Compiled before a push, pop or emptying of
+	// the list a plain variable holds: the list itself changes, so no store to the variable
+	// would refuse it. Appended after CHECK_LIST_FIELD.
+
 	BIN // Operand: *BinOperand — a binary operator fused with the loads of its operands
 	// and, optionally, the store of its result or a jump on it (see peephole.go). Made
 	// by Optimize after compiling, never by the compiler itself. Appended after SET_LIST_VAR.
 
-	SET_LIST_VAR // Operand: *ListSetOperand — SET_VAR for a list that was just changed at an end
-	// (LIST_PUSH/LIST_POP/LIST_CLEAR write the new list back): a declared list type is
-	// checked against the new element only, or not at all when the list only got shorter,
-	// instead of against every element. Appended after INIT_MODULE.
+	SET_LIST_VAR // Operand: *ListSetOperand — pop the list LIST_PUSH left and test the
+	// value it just put on an end against the type its variable was declared with (the
+	// new element only, not every element); when it does not fit the push is taken back
+	// and TypeError raised. Appended after INIT_MODULE.
 
 	INIT_MODULE // Operand: *ModuleInit — run a module's top-level code, once: the first
 	// INIT_MODULE of a name runs it in the module's own frame (where its variables
@@ -239,18 +241,17 @@ type BinOperand struct {
 	Jump int
 }
 
-// ListSetOperand is SET_LIST_VAR's operand.
+// ListSetOperand is SET_LIST_VAR's and CHECK_LIST_FIELD's operand.
 type ListSetOperand struct {
 	NameIndex int
 	Change    ListChange
 }
 
-// ListChange is how the list SET_LIST_VAR writes differs from the one it replaces.
+// ListChange says at which end of the list the value was put.
 type ListChange int
 
 const (
-	ListShrunk      ListChange = iota // elements were taken away: still fits its type
-	ListPushedBack                    // one element was added at the back
+	ListPushedBack  ListChange = iota // one element was added at the back
 	ListPushedFront                   // one element was added at the front
 )
 

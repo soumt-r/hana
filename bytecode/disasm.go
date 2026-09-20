@@ -66,6 +66,8 @@ var opcodeNames = map[Opcode]string{
 	TO_ITERABLE:       "TO_ITERABLE",
 	INIT_MODULE:       "INIT_MODULE",
 	SET_LIST_VAR:      "SET_LIST_VAR",
+	CHECK_LIST_FIELD:  "CHECK_LIST_FIELD",
+	CHECK_CONST_VAR:   "CHECK_CONST_VAR",
 	BIN:               "BIN",
 }
 
@@ -181,7 +183,7 @@ func operandString(chunk *Chunk, instr Instruction) string {
 			out += fmt.Sprintf(" ; if false -> %d", b.Jump)
 		}
 		return out
-	case SET_LIST_VAR:
+	case SET_LIST_VAR, CHECK_LIST_FIELD:
 		op := instr.Operand.(*ListSetOperand)
 		return fmt.Sprintf("%s ; change %d", chunk.Names[op.NameIndex], op.Change)
 	case INIT_MODULE:

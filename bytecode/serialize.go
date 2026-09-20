@@ -27,7 +27,7 @@ import (
 // toolchain needs to parse.
 const (
 	hnMagic   = "HNB\x00"
-	hnVersion = 2 // v1 had no Lang byte — bumped rather than made optional, per the version byte's own stated purpose
+	hnVersion = 3 // v1 had no Lang byte; v2 had lists written back by value (LIST_PUSH/POP/CLEAR changed meaning when lists became references)
 )
 
 // Lang records which source language a .hn file's Program was compiled

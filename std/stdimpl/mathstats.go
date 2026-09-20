@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/soumt-r/hana/errs"
+	"github.com/soumt-r/hana/value"
 )
 
 // clean turns -0 into 0 so every engine prints the same thing.
@@ -23,12 +24,12 @@ func finite(f float64) (interface{}, error) {
 }
 
 func numbersArg(args []interface{}, i int) ([]float64, error) {
-	list, ok := args[i].([]interface{})
+	l, ok := args[i].(*value.List)
 	if !ok {
 		return nil, errs.New(errs.NativeArgList, i+1)
 	}
-	out := make([]float64, len(list))
-	for n, v := range list {
+	out := make([]float64, len(l.Items))
+	for n, v := range l.Items {
 		f, ok := v.(float64)
 		if !ok {
 			return nil, errs.New(errs.NativeListNumbers, i+1)

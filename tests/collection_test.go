@@ -66,8 +66,8 @@ func TestListClearMethod(t *testing.T) {
 	}
 }
 
-// TestListClearMethodOnObjectField covers the write-back path through a
-// MemberExpression target (assignListBack), not just a plain variable.
+// TestListClearMethodOnObjectField covers emptying a list held in an object field: the
+// list is changed through the object, not just a plain variable.
 func TestListClearMethodOnObjectField(t *testing.T) {
 	interp, err := runHaja(t, `[상자]를 설계하자:
     '내용물'을 ["사과", "포도"]로 정하자

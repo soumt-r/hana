@@ -35,7 +35,7 @@ func TestBytecodeConstantsCannotBeReassigned(t *testing.T) {
 			kanade: "『誕生日』を【文字列】の「1月1日」で固定しよう\n『誕生日』を【文字列】の「2月2日」にしよう\n",
 		},
 		{
-			name:   "list push write-back",
+			name:   "list push",
 			haja:   "'목록'을 [(숫자)목록]인 [1, 2]로 고정하자\n'목록' 뒤에 3을 추가하자\n",
 			kanade: "『リスト』を【(数字)リスト】の【1,2】で固定しよう\n『リスト』の後ろに3を追加しよう\n",
 		},

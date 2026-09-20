@@ -6,6 +6,7 @@ import (
 	"github.com/soumt-r/hana/errs"
 	"github.com/soumt-r/hana/num"
 	"github.com/soumt-r/hana/symbol"
+	"github.com/soumt-r/hana/value"
 
 	"github.com/soumt-r/hana/ast"
 )
@@ -96,25 +97,21 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 		if err != nil {
 			return nil, err
 		}
-		list, ok := targetVal.([]interface{})
+		list, ok := targetVal.(*value.List)
 		if !ok {
 			return nil, errs.New(errs.NotAList)
+		}
+		if err := i.requireMutable(s.Target, env); err != nil {
+			return nil, err
 		}
 		pushVal, err := i.Evaluate(s.Value, env)
 		if err != nil {
 			return nil, err
 		}
-		var newList []interface{}
-		if s.Position == "front" {
-			newList = append([]interface{}{pushVal}, list...)
-		} else {
-			newList = append(list, pushVal)
-		}
-		change := listPushedBack
-		if s.Position == "front" {
-			change = listPushedFront
-		}
-		if err := i.assignListBack(s.Target, newList, env, change); err != nil {
+		front := s.Position == "front"
+		list.Push(pushVal, front)
+		if err := i.checkListPush(s.Target, list, env, front); err != nil {
+			list.Unpush(front)
 			return nil, err
 		}
 	case *ast.ListPopStatement:
@@ -122,17 +119,17 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 		if err != nil {
 			return nil, err
 		}
-		list, ok := targetVal.([]interface{})
+		list, ok := targetVal.(*value.List)
 		if !ok {
 			return nil, errs.New(errs.NotAList)
 		}
-		if len(list) == 0 {
-			return nil, errs.New(errs.ListEmpty)
-		}
-		_, newList := popFromList(list, s.Position)
-		if err := i.assignListBack(s.Target, newList, env, listShrunk); err != nil {
+		if err := i.requireMutable(s.Target, env); err != nil {
 			return nil, err
 		}
+		if len(list.Items) == 0 {
+			return nil, errs.New(errs.ListEmpty)
+		}
+		list.Pop(s.Position)
 	case *ast.ReturnStatement:
 		var val interface{}
 		if s.Value != nil {
@@ -222,16 +219,22 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 		if err != nil {
 			return nil, err
 		}
+		var items []interface{}
+		isList := false
 		if text, ok := listVal.(string); ok {
-			chars := make([]interface{}, 0, len(text))
+			items = make([]interface{}, 0, len(text))
 			for _, r := range text {
-				chars = append(chars, string(r))
+				items = append(items, string(r))
 			}
-			listVal = chars
+			isList = true
+		} else if list, ok := listVal.(*value.List); ok {
+			// a loop walks the list as it was when the loop began
+			items = append([]interface{}(nil), list.Items...)
+			isList = true
 		}
-		if list, ok := listVal.([]interface{}); ok {
+		if isList {
 			itemSym := symbol.Intern(itemName)
-			for _, item := range list {
+			for _, item := range items {
 				// 반복문 환경 생성 (옵션)
 				loopEnv := i.newScope(env)
 				// 원래 Haja 스펙에서는 '꺼낸 값' 같은 특수 키워드나 명시적 순회 변수가 필요하지만
@@ -453,7 +456,7 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 					}
 				}
 
-			} else if list, ok := obj.([]interface{}); ok {
+			} else if list, ok := obj.(*value.List); ok {
 				var idx = -1
 				if numLit, ok := mem.Property.(*ast.NumberLiteral); ok {
 					idx = int(numLit.Value) - 1
@@ -465,8 +468,8 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 						}
 					}
 				}
-				if idx >= 0 && idx < len(list) {
-					list[idx] = val
+				if idx >= 0 && idx < len(list.Items) {
+					list.Items[idx] = val
 				}
 			} else if dict, ok := obj.(map[interface{}]interface{}); ok {
 				propVal, err := i.Evaluate(mem.Property, env)
