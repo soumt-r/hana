@@ -16,8 +16,11 @@ type Interpreter struct {
 	ast           *ast.Program
 	GlobalEnv     *Environment
 	Classes       map[string]*ast.ClassDeclaration
-	memberCache   map[memberKey]*classMember // see class_lookup.go
-	scopePool     []*Environment             // see newScope in env.go
+	memberCache   map[*ast.ClassDeclaration]*classMembers // see class_lookup.go
+	lastMembers   *classMembers
+	scopePool     []*Environment // see newScope in env.go
+	argStack      []interface{}  // the arguments of the calls in flight, see CallExpression
+	funcIndex     *funcIndex     // see topFunction in module_scope.go
 	Interfaces    map[string]*ast.InterfaceDeclaration
 	Output        []string
 	Config        LangConfig

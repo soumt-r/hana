@@ -123,20 +123,30 @@ type FunctionReference struct {
 
 // namedSymbol is a Symbol together with the name it was worked out for.
 type namedSymbol struct {
-	name string
-	sym  symbol.Symbol
+	name   string
+	sym    symbol.Symbol
+	dotted bool
 }
 
 // Symbol is the interned form of Name. Name can be replaced while running (a
 // dynamic `<'변수'>()` names another function), so the cached Symbol is only
 // used while it still belongs to the current Name.
 func (f *FunctionReference) Symbol() symbol.Symbol {
+	return f.named().sym
+}
+
+// Dotted says whether Name has a dot in it (`객체.메서드`).
+func (f *FunctionReference) Dotted() bool {
+	return f.named().dotted
+}
+
+func (f *FunctionReference) named() *namedSymbol {
 	if c := f.cached.Load(); c != nil && c.name == f.Name {
-		return c.sym
+		return c
 	}
-	sym := symbol.Intern(f.Name)
-	f.cached.Store(&namedSymbol{f.Name, sym})
-	return sym
+	c := &namedSymbol{f.Name, symbol.Intern(f.Name), strings.Contains(f.Name, ".")}
+	f.cached.Store(c)
+	return c
 }
 
 func (f *FunctionReference) TokenLiteral() string { return f.Name }

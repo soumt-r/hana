@@ -4,6 +4,7 @@ import (
 	"github.com/soumt-r/hana/console"
 	"github.com/soumt-r/hana/conv"
 	"github.com/soumt-r/hana/errs"
+	"github.com/soumt-r/hana/num"
 	"github.com/soumt-r/hana/symbol"
 
 	"github.com/soumt-r/hana/ast"
@@ -232,7 +233,7 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 			itemSym := symbol.Intern(itemName)
 			for _, item := range list {
 				// 반복문 환경 생성 (옵션)
-				loopEnv := NewEnvironment(env)
+				loopEnv := i.newScope(env)
 				// 원래 Haja 스펙에서는 '꺼낸 값' 같은 특수 키워드나 명시적 순회 변수가 필요하지만
 				// ForEachLoop의 순회 변수를 현재 AST가 지원하지 않으므로, 임시로 '아이템'이라고 지정
 				loopEnv.DeclareSym(itemSym, item)
@@ -245,6 +246,7 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 						return nil, err
 					}
 				}
+				i.freeScope(loopEnv)
 			}
 		} else {
 			return nil, errs.New(errs.NotIterable)
@@ -297,16 +299,17 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 			step = -1.0
 		}
 
+		varName := s.LoopVar
+		if varName == "" {
+			varName = i.Config.DefaultIndexName
+		}
+		varSym := symbol.Intern(varName)
 		for v := startNum; ; v += step {
 			if (step > 0 && v > endNum) || (step < 0 && v < endNum) {
 				break
 			}
-			loopEnv := NewEnvironment(env)
-			if s.LoopVar != "" {
-				loopEnv.Declare(s.LoopVar, v)
-			} else {
-				loopEnv.Declare(i.Config.DefaultIndexName, v)
-			}
+			loopEnv := i.newScope(env)
+			loopEnv.DeclareSym(varSym, num.Box(v))
 			for _, bs := range s.Body.Statements {
 				_, err := i.Execute(bs, loopEnv)
 				if err != nil {
@@ -316,6 +319,7 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 					return nil, err
 				}
 			}
+			i.freeScope(loopEnv)
 		}
 	case *ast.ExpressionStatement:
 		_, err := i.Evaluate(s.Expression, env)

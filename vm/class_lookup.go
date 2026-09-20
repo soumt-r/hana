@@ -13,9 +13,10 @@ import (
 // visit이 true를 반환하면, 그 시점에 부모 탐색을 멈춥니다 — 이름이 한 번 그 클래스에서
 // "발견"되면(섀도잉되면) 더 위 조상까지 올라가 같은 이름을 찾지 않는다는 하자의 규칙을
 // 그대로 따릅니다. 이 판단은 visit 클로저가 맡습니다.
-type memberKey struct {
-	cls *ast.ClassDeclaration
-	sym symbol.Symbol
+// classMembers are the answers found so far for one class, indexed by Symbol.
+type classMembers struct {
+	cls   *ast.ClassDeclaration
+	bySym []*classMember
 }
 
 // classMember는 한 클래스에서 시작해 이름 하나를 BaseClass 체인에서 찾은 결과입니다.
@@ -31,9 +32,22 @@ type classMember struct {
 }
 
 func (i *Interpreter) classMember(cls *ast.ClassDeclaration, sym symbol.Symbol) *classMember {
-	key := memberKey{cls, sym}
-	if m, ok := i.memberCache[key]; ok {
-		return m
+	cache := i.lastMembers
+	if cache == nil || cache.cls != cls {
+		cache = i.memberCache[cls]
+		if cache == nil {
+			if i.memberCache == nil {
+				i.memberCache = make(map[*ast.ClassDeclaration]*classMembers)
+			}
+			cache = &classMembers{cls: cls}
+			i.memberCache[cls] = cache
+		}
+		i.lastMembers = cache
+	}
+	if int(sym) < len(cache.bySym) {
+		if m := cache.bySym[sym]; m != nil {
+			return m
+		}
 	}
 	name := sym.String()
 	m := &classMember{fieldAccess: "public", methodAccess: "public"}
@@ -54,10 +68,12 @@ func (i *Interpreter) classMember(cls *ast.ClassDeclaration, sym symbol.Symbol) 
 		}
 		return fieldDone && m.method != nil
 	})
-	if i.memberCache == nil {
-		i.memberCache = make(map[memberKey]*classMember)
+	if int(sym) >= len(cache.bySym) {
+		grown := make([]*classMember, symbol.Count()+16)
+		copy(grown, cache.bySym)
+		cache.bySym = grown
 	}
-	i.memberCache[key] = m
+	cache.bySym[sym] = m
 	return m
 }
 
@@ -74,6 +90,7 @@ func (i *Interpreter) classOf(obj *HajaObject) *ast.ClassDeclaration {
 func (i *Interpreter) registerClass(name string, cls *ast.ClassDeclaration) {
 	i.Classes[name] = cls
 	i.memberCache = nil
+	i.lastMembers = nil
 }
 
 func (i *Interpreter) findInClassChain(cls *ast.ClassDeclaration, visit func(body []ast.Statement) (found bool)) {

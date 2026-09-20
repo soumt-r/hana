@@ -135,7 +135,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 		}
 		return val, nil
 	case *ast.FunctionReference:
-		if strings.HasPrefix(e.Name, i.Config.VarQuoteOpen) && strings.HasSuffix(e.Name, i.Config.VarQuoteClose) {
+		if e.Name != "" && e.Name[0] == i.Config.VarQuoteOpen[0] && strings.HasPrefix(e.Name, i.Config.VarQuoteOpen) && strings.HasSuffix(e.Name, i.Config.VarQuoteClose) {
 			idName := e.Name[len(i.Config.VarQuoteOpen) : len(e.Name)-len(i.Config.VarQuoteClose)]
 			if val, ok := env.Get(idName); ok {
 				if strVal, ok := val.(string); ok {
@@ -143,7 +143,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 				}
 			}
 		}
-		if strings.Contains(e.Name, ".") {
+		if e.Dotted() {
 			parts := strings.SplitN(e.Name, ".", 2)
 			objName, methodName := parts[0], parts[1]
 			if val, ok := env.Get(objName); ok {
@@ -157,13 +157,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 			return v, nil
 		}
 
-		var fnDecl *ast.FunctionDeclaration
-		for _, stmt := range i.ast.Statements {
-			if f, ok := stmt.(*ast.FunctionDeclaration); ok && f.Name.Value == e.Name {
-				fnDecl = f
-				break
-			}
-		}
+		fnDecl := i.topFunction(e.Name)
 		if fnDecl == nil {
 			if val, ok := env.Get(e.Name); ok {
 				if f, ok := val.(*ast.FunctionDeclaration); ok {
@@ -249,14 +243,34 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 			return nil, err
 		}
 
-		args := make([]interface{}, len(e.Arguments))
-		for idx, argExpr := range e.Arguments {
+		// The arguments are built on a stack the calls share, so a call to a function
+		// declared in the program costs no allocation for them: binding the parameters
+		// copies them into the call's scope. Any other callee may keep the slice it is
+		// given, so it gets a copy.
+		base := len(i.argStack)
+		for _, argExpr := range e.Arguments {
 			argVal, err := i.Evaluate(argExpr, env)
 			if err != nil {
+				i.argStack = i.argStack[:base]
 				return nil, err
 			}
-			args[idx] = argVal
+			i.argStack = append(i.argStack, argVal)
 		}
+		args := i.argStack[base:len(i.argStack):len(i.argStack)]
+
+		if fnDecl, ok := callee.(*ast.FunctionDeclaration); ok {
+			callEnv := i.newScope(i.globalOf(fnDecl.Module))
+			res, err := i.runFunctionBody(fnDecl, args, callEnv)
+			i.freeScope(callEnv)
+			clear(args)
+			i.argStack = i.argStack[:base]
+			return res, err
+		}
+		owned := make([]interface{}, len(args))
+		copy(owned, args)
+		args = owned
+		clear(i.argStack[base:])
+		i.argStack = i.argStack[:base]
 
 		// 전역 함수 호출
 		if funcName, ok := callee.(string); ok {
@@ -278,12 +292,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 
 			// 없으면 현재 AST에서 찾기
 			if funcDecl == nil {
-				for _, stmt := range i.ast.Statements {
-					if f, ok := stmt.(*ast.FunctionDeclaration); ok && f.Name.Value == funcName {
-						funcDecl = f
-						break
-					}
-				}
+				funcDecl = i.topFunction(funcName)
 			}
 			if funcDecl == nil {
 				return nil, errs.New(errs.GlobalFunctionNotFound, funcName)
@@ -296,13 +305,6 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 
 		if builtIn, ok := callee.(*BuiltinFunction); ok {
 			return builtIn.Fn(i, env, args...)
-		}
-
-		if fnDecl, ok := callee.(*ast.FunctionDeclaration); ok {
-			callEnv := i.newScope(i.globalOf(fnDecl.Module))
-			res, err := i.runFunctionBody(fnDecl, args, callEnv)
-			i.freeScope(callEnv)
-			return res, err
 		}
 
 		if bm, ok := callee.(*BoundStaticMethod); ok {

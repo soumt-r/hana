@@ -352,6 +352,15 @@ docs 저장소의 브라우저 에디터용 `lspKeywords.ts`는 `go run ./cmd/ls
 엄격한 형식이라 `""`, `0x10`, `1e3`은 실패하고(`InputConversionError`), 논리는 언어의 참/거짓 낱말, 타입을 생략하면 문자열입니다.
 입력 소스가 없으면(`ReadLine == nil`: 테스트, doctest) 빈 줄을 읽어서 절대 멈추지 않습니다. 타입 이름은 `LangConfig.TypeString/TypeNumber/TypeBoolean`.
 
+## 속도: 재는 법과 이미 들어간 최적화
+
+`bench/*.hj`(피보나치·중첩 반복·목록·문자열·클래스·사전)를 `tests/bench_test.go`의 `BenchmarkPrograms`가 두 엔진에서 돌립니다(파싱·컴파일은 재는 시간 밖, 출력은 버림): `go test ./tests -run XXX -bench Programs -benchtime 4x`. 느려 보이면 `-cpuprofile`로 `go tool pprof -top`부터 보세요 — 짐작으로 고친 최적화 중 실제로 느려진 것도 있었습니다(호출 인자를 스택 뷰로 넘긴 바이트코드 CALL). 최적화를 넣은 뒤에는 `go test ./...`와 두 docs의 `compare_tests.ts`(엔진 간 출력 비교)로 의미가 안 바뀌었는지 확인하세요.
+
+- **`num.Box`**: 작은 정수 float64를 `interface{}`로 만들 때마다 8바이트를 할당하던 것을 [-1024, 1<<20)의 값은 미리 만든 표에서 돌려줍니다. 산술 결과·`NumberLiteral.Boxed`·범위 반복 변수가 씁니다.
+- **트리워커**: 리터럴은 노드에 미리 계산해 둡니다(`NumberLiteral.Boxed`, `StringLiteral.Cooked`, `TemplateLiteral.Parts`). 함수·반복 범위는 `newScope`/`freeScope`(작은 free list)로 재사용하므로, **범위를 만든 뒤 아무도 그 `Environment`를 붙잡지 않아야** 합니다(클로저 값이 없는 지금은 성립). 호출 인자는 `Interpreter.argStack`에 쌓고 프로그램 안에서 선언한 함수(`*ast.FunctionDeclaration`)에만 뷰로 넘깁니다(매개변수 바인딩이 복사) — 다른 호출 대상은 인자를 붙잡을 수 있어 복사본을 받습니다. 최상위 함수는 `topFunction`(이름 색인), 클래스 멤버는 클래스별 Symbol 표(`classMembers`)로 찾고, `evaluate`/`Execute`에 `defer`를 넣지 마세요(모든 식 평가가 느려집니다).
+- **바이트코드**: `bytecode/peephole.go`의 `Optimize`가 컴파일 끝에 `LOAD_VAR/PUSH_CONST + 산술·비교 (+ SET_VAR / JUMP_IF_FALSE)`를 `BIN` 하나로 합칩니다(피연산자 `BinOperand`, 못 빠르게 하는 경우는 합치지 않은 명령과 같은 결과·에러로 처리). 점프 목표가 가운데에 있으면 합치지 않고, 합친 뒤 점프 목표를 옮깁니다. `SET_LIST_VAR`는 `목록에 추가` 같은 쓰기-되쓰기, `Instruction.Hint`는 실행 중 채우는 캐시(직렬화 안 함), `CallOperand.CachedFunction`은 호출 대상 캐시입니다. 새 옵코드가 점프나 변수 슬롯을 다루면 `jumpTargets`/`optimizeChunk`를 같이 고치세요. `run`/`exec` 분리는 `defer` 없이 프레임을 정리하기 위한 것입니다.
+- **typecheck**: 타입 표기의 분해 결과를 `Spec`으로 캐시하고(`parsed`) 공개 함수가 `*Names`를 받습니다(값 복사 비용 제거). 흔한 경우(`[숫자]`에 float64 등)는 `QuickAccepts`가 바로 답합니다.
+
 ## 문자열 `+`는 `strcat.Join`으로
 
 Go 문자열은 바꿀 수 없어서 `s = s + 조각`을 반복하면 매번 s 전체를 복사해 길이의 제곱만큼 걸렸습니다(20만 번에 약 4초). 두 엔진의 문자열 `+`(`vm/eval_expr.go`, `bcvm/vm.go`의 `binaryOp`)는 `strcat.Join`을 씁니다: 256바이트 이상의 결과는 여유를 둔 버퍼에 만들어 기억해 두었다가, 다음 `Join`의 왼쪽이 정확히 그 결과이면 여유 자리에 조각만 써 넣습니다(값 표현은 그대로). 이미 나눠 준 문자열의 바이트는 절대 다시 쓰지 않고 그 뒤쪽만 쓰므로 안전하고, 같은 문자열에서 갈라져 붙이거나 부분 문자열을 잇는 경우는 그냥 복사합니다(`strcat/strcat_test.go`가 지킴). 문자열을 잇는 새 경로를 만들면 `a + b` 대신 이걸 쓰세요.

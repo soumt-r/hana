@@ -61,15 +61,38 @@ func (i *Interpreter) enterModule(m interface{}) *Interpreter {
 // scopedFunction finds a function called name in the module whose code is
 // running: a function it declares, or one it imported (a function or a native
 // library function bound in its own environment).
+// funcIndex finds the functions a program declares at its top level by name; the
+// linear scan it replaces ran on every call.
+type funcIndex struct {
+	prog   *ast.Program
+	count  int
+	byName map[string]*ast.FunctionDeclaration
+}
+
+// topFunction is the first top-level function declaration of that name.
+func (i *Interpreter) topFunction(name string) *ast.FunctionDeclaration {
+	idx := i.funcIndex
+	if idx == nil || idx.prog != i.ast || idx.count != len(i.ast.Statements) {
+		idx = &funcIndex{prog: i.ast, count: len(i.ast.Statements), byName: map[string]*ast.FunctionDeclaration{}}
+		for _, stmt := range i.ast.Statements {
+			if f, ok := stmt.(*ast.FunctionDeclaration); ok {
+				if _, dup := idx.byName[f.Name.Value]; !dup {
+					idx.byName[f.Name.Value] = f
+				}
+			}
+		}
+		i.funcIndex = idx
+	}
+	return idx.byName[name]
+}
+
 func (i *Interpreter) scopedFunction(name string) (interface{}, bool) {
 	m := i.scope
 	if m == nil {
 		return nil, false
 	}
-	for _, stmt := range m.ast.Statements {
-		if f, ok := stmt.(*ast.FunctionDeclaration); ok && f.Name.Value == name {
-			return f, true
-		}
+	if f := m.topFunction(name); f != nil {
+		return f, true
 	}
 	if v, ok := m.GlobalEnv.Get(name); ok {
 		switch v.(type) {
