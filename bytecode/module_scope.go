@@ -30,9 +30,9 @@ func isScoped(name string) bool { return strings.Contains(name, scopeSep) }
 // module) into this Program under private names. It returns the run-time binds of
 // the module's own package imports (the native functions it brought in), renamed
 // the same way, for the importer to run at the import's position.
-func (c *Compiler) exportModule(module string, prog *ast.Program, sub *Compiler) (binds []nativeBind) {
+func (c *Compiler) exportModule(module string, prog *ast.Program, sub *Compiler, items []ast.ImportItem) (binds []nativeBind) {
 	for _, stmt := range prog.Statements {
-		if st, ok := stmt.(*ast.ImportStatement); ok && st.IsBuiltin {
+		if st, ok := stmt.(*ast.ImportStatement); ok {
 			binds = append(binds, sub.pkgBinds[st]...)
 		}
 	}
@@ -70,17 +70,62 @@ func (c *Compiler) exportModule(module string, prog *ast.Program, sub *Compiler)
 		}
 		c.program.Functions[name] = fn
 	}
-	for name, cls := range sub.program.Classes {
-		if _, exists := c.program.Classes[name]; !exists {
-			c.program.Classes[name] = cls
+	aliased := map[string]bool{}
+	for _, item := range items {
+		if item.As != "" {
+			aliased[item.Name] = true
 		}
+	}
+	for name, cls := range sub.program.Classes {
+		if (cls.Name == c.lang.builtinErrorClass.Name.Name || cls.Name == sub.lang.builtinErrorClass.Name.Name) && sub.classOwner[name] == "" {
+			continue
+		}
+		mine := sub.ownerOrElse(name, module)
+		if _, exists := c.program.Classes[name]; exists {
+			if theirs := c.classOwner[name]; theirs != mine && !aliased[name] {
+				c.conflict(module, name, theirs)
+			}
+			continue
+		}
+		c.program.Classes[name] = cls
+		c.rememberOwner(name, mine)
 	}
 	for name, iface := range sub.program.Interfaces {
-		if _, exists := c.program.Interfaces[name]; !exists {
-			c.program.Interfaces[name] = iface
+		mine := sub.ownerOrElse(name, module)
+		if _, exists := c.program.Interfaces[name]; exists {
+			if theirs := c.classOwner[name]; theirs != mine && !aliased[name] {
+				c.conflict(module, name, theirs)
+			}
+			continue
 		}
+		c.program.Interfaces[name] = iface
+		c.rememberOwner(name, mine)
 	}
 	return binds
+}
+
+func (c *Compiler) ownerOrElse(name, module string) string {
+	if o, ok := c.classOwner[name]; ok {
+		return o
+	}
+	return module
+}
+
+func (c *Compiler) rememberOwner(name, owner string) {
+	if c.classOwner == nil {
+		c.classOwner = map[string]string{}
+	}
+	c.classOwner[name] = owner
+}
+
+// conflict reports that a module brings a class or interface whose name another module
+// (or the program itself, theirs == "") already uses.
+func (c *Compiler) conflict(module, name, theirs string) {
+	if theirs == "" {
+		c.errorf("ImportError: The class '%s' of '%s' has the same name as a class this program already has. Give it another name when importing it (<name> as <alias>).", name, module)
+		return
+	}
+	c.errorf("ImportError: The class '%s' of '%s' has the same name as a class of '%s'. Give one of them another name when importing it (<name> as <alias>).", name, module, theirs)
 }
 
 func rewriteFunction(fn *Function, scope map[string]string) {

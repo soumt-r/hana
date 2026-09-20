@@ -297,6 +297,8 @@ const (
 	ImportPackageSyntax          Code = "ImportError.ImportPackageSyntax"          // package, file
 	ImportPackageNotFound        Code = "ImportError.ImportPackageNotFound"        // package
 	ImportPackageNotInstalled    Code = "ImportError.ImportPackageNotInstalled"    // package
+	ImportClassConflict          Code = "ImportError.ImportClassConflict"          // module, class, other module
+	ImportClassConflictOwn       Code = "ImportError.ImportClassConflictOwn"       // module, class
 	ImportFileNotFound           Code = "ImportError.ImportFileNotFound"           // file
 	ImportFileSyntax             Code = "ImportError.ImportFileSyntax"             // file
 	ImportTargetNotFound         Code = "ImportError.ImportTargetNotFound"         // source, target
@@ -339,7 +341,7 @@ var allCodes = []Code{
 	DivideByZero,
 	ConvertToNumberFailed, ConvertToNumberInvalid, ConvertToCodeNeedsOneChar, ConvertToTextNeedsNumber,
 	ImportManifestInvalid, ImportNativeMissing, ImportNativeLoadFailed, NativeCallFailed,
-	ImportNativeFunctionNotFound, ImportDLLNotFound, ImportPluginUnsupported, ImportUnsupportedLocale, ImportPackageSyntax, ImportPackageNotFound, ImportPackageNotInstalled,
+	ImportNativeFunctionNotFound, ImportDLLNotFound, ImportPluginUnsupported, ImportUnsupportedLocale, ImportPackageSyntax, ImportPackageNotFound, ImportPackageNotInstalled, ImportClassConflict, ImportClassConflictOwn,
 	ImportFileNotFound, ImportFileSyntax, ImportTargetNotFound, ImportNativeOnly,
 	ImportUnsupported, InputTypeUnsupported, InputToNumberFailed, InputToBooleanFailed,
 }

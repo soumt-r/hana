@@ -90,6 +90,14 @@ var catalog = map[string]message{
 	"remove.short":          {"패키지를 프로젝트에서 빼요", "パッケージをプロジェクトから外します"},
 	"remove.done":           {"%s을(를) 뺐어요", "%sを外しました"},
 	"remove.notThere":       {"%s은(는) 이 프로젝트의 의존 패키지가 아니에요", "%sはこのプロジェクトの依存パッケージではありません"},
+	"why.use":               {"why <git 경로>", "why <gitパス>"},
+	"why.short":             {"패키지가 프로젝트에 들어온 이유를 보여줘요 (직접 추가했는지, 어떤 패키지가 필요로 하는지)", "パッケージがプロジェクトに入っている理由を表示します（直接追加したか、どのパッケージが必要としているか）"},
+	"why.direct":            {"%s: 직접 추가했어요 (hana.json)", "%s: 直接追加しました（hana.json）"},
+	"why.replacedOnly":      {"%s은(는) 내 폴더로 바꿔 쓰고 있어요 (replace)", "%sは自分のフォルダに置き換えて使っています（replace）"},
+	"outdated.use":          {"outdated", "outdated"},
+	"outdated.short":        {"더 높은 버전이 나온 패키지를 보여줘요 (*는 직접 추가한 것)", "より新しいバージョンが出ているパッケージを表示します（*は直接追加したもの）"},
+	"outdated.none":         {"모두 최신이에요", "すべて最新です"},
+	"outdated.hint":         {"올리려면 hana add <경로>@<버전>을 실행하세요", "上げるにはhana add <パス>@<バージョン>を実行してください"},
 	"list.use":              {"list", "list"},
 	"list.short":            {"이 프로젝트가 쓰는 패키지와 버전을 보여줘요 (*는 직접 추가한 것)", "このプロジェクトが使うパッケージとバージョンを表示します（*は直接追加したもの）"},
 	"list.replaced":         {"→ %s (로컬 폴더)", "→ %s（ローカルフォルダ）"},
@@ -116,6 +124,8 @@ var catalog = map[string]message{
 	"pkg.err.NativeHashMismatch": {"%s의 %s용 네이티브 라이브러리가 sha256과 달라요. 파일이 바뀌었을 수 있어요", "%sの%s用ネイティブライブラリがsha256と一致しません。ファイルが書き換えられた可能性があります"},
 	"pkg.err.ScriptChanged":      {"%[1]s %[2]s의 설치 스크립트가 승인했던 것과 달라요. 새 스크립트를 확인한 뒤 hana add %[1]s --allow-scripts로 다시 승인하세요", "%[1]s %[2]sのインストールスクリプトが承認したものと異なります。新しいスクリプトを確認してから、hana add %[1]s --allow-scriptsで再承認してください"},
 	"pkg.err.ScriptFailed":       {"%s의 설치 스크립트가 실패했어요: %s", "%sのインストールスクリプトが失敗しました: %s"},
+	"pkg.err.NotInProject":       {"%s은(는) 이 프로젝트의 패키지가 아니에요", "%sはこのプロジェクトのパッケージではありません"},
+	"pkg.err.AuthFailed": {"git이 %s을(를) 가져오지 못했어요. 로그인이 필요한 비공개 저장소이거나 저장소가 없어요 (%s). git에 로그인해 두거나 ssh 키를 등록하고, ssh로 받으려면 HANA_GIT_PROTOCOL=ssh를 설정하세요", "gitが%sを取得できませんでした。ログインが必要な非公開リポジトリか、リポジトリが存在しません（%s）。gitにログインしておくかsshキーを登録し、sshで取得するにはHANA_GIT_PROTOCOL=sshを設定してください"},
 	"pkg.err.NotPath":            {"%q은(는) github.com/주인/저장소 같은 패키지 경로가 아니에요", "%qはgithub.com/owner/repoのようなパッケージパスではありません"},
 }
 
@@ -223,6 +233,8 @@ func applyLocale() {
 	installCmd.Use, installCmd.Short = T("install.use"), T("install.short")
 	removeCmd.Use, removeCmd.Short = T("remove.use"), T("remove.short")
 	listCmd.Use, listCmd.Short = T("list.use"), T("list.short")
+	whyCmd.Use, whyCmd.Short = T("why.use"), T("why.short")
+	outdatedCmd.Use, outdatedCmd.Short = T("outdated.use"), T("outdated.short")
 
 	for cmd, flags := range map[*cobra.Command]map[string]string{
 		rootCmd:  {"locale": "flag.locale"},
@@ -240,7 +252,7 @@ func applyLocale() {
 			set.Lookup(name).Usage = T(key)
 		}
 	}
-	for _, cmd := range []*cobra.Command{rootCmd, runCmd, buildCmd, disasmCmd, lspCmd, initCmd, packCmd, addCmd, installCmd, removeCmd, listCmd} {
+	for _, cmd := range []*cobra.Command{rootCmd, runCmd, buildCmd, disasmCmd, lspCmd, initCmd, packCmd, addCmd, installCmd, removeCmd, listCmd, whyCmd, outdatedCmd} {
 		cmd.InitDefaultHelpFlag()
 		cmd.Flags().Lookup("help").Usage = T("flag.help", cmd.Name())
 	}

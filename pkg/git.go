@@ -33,13 +33,54 @@ type Source interface {
 // is the repository https://github.com/owner/repo.
 type Git struct{}
 
+// EnvGitProtocol set to "ssh" makes hana clone over SSH (git@host:owner/repo) instead
+// of https. What git itself is configured with (credential helper, ssh keys,
+// url.<base>.insteadOf) works too: hana runs the git command.
+const EnvGitProtocol = "HANA_GIT_PROTOCOL"
+
 // RepoURL is the address hana clones a package path from.
-func RepoURL(path string) string { return "https://" + path }
+func RepoURL(path string) string {
+	if os.Getenv(EnvGitProtocol) == "ssh" {
+		if host, rest, ok := strings.Cut(path, "/"); ok {
+			return "git@" + host + ":" + rest
+		}
+	}
+	return "https://" + path
+}
+
+// needsLogin reports whether git's complaint is about credentials (or a repository
+// that a stranger cannot see, which hosts report as "not found").
+func needsLogin(detail string) bool {
+	for _, marker := range []string{
+		"Authentication failed", "could not read Username", "could not read Password",
+		"terminal prompts disabled", "Permission denied (publickey)", "Repository not found",
+		"Host key verification failed", "access denied",
+	} {
+		if strings.Contains(detail, marker) {
+			return true
+		}
+	}
+	return false
+}
+
+// interactive reports whether git may ask the user for a login: standard input is a
+// terminal and the user did not decide otherwise with GIT_TERMINAL_PROMPT.
+func interactive() bool {
+	if os.Getenv("GIT_TERMINAL_PROMPT") != "" {
+		return false
+	}
+	fi, err := os.Stdin.Stat()
+	return err == nil && fi.Mode()&os.ModeCharDevice != 0
+}
 
 func git(dir string, args ...string) (string, error) {
 	cmd := exec.Command("git", args...)
 	cmd.Dir = dir
-	cmd.Env = append(os.Environ(), "GIT_TERMINAL_PROMPT=0")
+	if interactive() {
+		cmd.Stdin = os.Stdin
+	} else if os.Getenv("GIT_TERMINAL_PROMPT") == "" {
+		cmd.Env = append(os.Environ(), "GIT_TERMINAL_PROMPT=0")
+	}
 	var out, errOut bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &out, &errOut
 	if err := cmd.Run(); err != nil {
@@ -61,6 +102,9 @@ func (Git) Tags(path string) ([]Tag, error) {
 	if err != nil {
 		if e, ok := err.(*Error); ok {
 			return nil, e
+		}
+		if needsLogin(err.Error()) {
+			return nil, newError(AuthFailed, path, firstLine(err.Error()))
 		}
 		return nil, newError(TagsFailed, path, err.Error())
 	}
@@ -113,6 +157,9 @@ func (Git) Download(path string, tag Tag, dest, wantCommit string) (string, erro
 		if e, ok := err.(*Error); ok {
 			return "", e
 		}
+		if needsLogin(err.Error()) {
+			return "", newError(AuthFailed, path, firstLine(err.Error()))
+		}
 		return "", newError(DownloadFailed, path, tag.Version.String(), err.Error())
 	}
 	out, err := git(work, "rev-parse", "HEAD")
@@ -133,6 +180,11 @@ func (Git) Download(path string, tag Tag, dest, wantCommit string) (string, erro
 		return "", err
 	}
 	return commit, nil
+}
+
+func firstLine(s string) string {
+	line, _, _ := strings.Cut(strings.TrimSpace(s), "\n")
+	return line
 }
 
 func shortCommit(c string) string {

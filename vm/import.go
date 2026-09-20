@@ -94,7 +94,9 @@ func (i *Interpreter) importBuiltin(s *ast.ImportStatement, env *Environment) (i
 		if err := sub.Run(); err != nil {
 			return nil, err
 		}
-		i.bringModuleTypes(sub, prog)
+		if err := i.bringModuleTypes(sub, s.Module, s); err != nil {
+			return nil, err
+		}
 		return nil, i.bindImports(sub, prog, s, remaining, s.Module, env)
 	}
 	// 패키지 폴더는 있는데 이 언어의 진입점만 없는 경우: 다른 언어용 진입점이 있는지 확인한다.
@@ -167,7 +169,9 @@ func (i *Interpreter) importLocalFile(s *ast.ImportStatement, env *Environment) 
 	if err := sub.Run(); err != nil {
 		return nil, err
 	}
-	i.bringModuleTypes(sub, prog)
+	if err := i.bringModuleTypes(sub, filename, s); err != nil {
+		return nil, err
+	}
 	return nil, i.bindImports(sub, prog, s, s.Items, filename, env)
 }
 
@@ -235,7 +239,19 @@ func (i *Interpreter) bindImportTarget(sub *Interpreter, prog *ast.Program, targ
 		return nil
 	}
 	if cls, exists := sub.Classes[target]; exists {
+		mine := source
+		if o, ok := sub.classOwner[target]; ok {
+			mine = o
+		}
+		if _, taken := i.Classes[bindName]; taken && i.classOwner[bindName] != mine {
+			if theirs := i.classOwner[bindName]; theirs == "" {
+				return errs.New(errs.ImportClassConflictOwn, source, bindName)
+			} else {
+				return errs.New(errs.ImportClassConflict, source, bindName, theirs)
+			}
+		}
 		i.registerClass(bindName, cls)
+		i.rememberOwner(bindName, mine)
 		return nil
 	}
 	if iface, exists := sub.Interfaces[target]; exists {

@@ -441,3 +441,105 @@ func (in *Installer) Remove(path string) (bool, error) {
 	}
 	return true, SaveLock(in.Proj.Dir, lock)
 }
+
+// Why lists how a package got into the project: for each way of reaching it from
+// what hana.json names directly, the chain of packages (the first is a direct
+// dependency, the last is path itself). A direct dependency that is also needed by
+// another package has both its own one-element chain and the longer ones.
+func (in *Installer) Why(path string) ([][]string, error) {
+	lock, err := LoadLock(in.Proj.Dir)
+	if err != nil {
+		return nil, err
+	}
+	if _, locked := lock[path]; !locked {
+		if _, replaced := in.Proj.Replace[path]; !replaced {
+			return nil, newError(NotInProject, path)
+		}
+	}
+	needs := func(p string) []string {
+		dir, ok := in.Proj.ReplaceDir(p)
+		if !ok {
+			e, locked := lock[p]
+			if !locked {
+				return nil
+			}
+			dir, _ = CacheDir(p, e.Version)
+		}
+		m, err := Load(dir)
+		if err != nil || m == nil {
+			return nil
+		}
+		deps := make([]string, 0, len(m.Dependencies))
+		for d := range m.Dependencies {
+			deps = append(deps, d)
+		}
+		sort.Strings(deps)
+		return deps
+	}
+
+	var chains [][]string
+	const most = 10
+	var walk func(chain []string)
+	walk = func(chain []string) {
+		here := chain[len(chain)-1]
+		if here == path {
+			chains = append(chains, append([]string{}, chain...))
+			return
+		}
+		for _, next := range needs(here) {
+			seen := false
+			for _, c := range chain {
+				if c == next {
+					seen = true
+				}
+			}
+			if !seen && len(chains) < most {
+				walk(append(chain, next))
+			}
+		}
+	}
+	roots := make([]string, 0, len(in.Proj.Dependencies))
+	for r := range in.Proj.Dependencies {
+		roots = append(roots, r)
+	}
+	sort.Strings(roots)
+	for _, r := range roots {
+		walk([]string{r})
+	}
+	return chains, nil
+}
+
+// Outdated is a locked package that has a higher version than the one locked.
+type Outdated struct {
+	Path            string
+	Current, Latest Version
+	Direct          bool
+}
+
+// Outdated lists the locked packages that have a newer version. Packages the project
+// replaces with a local folder are not looked at.
+func (in *Installer) Outdated() ([]Outdated, error) {
+	lock, err := LoadLock(in.Proj.Dir)
+	if err != nil {
+		return nil, err
+	}
+	var rows []Outdated
+	for _, path := range lock.Paths() {
+		if _, replaced := in.Proj.Replace[path]; replaced {
+			continue
+		}
+		cur, err := ParseVersion(lock[path].Version)
+		if err != nil {
+			return nil, err
+		}
+		latest, err := in.Latest(path)
+		if err != nil {
+			return nil, err
+		}
+		if latest.Compare(cur) > 0 {
+			_, direct := in.Proj.Dependencies[path]
+			rows = append(rows, Outdated{Path: path, Current: cur, Latest: latest, Direct: direct})
+		}
+	}
+	return rows, nil
+}

@@ -121,7 +121,7 @@ func (c *Compiler) compilePackageImport(s *ast.ImportStatement, items []ast.Impo
 		}
 	}
 	c.errors = append(c.errors, sub.errors...)
-	binds = c.exportModule(s.Module, prog, sub)
+	binds = c.exportModule(s.Module, prog, sub, items)
 	c.mergeImported(s.Module, s.All, items, prog, sub)
 	return binds, true
 }
@@ -147,7 +147,12 @@ func (c *Compiler) mergeImported(source string, all bool, items []ast.ImportItem
 		if fn, ok := sub.program.Functions[item.Name]; ok {
 			c.program.Functions[bindName] = fn
 		} else if cls, ok := sub.program.Classes[item.Name]; ok {
+			mine := sub.ownerOrElse(item.Name, source)
+			if _, taken := c.program.Classes[bindName]; taken && item.As != "" && c.classOwner[bindName] != mine {
+				c.conflict(source, bindName, c.classOwner[bindName])
+			}
 			c.program.Classes[bindName] = cls
+			c.rememberOwner(bindName, mine)
 		} else if iface, ok := sub.program.Interfaces[item.Name]; ok {
 			c.program.Interfaces[bindName] = iface
 		} else {

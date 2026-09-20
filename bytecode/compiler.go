@@ -51,6 +51,10 @@ type Compiler struct {
 	// (see package_import.go).
 	pkgBinds map[*ast.ImportStatement][]nativeBind
 
+	// classOwner remembers which module a class or interface came from (by the name it
+	// is registered under); a name that is missing is the program's own.
+	classOwner map[string]string
+
 	// libraries are the packages whose native library the program binds when it
 	// runs, in first-use order (see LibraryModules).
 	libraries []string
@@ -208,14 +212,20 @@ func (c *Compiler) errorf(format string, args ...interface{}) {
 func (c *Compiler) Compile(prog *ast.Program) *Program {
 	main := newChunk()
 
+	// The classes and interfaces first: an import below has to see which names the
+	// program's own classes already use, wherever they are declared.
 	for _, stmt := range prog.Statements {
 		switch s := stmt.(type) {
-		case *ast.FunctionDeclaration:
-			c.compileFunction(s)
 		case *ast.InterfaceDeclaration:
 			c.registerInterface(s)
 		case *ast.ClassDeclaration:
 			c.registerClass(s)
+		}
+	}
+	for _, stmt := range prog.Statements {
+		switch s := stmt.(type) {
+		case *ast.FunctionDeclaration:
+			c.compileFunction(s)
 		case *ast.ImportStatement:
 			// "파일"에서 ... 가져오자 is resolved entirely here, at compile
 			// time, by merging the imported file's declaration into this
@@ -240,7 +250,10 @@ func (c *Compiler) Compile(prog *ast.Program) *Program {
 			continue
 		case *ast.ImportStatement:
 			if !st.IsBuiltin {
-				continue // already resolved above
+				// the file itself was merged above; what it imported from native
+				// modules is bound here, where the import is
+				c.emitBuiltinImport(main, st)
+				continue
 			}
 		}
 		c.compileStatement(main, stmt)
@@ -333,14 +346,19 @@ func (c *Compiler) compileLocalImport(s *ast.ImportStatement) {
 		case *ast.ClassDeclaration:
 			sub.registerClass(st)
 		case *ast.ImportStatement:
-			if !st.IsBuiltin {
+			if st.IsBuiltin {
+				sub.resolveBuiltinImport(st)
+			} else {
 				sub.compileLocalImport(st)
 			}
 		}
 	}
 	c.errors = append(c.errors, sub.errors...)
 
-	c.exportModule(s.Module, prog, sub)
+	if c.pkgBinds == nil {
+		c.pkgBinds = map[*ast.ImportStatement][]nativeBind{}
+	}
+	c.pkgBinds[s] = c.exportModule(s.Module, prog, sub, s.Items)
 	c.mergeImported(s.Module, s.All, s.Items, prog, sub)
 }
 

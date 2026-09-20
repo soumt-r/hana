@@ -120,6 +120,8 @@ var koCatalog = Catalog{
 	ImportPackageSyntax:          "패키지 '%s'의 '%s' 파일에 문법 오류가 있어요.",
 	ImportPackageNotFound:        "패키지 '[%s]'를 찾을 수 없어요.",
 	ImportPackageNotInstalled:    "패키지 '[%s]'가 설치되어 있지 않아요. 'hana install'로 내려받을 수 있어요.",
+	ImportClassConflict:          "'%[1]s'의 클래스 '%[2]s'와(과) 이름이 같은 클래스가 '%[3]s'에도 있어요. 하나는 가져올 때 <이름>을 <별칭>으로 가져오자로 다른 이름을 붙여 주세요.",
+	ImportClassConflictOwn:       "'%[1]s'의 클래스 '%[2]s'와(과) 이름이 같은 클래스를 이 프로그램이 이미 가지고 있어요. 가져올 때 <이름>을 <별칭>으로 가져오자로 다른 이름을 붙여 주세요.",
 	ImportFileNotFound:           "'%s' 파일을 찾을 수 없어요.",
 	ImportFileSyntax:             "'%s' 파일에 문법 오류가 있어요.",
 	ImportTargetNotFound:         "'%s'에서 '%s'을(를) 찾을 수 없어요.",

@@ -2,6 +2,7 @@ package vm
 
 import (
 	"github.com/soumt-r/hana/ast"
+	"github.com/soumt-r/hana/errs"
 	"github.com/soumt-r/hana/typecheck"
 )
 
@@ -69,26 +70,71 @@ func (i *Interpreter) scopedFunction(name string) (interface{}, bool) {
 	return nil, false
 }
 
-// bringModuleTypes registers the classes and interfaces a module declares under
-// their own names when the importer has none of that name, so the module's
-// functions can create them and check against them.
-func (i *Interpreter) bringModuleTypes(sub *Interpreter, prog *ast.Program) {
-	for _, stmt := range prog.Statements {
-		switch d := stmt.(type) {
-		case *ast.ClassDeclaration:
-			if _, exists := i.Classes[d.Name.Name]; !exists {
-				if cls, ok := sub.Classes[d.Name.Name]; ok {
-					i.registerClass(d.Name.Name, cls)
-				}
-			}
-		case *ast.InterfaceDeclaration:
-			if _, exists := i.Interfaces[d.Name.Name]; !exists {
-				if iface, ok := sub.Interfaces[d.Name.Name]; ok {
-					i.Interfaces[d.Name.Name] = iface
-				}
-			}
+// bringModuleTypes registers the classes and interfaces a module declares (and the ones
+// it brought in itself) under their own names, so the module's functions can create
+// them and check against them. moduleID names the module for messages and ownership.
+// A name the importer already has for a class of another module is an error, except
+// for one the import statement gives another name (<이름>을 <별칭>으로): that is how the
+// program says which one it means.
+func (i *Interpreter) bringModuleTypes(sub *Interpreter, moduleID string, s *ast.ImportStatement) error {
+	aliased := map[string]bool{}
+	for _, item := range s.Items {
+		if item.As != "" {
+			aliased[item.Name] = true
 		}
 	}
+	owner := func(m *Interpreter, name string) string {
+		if o, ok := m.classOwner[name]; ok {
+			return o
+		}
+		return moduleID
+	}
+	conflict := func(name, mine, theirs string) error {
+		if aliased[name] {
+			return nil
+		}
+		if theirs == "" {
+			return errs.New(errs.ImportClassConflictOwn, moduleID, name)
+		}
+		return errs.New(errs.ImportClassConflict, moduleID, name, theirs)
+	}
+	for name, cls := range sub.Classes {
+		if name == sub.Config.BuiltinErrorClass || name == i.Config.BuiltinErrorClass {
+			continue
+		}
+		mine := owner(sub, name)
+		if _, exists := i.Classes[name]; exists {
+			if theirs := i.classOwner[name]; theirs != mine {
+				if err := conflict(name, mine, theirs); err != nil {
+					return err
+				}
+			}
+			continue
+		}
+		i.registerClass(name, cls)
+		i.rememberOwner(name, mine)
+	}
+	for name, iface := range sub.Interfaces {
+		mine := owner(sub, name)
+		if _, exists := i.Interfaces[name]; exists {
+			if theirs := i.classOwner[name]; theirs != mine {
+				if err := conflict(name, mine, theirs); err != nil {
+					return err
+				}
+			}
+			continue
+		}
+		i.Interfaces[name] = iface
+		i.rememberOwner(name, mine)
+	}
+	return nil
+}
+
+func (i *Interpreter) rememberOwner(name, owner string) {
+	if i.classOwner == nil {
+		i.classOwner = map[string]string{}
+	}
+	i.classOwner[name] = owner
 }
 
 // initFields evaluates the field initializers of a new object, in the scope of

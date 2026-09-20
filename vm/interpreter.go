@@ -36,6 +36,10 @@ type Interpreter struct {
 	// importer's. nil while the program's own code runs. See module_scope.go.
 	scope *Interpreter
 
+	// classOwner remembers which module a class or interface came from (by the name
+	// it is registered under); a name that is missing is the program's own.
+	classOwner map[string]string
+
 	// ReadLine supplies the next line for `입력받자` (the CLI wires it to stdin).
 	// nil means no input source: the statement reads an empty line, so tests
 	// and tools never block waiting for a terminal.

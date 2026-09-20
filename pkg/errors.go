@@ -18,6 +18,8 @@ const (
 	BadManifest    Code = "BadManifest"    // path, version, detail
 	Circular       Code = "Circular"       // chain like a -> b -> a
 	NotPath        Code = "NotPath"        // what was given
+	NotInProject   Code = "NotInProject"   // path
+	AuthFailed     Code = "AuthFailed"     // path, detail
 
 	NativeNoHash       Code = "NativeNoHash"       // path, platform
 	NativeDownloadFail Code = "NativeDownloadFail" // path, url, detail
@@ -45,6 +47,8 @@ var english = map[Code]string{
 	BadManifest:    "the hana.pkg.json of %s %s is not valid: %s",
 	Circular:       "circular dependency: %s",
 	NotPath:        "%q is not a package path like github.com/owner/repo",
+	NotInProject:   "%s is not one of the packages of this project",
+	AuthFailed:     "git could not get %s: it needs a login, or the repository does not exist (%s)",
 
 	NativeNoHash:       "%s declares a native library download for %s without a sha256",
 	NativeDownloadFail: "could not download the native library of %s from %s: %s",

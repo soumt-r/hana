@@ -95,6 +95,52 @@ var listCmd = &cobra.Command{
 	},
 }
 
+var whyCmd = &cobra.Command{
+	Use:  "why",
+	Args: cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		in := newInstaller(false)
+		chains, err := in.Why(args[0])
+		if err != nil {
+			fatalPkg(err)
+		}
+		for _, chain := range chains {
+			if len(chain) == 1 {
+				fmt.Println("  " + T("why.direct", chain[0]))
+				continue
+			}
+			fmt.Println("  " + strings.Join(chain, " -> "))
+		}
+		if len(chains) == 0 {
+			fmt.Println(T("why.replacedOnly", args[0]))
+		}
+	},
+}
+
+var outdatedCmd = &cobra.Command{
+	Use:  "outdated",
+	Args: cobra.NoArgs,
+	Run: func(cmd *cobra.Command, args []string) {
+		in := newInstaller(false)
+		rows, err := in.Outdated()
+		if err != nil {
+			fatalPkg(err)
+		}
+		if len(rows) == 0 {
+			fmt.Println(T("outdated.none"))
+			return
+		}
+		for _, r := range rows {
+			mark := " "
+			if r.Direct {
+				mark = "*"
+			}
+			fmt.Printf("%s %s  %s -> %s\n", mark, r.Path, r.Current, r.Latest)
+		}
+		fmt.Println(T("outdated.hint"))
+	},
+}
+
 func shortCommit(c string) string {
 	if len(c) > 7 {
 		return c[:7]
@@ -161,7 +207,7 @@ func fatalPkg(err error) {
 
 func init() {
 	addCmd.Flags().Bool("allow-scripts", false, "")
-	for _, c := range []*cobra.Command{addCmd, installCmd, removeCmd, listCmd} {
+	for _, c := range []*cobra.Command{addCmd, installCmd, removeCmd, listCmd, whyCmd, outdatedCmd} {
 		rootCmd.AddCommand(c)
 	}
 }

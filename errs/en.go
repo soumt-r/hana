@@ -119,6 +119,8 @@ var enCatalog = Catalog{
 	ImportPackageSyntax:          "Syntax error in file '%[2]s' of package '%[1]s'.",
 	ImportPackageNotFound:        "Package '[%s]' not found.",
 	ImportPackageNotInstalled:    "Package '[%s]' is not installed. 'hana install' downloads it.",
+	ImportClassConflict:          "The class '%[2]s' of '%[1]s' has the same name as a class of '%[3]s'. Give one of them another name when importing it (<name> as <alias>).",
+	ImportClassConflictOwn:       "The class '%[2]s' of '%[1]s' has the same name as a class this program already has. Give it another name when importing it (<name> as <alias>).",
 	ImportFileNotFound:           "File '%s' not found.",
 	ImportFileSyntax:             "Syntax error in file '%s'.",
 	ImportTargetNotFound:         "Target '%[2]s' not found in '%[1]s'.",

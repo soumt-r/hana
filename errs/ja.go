@@ -120,6 +120,8 @@ var jaCatalog = Catalog{
 	ImportPackageSyntax:          "パッケージ『%s』のファイル『%s』に文法エラーがあります。",
 	ImportPackageNotFound:        "パッケージ『[%s]』が見つかりません。",
 	ImportPackageNotInstalled:    "パッケージ『[%s]』がインストールされていません。「hana install」でダウンロードできます。",
+	ImportClassConflict:          "『%[1]s』のクラス『%[2]s』と同じ名前のクラスが、『%[3]s』にもあります。持ってくるときに〈名前〉を〈別名〉に持ってこようで、片方に別の名前を付ける必要があります。",
+	ImportClassConflictOwn:       "『%[1]s』のクラス『%[2]s』と同じ名前のクラスを、このプログラムがすでに持っています。持ってくるときに〈名前〉を〈別名〉に持ってこようで、別の名前を付ける必要があります。",
 	ImportFileNotFound:           "ファイル『%s』が見つかりません。",
 	ImportFileSyntax:             "ファイル『%s』に文法エラーがあります。",
 	ImportTargetNotFound:         "『%s』に『%s』が見つかりません。",
