@@ -1,0 +1,15 @@
+{
+  "name": "timezone",
+  "version": "0.1.0",
+  "entry": {
+    "haja": "haja/index.hj",
+    "kanade": "kanade/index.knd"
+  },
+  "native": {
+    "windows-amd64": { "file": "native/timezone-windows-amd64.dll" },
+    "linux-amd64": { "file": "native/timezone-linux-amd64.so" },
+    "linux-arm64": { "file": "native/timezone-linux-arm64.so" },
+    "darwin-amd64": { "file": "native/timezone-darwin-amd64.dylib" },
+    "darwin-arm64": { "file": "native/timezone-darwin-arm64.dylib" }
+  }
+}

@@ -1,0 +1,32 @@
+# Build output — build locally with `go build`, never commit binaries
+*.exe
+*.o
+/dist/
+
+# Scratch / debug artifacts — a past agent session left 147 of these committed.
+# If you need a throwaway script or test file during development, keep it
+# untracked (it's covered below) or, if it has lasting value, put it in
+# tests/ with a real name and commit it deliberately.
+patch*.py
+patch*.diff
+debug_*.hj
+debug_*.go
+temp_*.hj
+temp_*.js
+check.py
+find_patch.py
+test_docs.js
+ast.json
+tokens.txt
+doctest_errors*.txt
+test_results.txt
+
+# Native libraries and the folders tests build them in (built locally: packages/*/native/build.sh or build.ps1)
+/packages/*/native/*.dll
+/packages/*/native/*.so
+/packages/*/native/*.dylib
+/packages/*/native/*.h
+/tests/testdata/nativeecho/build/
+/tests/testdata/httpbuild/
+/tests/testdata/packbuild/
+/tests/testdata/tzbuild/

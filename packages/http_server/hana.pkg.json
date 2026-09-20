@@ -1,0 +1,15 @@
+{
+  "name": "http_server",
+  "version": "0.1.0",
+  "entry": {
+    "haja": "haja/index.hj",
+    "kanade": "kanade/index.knd"
+  },
+  "native": {
+    "windows-amd64": { "file": "native/http_server-windows-amd64.dll" },
+    "linux-amd64": { "file": "native/http_server-linux-amd64.so" },
+    "linux-arm64": { "file": "native/http_server-linux-arm64.so" },
+    "darwin-amd64": { "file": "native/http_server-darwin-amd64.dylib" },
+    "darwin-arm64": { "file": "native/http_server-darwin-arm64.dylib" }
+  }
+}

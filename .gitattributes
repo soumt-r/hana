@@ -1,0 +1,2 @@
+# Shell scripts run on Linux and macOS: keep them LF even where core.autocrlf would turn them into CRLF.
+*.sh text eol=lf
