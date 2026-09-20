@@ -3,6 +3,7 @@ package vm
 import (
 	"fmt"
 	"github.com/soumt-r/hana/errs"
+	"github.com/soumt-r/hana/num"
 	"github.com/soumt-r/hana/strcat"
 	"github.com/soumt-r/hana/typecheck"
 	"strings"
@@ -416,7 +417,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 					return nil, errs.New(errs.ArgCountExact, 0)
 				}
 				if blm.Target != nil {
-					if err := i.assignListBack(blm.Target, []interface{}{}, env); err != nil {
+					if err := i.assignListBack(blm.Target, []interface{}{}, env, listShrunk); err != nil {
 						return nil, err
 					}
 				}
@@ -507,7 +508,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 			return nil, errs.New(errs.ListEmpty)
 		}
 		popped, newList := popFromList(list, e.Position)
-		if err := i.assignListBack(e.Target, newList, env); err != nil {
+		if err := i.assignListBack(e.Target, newList, env, listShrunk); err != nil {
 			return nil, err
 		}
 		return popped, nil
@@ -587,16 +588,17 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 				getterEnv.DeclareSym(thisSym, hajaObj)
 				getterEnv.DeclareSym(selfClassSym, hajaObj.ClassName)
 				prev := i.enterModule(i.classOf(hajaObj).Module)
-				defer func() { i.scope = prev }()
 				for _, bs := range getterBody {
 					_, err := i.Execute(bs, getterEnv)
 					if err != nil {
+						i.scope = prev
 						if ret, isRet := err.(*ReturnValue); isRet {
 							return ret.Value, nil
 						}
 						return nil, err
 					}
 				}
+				i.scope = prev
 				return nil, nil // Or throw error if no return?
 			}
 			return hajaObj.Props[propName], nil
@@ -804,21 +806,21 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 		if leftIsNum && rightIsNum {
 			switch e.Operator {
 			case "+":
-				return leftNum + rightNum, nil
+				return num.Box(leftNum + rightNum), nil
 			case "-":
-				return leftNum - rightNum, nil
+				return num.Box(leftNum - rightNum), nil
 			case "*":
-				return leftNum * rightNum, nil
+				return num.Box(leftNum * rightNum), nil
 			case "/":
 				if rightNum == 0 {
 					return nil, errs.New(errs.DivideByZero)
 				}
-				return leftNum / rightNum, nil
+				return num.Box(leftNum / rightNum), nil
 			case "%":
-				if rightNum == 0 {
+				if int64(rightNum) == 0 {
 					return nil, errs.New(errs.DivideByZero)
 				}
-				return float64(int64(leftNum) % int64(rightNum)), nil
+				return num.Box(float64(int64(leftNum) % int64(rightNum))), nil
 			case ">":
 				return leftNum > rightNum, nil
 			case "<":

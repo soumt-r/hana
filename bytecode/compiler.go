@@ -265,6 +265,7 @@ func (c *Compiler) Compile(prog *ast.Program) *Program {
 	main.emit(HALT, nil)
 
 	c.program.Main = main
+	Optimize(c.program)
 	return c.program
 }
 
@@ -651,13 +652,17 @@ func (c *Compiler) compileStatement(chunk *Chunk, stmt ast.Statement) {
 		c.compileExpression(chunk, s.Target) // 현재 목록 값
 		c.compileExpression(chunk, s.Value)
 		chunk.emit(LIST_PUSH, s.Position)
-		c.compileAssignTarget(chunk, s.Target) // 새 목록을 원래 자리(변수든 객체 필드든)에 다시 씀
+		change := ListPushedBack
+		if s.Position == "front" {
+			change = ListPushedFront
+		}
+		c.compileListWriteBack(chunk, s.Target, change) // 새 목록을 원래 자리(변수든 객체 필드든)에 다시 씀
 
 	case *ast.ListPopStatement:
-		c.compileExpression(chunk, s.Target)   // 현재 목록 값
-		chunk.emit(LIST_POP, s.Position)       // -> ..., 나머지, 꺼낸값
-		chunk.emit(POP, nil)                   // 문장형은 꺼낸 값을 버림 (AST 스펙: 반환값 없음)
-		c.compileAssignTarget(chunk, s.Target) // 나머지를 다시 씀
+		c.compileExpression(chunk, s.Target)                // 현재 목록 값
+		chunk.emit(LIST_POP, s.Position)                    // -> ..., 나머지, 꺼낸값
+		chunk.emit(POP, nil)                                // 문장형은 꺼낸 값을 버림 (AST 스펙: 반환값 없음)
+		c.compileListWriteBack(chunk, s.Target, ListShrunk) // 나머지를 다시 씀
 
 	case *ast.InputStatement:
 		// vm/exec_stmt.go와 같은 규칙: 한 줄을 읽어 [타입]으로 변환(타입이 없으면
@@ -676,6 +681,18 @@ func (c *Compiler) compileStatement(chunk *Chunk, stmt ast.Statement) {
 	default:
 		c.errorf("compileStatement: unsupported statement %T", stmt)
 	}
+}
+
+// compileListWriteBack is compileAssignTarget for a list that was changed at an end (see
+// ListChange): a plain variable gets SET_LIST_VAR, which checks a declared type cheaply.
+func (c *Compiler) compileListWriteBack(chunk *Chunk, target ast.Expression, change ListChange) {
+	if _, isMember := target.(*ast.MemberExpression); !isMember {
+		if nameIdx, ok := c.identifierNameIndex(chunk, target); ok {
+			chunk.emit(SET_LIST_VAR, &ListSetOperand{NameIndex: nameIdx, Change: change})
+			return
+		}
+	}
+	c.compileAssignTarget(chunk, target)
 }
 
 func (c *Compiler) compileAssignTarget(chunk *Chunk, target ast.Expression) {
@@ -786,6 +803,15 @@ func (c *Compiler) compileForRange(chunk *Chunk, s *ast.ForRangeStatement) {
 	outerScope := tmp + "_outer"
 	chunk.emit(PUSH_SCOPE, chunk.addName(outerScope))
 
+	// Both ends are number literals: which way the loop counts is known now, so it
+	// needs no hidden end and step variables and a plain comparison as its test.
+	if startLit, ok := s.Start.(*ast.NumberLiteral); ok {
+		if endLit, ok := s.End.(*ast.NumberLiteral); ok {
+			c.compileConstantRange(chunk, s, loopVar, outerScope, startLit.Value, endLit.Value)
+			return
+		}
+	}
+
 	c.compileExpression(chunk, s.Start)
 	chunk.emit(SET_VAR, chunk.addName(loopVar))
 
@@ -819,6 +845,36 @@ func (c *Compiler) compileForRange(chunk *Chunk, s *ast.ForRangeStatement) {
 
 	chunk.emit(LOAD_VAR, chunk.addName(loopVar))
 	chunk.emit(LOAD_VAR, chunk.addName(stepName))
+	chunk.emit(ADD, nil)
+	chunk.emit(SET_VAR, chunk.addName(loopVar))
+	chunk.emit(JUMP, loopStart)
+
+	chunk.patchOperand(jEnd, chunk.nextIndex())
+	c.popLoopAndPatchBreaks(chunk)
+	chunk.emit(POP_SCOPE, chunk.addName(outerScope))
+}
+
+// compileConstantRange is compileForRange for a loop whose start and end are numbers written
+// in the source: it counts up (or down) by one, the end included.
+func (c *Compiler) compileConstantRange(chunk *Chunk, s *ast.ForRangeStatement, loopVar, outerScope string, start, end float64) {
+	step, test := 1.0, LTE
+	if end < start {
+		step, test = -1.0, GTE
+	}
+	chunk.emit(PUSH_CONST, chunk.addConstant(start))
+	chunk.emit(SET_VAR, chunk.addName(loopVar))
+
+	c.pushLoop(c.bodyScope(s.Body))
+	loopStart := chunk.nextIndex()
+	chunk.emit(LOAD_VAR, chunk.addName(loopVar))
+	chunk.emit(PUSH_CONST, chunk.addConstant(end))
+	chunk.emit(test, nil)
+	jEnd := chunk.emit(JUMP_IF_FALSE, nil)
+
+	c.compileScopedBody(chunk, s.Body)
+
+	chunk.emit(LOAD_VAR, chunk.addName(loopVar))
+	chunk.emit(PUSH_CONST, chunk.addConstant(step))
 	chunk.emit(ADD, nil)
 	chunk.emit(SET_VAR, chunk.addName(loopVar))
 	chunk.emit(JUMP, loopStart)
@@ -1268,7 +1324,7 @@ func (c *Compiler) compileExpression(chunk *Chunk, expr ast.Expression) {
 		c.compileExpression(chunk, e.Target) // 현재 목록 값
 		chunk.emit(LIST_POP, e.Position)     // -> ..., 나머지, 꺼낸값
 		chunk.emit(SET_VAR, chunk.addName(tmp))
-		c.compileAssignTarget(chunk, e.Target) // 나머지를 다시 씀
+		c.compileListWriteBack(chunk, e.Target, ListShrunk) // 나머지를 다시 씀
 		chunk.emit(LOAD_VAR, chunk.addName(tmp))
 
 	case *ast.MemberExpression:
@@ -1314,7 +1370,7 @@ func (c *Compiler) compileExpression(chunk *Chunk, expr ast.Expression) {
 			if fr, ok := callee.Property.(*ast.FunctionReference); ok && fr.Name == c.lang.listClearMethod && len(e.Arguments) == 0 {
 				c.compileExpression(chunk, callee.Object) // 현재 목록 값
 				chunk.emit(LIST_CLEAR, nil)               // -> 빈 목록
-				c.compileAssignTarget(chunk, callee.Object)
+				c.compileListWriteBack(chunk, callee.Object, ListShrunk)
 				chunk.emit(PUSH_NULL, nil) // 이 식 자체의 결과값 (비우기는 반환값 없음)
 				return
 			}

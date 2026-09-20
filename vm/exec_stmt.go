@@ -105,7 +105,11 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 		} else {
 			newList = append(list, pushVal)
 		}
-		if err := i.assignListBack(s.Target, newList, env); err != nil {
+		change := listPushedBack
+		if s.Position == "front" {
+			change = listPushedFront
+		}
+		if err := i.assignListBack(s.Target, newList, env, change); err != nil {
 			return nil, err
 		}
 	case *ast.ListPopStatement:
@@ -121,7 +125,7 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 			return nil, errs.New(errs.ListEmpty)
 		}
 		_, newList := popFromList(list, s.Position)
-		if err := i.assignListBack(s.Target, newList, env); err != nil {
+		if err := i.assignListBack(s.Target, newList, env, listShrunk); err != nil {
 			return nil, err
 		}
 	case *ast.ReturnStatement:
@@ -421,16 +425,17 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 							setterEnv.DeclareSym(setter.Param.Symbol(), val)
 						}
 						prev := i.enterModule(i.classOf(hajaObj).Module)
-						defer func() { i.scope = prev }()
 						for _, bs := range setter.Body {
 							_, err := i.Execute(bs, setterEnv)
 							if err != nil {
+								i.scope = prev
 								if ret, isRet := err.(*ReturnValue); isRet {
 									return ret.Value, nil
 								}
 								return nil, err
 							}
 						}
+						i.scope = prev
 					} else {
 						if err := i.checkField(hajaObj, propId.Value, val); err != nil {
 							return nil, err

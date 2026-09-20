@@ -8,6 +8,7 @@ package typecheck
 
 import (
 	"strings"
+	"sync"
 
 	"github.com/soumt-r/hana/errs"
 )
@@ -23,6 +24,19 @@ type Names struct {
 type Spec struct {
 	Name string
 	Args []string
+}
+
+// specs remembers the parsed form of every annotation seen: an annotation is a few
+// short strings in a program, and checking one used to split and trim it every time.
+var specs sync.Map // annotation -> *Spec
+
+func parsed(annotation string) *Spec {
+	if v, ok := specs.Load(annotation); ok {
+		return v.(*Spec)
+	}
+	spec := Parse(annotation)
+	specs.Store(annotation, &spec)
+	return &spec
 }
 
 // Parse reads an annotation as the parser stores it: "숫자", "(숫자)목록",
@@ -53,7 +67,11 @@ type Host interface {
 
 // Accepts reports whether v satisfies s. Null (비어있음) is accepted by every type
 // (spec 2.2: Nullable by default), and an omitted or [아무거나] type accepts anything.
-func (s Spec) Accepts(n Names, v interface{}, h Host) bool {
+func (s Spec) Accepts(n Names, v interface{}, h Host) bool { return s.accepts(&n, v, h) }
+
+// accepts is Accepts with the type names by reference: a check of a long list asks
+// once per element, and copying the names every time was a large part of its cost.
+func (s *Spec) accepts(n *Names, v interface{}, h Host) bool {
 	if v == nil || s.Name == "" || s.Name == n.Any {
 		return true
 	}
@@ -75,12 +93,7 @@ func (s Spec) Accepts(n Names, v interface{}, h Host) bool {
 			return false
 		}
 		if len(s.Args) > 0 {
-			elem := Spec{Name: s.Args[0]}
-			for _, e := range list {
-				if !elem.Accepts(n, e, h) {
-					return false
-				}
-			}
+			return acceptsAll(n, s.Args[0], list, h)
 		}
 		return true
 	case n.Dict:
@@ -89,14 +102,13 @@ func (s Spec) Accepts(n Names, v interface{}, h Host) bool {
 			return false
 		}
 		if len(s.Args) > 0 {
-			keySpec, valSpec := Spec{}, Spec{}
-			if len(s.Args) == 1 {
-				valSpec = Spec{Name: s.Args[0]}
-			} else {
-				keySpec, valSpec = Spec{Name: s.Args[0]}, Spec{Name: s.Args[1]}
+			keyType, valType := "", s.Args[0]
+			if len(s.Args) > 1 {
+				keyType, valType = s.Args[0], s.Args[1]
 			}
+			keySpec, valSpec := Spec{Name: keyType}, Spec{Name: valType}
 			for k, e := range dict {
-				if !keySpec.Accepts(n, k, h) || !valSpec.Accepts(n, e, h) {
+				if !keySpec.accepts(n, k, h) || !valSpec.accepts(n, e, h) {
 					return false
 				}
 			}
@@ -108,6 +120,53 @@ func (s Spec) Accepts(n Names, v interface{}, h Host) bool {
 	}
 	class, isObject := h.ClassOf(v)
 	return isObject && (class == s.Name || h.IsSubtype(class, s.Name))
+}
+
+// acceptsAll reports whether every element of list satisfies the type called name. A
+// list of numbers, strings or booleans (by far the most common) is checked with one
+// type test per element and no other work.
+func acceptsAll(n *Names, name string, list []interface{}, h Host) bool {
+	switch name {
+	case "", n.Any:
+		return true
+	case n.Number:
+		for _, e := range list {
+			if e == nil {
+				continue
+			}
+			if _, ok := e.(float64); !ok {
+				return false
+			}
+		}
+		return true
+	case n.String:
+		for _, e := range list {
+			if e == nil {
+				continue
+			}
+			if _, ok := e.(string); !ok {
+				return false
+			}
+		}
+		return true
+	case n.Boolean:
+		for _, e := range list {
+			if e == nil {
+				continue
+			}
+			if _, ok := e.(bool); !ok {
+				return false
+			}
+		}
+		return true
+	}
+	elem := Spec{Name: name}
+	for _, e := range list {
+		if !elem.accepts(n, e, h) {
+			return false
+		}
+	}
+	return true
 }
 
 // Describe names v's type for an error message, in the language's own words.
@@ -152,10 +211,14 @@ func quickAccepts(n Names, annotation string, v interface{}) bool {
 	return false
 }
 
+// QuickAccepts is the fast answer for the common case: v is null, or a plain number,
+// string or boolean checked against its own type name. False only means "ask Check".
+func QuickAccepts(n Names, annotation string, v interface{}) bool { return quickAccepts(n, annotation, v) }
+
 // Check is Accepts as an error: a VariableTypeMismatch naming the variable (or
 // property), the declared type as written, and what actually arrived.
 func Check(n Names, annotation, name string, v interface{}, h Host) error {
-	if quickAccepts(n, annotation, v) || Parse(annotation).Accepts(n, v, h) {
+	if quickAccepts(n, annotation, v) || parsed(annotation).accepts(&n, v, h) {
 		return nil
 	}
 	return errs.New(errs.VariableTypeMismatch, name, annotation, Describe(n, v, h))
@@ -164,7 +227,7 @@ func Check(n Names, annotation, name string, v interface{}, h Host) error {
 // CheckReturn is Check for the value a function returns; a function that ends
 // without returning anything returns null, which every type accepts.
 func CheckReturn(n Names, annotation, function string, v interface{}, h Host) error {
-	if quickAccepts(n, annotation, v) || Parse(annotation).Accepts(n, v, h) {
+	if quickAccepts(n, annotation, v) || parsed(annotation).accepts(&n, v, h) {
 		return nil
 	}
 	return errs.New(errs.ReturnTypeMismatch, function, annotation, Describe(n, v, h))
@@ -172,8 +235,28 @@ func CheckReturn(n Names, annotation, function string, v interface{}, h Host) er
 
 // CheckArgument is Check for a function parameter.
 func CheckArgument(n Names, annotation, name string, v interface{}, h Host) error {
-	if quickAccepts(n, annotation, v) || Parse(annotation).Accepts(n, v, h) {
+	if quickAccepts(n, annotation, v) || parsed(annotation).accepts(&n, v, h) {
 		return nil
 	}
 	return errs.New(errs.ArgumentTypeMismatch, name, annotation, Describe(n, v, h))
+}
+
+// CheckAppended is Check for a list that had one element put on it — at the front or
+// (with front false) the back — where the list before was already known to fit: only
+// the new element needs testing. An annotation that is not a list of some type is
+// checked as a whole, like Check.
+func CheckAppended(n Names, annotation, name string, list []interface{}, front bool, h Host) error {
+	spec := parsed(annotation)
+	if spec.Name == n.List && len(spec.Args) > 0 && len(list) > 0 {
+		e := list[len(list)-1]
+		if front {
+			e = list[0]
+		}
+		elem := Spec{Name: spec.Args[0]}
+		if elem.accepts(&n, e, h) {
+			return nil
+		}
+		return errs.New(errs.VariableTypeMismatch, name, annotation, Describe(n, list, h))
+	}
+	return Check(n, annotation, name, list, h)
 }

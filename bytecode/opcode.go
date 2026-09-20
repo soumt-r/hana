@@ -200,9 +200,58 @@ const (
 	// 마다 반복하자 walks: a list stays, a string becomes the list of its characters
 	// (one-character strings), anything else raises NotIterable. Appended after POP_SCOPE.
 
+	BIN // Operand: *BinOperand — a binary operator fused with the loads of its operands
+	// and, optionally, the store of its result or a jump on it (see peephole.go). Made
+	// by Optimize after compiling, never by the compiler itself. Appended after SET_LIST_VAR.
+
+	SET_LIST_VAR // Operand: *ListSetOperand — SET_VAR for a list that was just changed at an end
+	// (LIST_PUSH/LIST_POP/LIST_CLEAR write the new list back): a declared list type is
+	// checked against the new element only, or not at all when the list only got shorter,
+	// instead of against every element. Appended after INIT_MODULE.
+
 	INIT_MODULE // Operand: *ModuleInit — run a module's top-level code, once: the first
 	// INIT_MODULE of a name runs it in the module's own frame (where its variables
 	// live and its functions look for theirs); later ones do nothing. Appended after TO_ITERABLE.
+)
+
+// ArgKind says where a BIN operand comes from.
+type ArgKind int
+
+const (
+	ArgStack ArgKind = iota // popped from the operand stack
+	ArgVar                  // a variable, by index into Chunk.Names
+	ArgConst                // a constant, by index into Chunk.Constants
+)
+
+// BinArg is one operand of a BIN.
+type BinArg struct {
+	Kind  ArgKind
+	Index int
+}
+
+// BinOperand is BIN's operand: Op applied to L and R. The result is pushed, unless
+// Set names a variable (index into Chunk.Names, -1 for none) to store it in, or Jump is
+// an instruction index (-1 for none) to go to when the result is false.
+type BinOperand struct {
+	Op   Opcode
+	L, R BinArg
+	Set  int
+	Jump int
+}
+
+// ListSetOperand is SET_LIST_VAR's operand.
+type ListSetOperand struct {
+	NameIndex int
+	Change    ListChange
+}
+
+// ListChange is how the list SET_LIST_VAR writes differs from the one it replaces.
+type ListChange int
+
+const (
+	ListShrunk      ListChange = iota // elements were taken away: still fits its type
+	ListPushedBack                    // one element was added at the back
+	ListPushedFront                   // one element was added at the front
 )
 
 // ModuleInit is INIT_MODULE's operand: the module's name and its top-level code.

@@ -65,6 +65,8 @@ var opcodeNames = map[Opcode]string{
 	POP_SCOPE:         "POP_SCOPE",
 	TO_ITERABLE:       "TO_ITERABLE",
 	INIT_MODULE:       "INIT_MODULE",
+	SET_LIST_VAR:      "SET_LIST_VAR",
+	BIN:               "BIN",
 }
 
 // Disassemble renders chunk as human-readable text: one line per
@@ -160,6 +162,28 @@ func operandString(chunk *Chunk, instr Instruction) string {
 			kind = " const"
 		}
 		return fmt.Sprintf("%s : [%s]%s", chunk.Names[op.NameIndex], op.Type, kind)
+	case BIN:
+		b := instr.Operand.(*BinOperand)
+		arg := func(a BinArg) string {
+			switch a.Kind {
+			case ArgVar:
+				return "var " + chunk.Names[a.Index]
+			case ArgConst:
+				return fmt.Sprintf("const %#v", chunk.Constants[a.Index])
+			}
+			return "stack"
+		}
+		out := fmt.Sprintf("%s %s, %s", opcodeNames[b.Op], arg(b.L), arg(b.R))
+		if b.Set >= 0 {
+			out += " -> " + chunk.Names[b.Set]
+		}
+		if b.Jump >= 0 {
+			out += fmt.Sprintf(" ; if false -> %d", b.Jump)
+		}
+		return out
+	case SET_LIST_VAR:
+		op := instr.Operand.(*ListSetOperand)
+		return fmt.Sprintf("%s ; change %d", chunk.Names[op.NameIndex], op.Change)
 	case INIT_MODULE:
 		return instr.Operand.(*ModuleInit).Name
 	case PUSH_BOOL:

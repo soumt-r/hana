@@ -5,6 +5,12 @@ package bytecode
 type Instruction struct {
 	Op      Opcode
 	Operand interface{}
+
+	// Hint remembers where the variable an instruction names was found last time: the
+	// slot in the call's own frame and the slot in the globals. The VM tries that slot
+	// first (and checks it still holds the name), which makes a variable access one
+	// comparison instead of a search. Only the VM writes it; it never changes meaning.
+	Hint [6]int32
 }
 
 // Chunk is a compiled sequence of instructions plus the constant and name

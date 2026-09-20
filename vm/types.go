@@ -100,6 +100,28 @@ func (i *Interpreter) checkDeclaredType(env *Environment, id *ast.Identifier, va
 	return nil
 }
 
+// checkListWrite is checkDeclaredType for a list that was changed at an end (see listChange).
+func (i *Interpreter) checkListWrite(env *Environment, id *ast.Identifier, list []interface{}, change listChange) error {
+	if change == listShrunk {
+		return nil
+	}
+	if declared, ok := i.declaredTypeOf(env, id); ok {
+		return typecheck.CheckAppended(i.Config.Types, declared, id.Value, list, change == listPushedFront, i.host())
+	}
+	return nil
+}
+
+// checkFieldListWrite is checkField for a list that was changed at an end.
+func (i *Interpreter) checkFieldListWrite(obj *HajaObject, prop string, list []interface{}, change listChange) error {
+	if change == listShrunk {
+		return nil
+	}
+	if annotation, ok := i.fieldAnnotation(obj.ClassName, prop); ok {
+		return typecheck.CheckAppended(i.Config.Types, annotation, prop, list, change == listPushedFront, i.host())
+	}
+	return nil
+}
+
 // checkField enforces a class field's declared type on a write.
 func (i *Interpreter) checkField(obj *HajaObject, prop string, val interface{}) error {
 	if annotation, ok := i.fieldAnnotation(obj.ClassName, prop); ok {

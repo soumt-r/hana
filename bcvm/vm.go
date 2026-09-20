@@ -10,6 +10,7 @@ import (
 	"github.com/soumt-r/hana/conv"
 	"github.com/soumt-r/hana/errs"
 	"github.com/soumt-r/hana/native"
+	"github.com/soumt-r/hana/num"
 	"github.com/soumt-r/hana/pkg"
 	"github.com/soumt-r/hana/strcat"
 	"github.com/soumt-r/hana/typecheck"
@@ -255,7 +256,7 @@ func (vm *VM) exec(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 
 	pc := 0
 	for pc < len(chunk.Instructions) {
-		instr := chunk.Instructions[pc]
+		instr := &chunk.Instructions[pc]
 		switch instr.Op {
 		case bytecode.PUSH_CONST:
 			push(chunk.Constants[instr.Operand.(int)])
@@ -266,7 +267,7 @@ func (vm *VM) exec(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 
 		case bytecode.LOAD_VAR:
 			idx := instr.Operand.(int)
-			val, ok := vm.lookupOrClass(locals, syms[idx])
+			val, ok := vm.loadVar(instr, locals, syms[idx], 0)
 			if !ok {
 				np, handled, rerr := raise(errs.New(errs.VariableNotFound, chunk.Names[idx]))
 				if handled {
@@ -277,6 +278,10 @@ func (vm *VM) exec(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 			}
 			push(val)
 		case bytecode.SET_VAR, bytecode.SET_CONST:
+			if instr.Op == bytecode.SET_VAR && vm.storeVar(instr, locals, syms[instr.Operand.(int)], stack[len(stack)-1], 0) {
+				stack = stack[:len(stack)-1]
+				break
+			}
 			if err := vm.assignOrDeclare(locals, syms[instr.Operand.(int)], pop(), instr.Op == bytecode.SET_CONST, ""); err != nil {
 				np, handled, rerr := raise(err)
 				if handled {
@@ -305,17 +310,78 @@ func (vm *VM) exec(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 		case bytecode.POP:
 			pop()
 
+		case bytecode.BIN:
+			op := instr.Operand.(*bytecode.BinOperand)
+			var left, right interface{}
+			var missing string
+			switch op.R.Kind {
+			case bytecode.ArgStack:
+				right = pop()
+			case bytecode.ArgVar:
+				v, ok := vm.loadVar(instr, locals, syms[op.R.Index], 2)
+				if !ok {
+					missing = chunk.Names[op.R.Index]
+				}
+				right = v
+			default:
+				right = chunk.Constants[op.R.Index]
+			}
+			switch op.L.Kind {
+			case bytecode.ArgStack:
+				left = pop()
+			case bytecode.ArgVar:
+				v, ok := vm.loadVar(instr, locals, syms[op.L.Index], 0)
+				if !ok {
+					missing = chunk.Names[op.L.Index]
+				}
+				left = v
+			default:
+				left = chunk.Constants[op.L.Index]
+			}
+			var result interface{}
+			var err error
+			if missing != "" {
+				err = errs.New(errs.VariableNotFound, missing)
+			} else if r, done := binaryFast(op.Op, left, right); done {
+				result = r
+			} else {
+				result, err = vm.binaryWithEquals(op.Op, left, right)
+			}
+			if err == nil {
+				switch {
+				case op.Set >= 0:
+					if !vm.storeVar(instr, locals, syms[op.Set], result, 4) {
+						err = vm.assignOrDeclare(locals, syms[op.Set], result, false, "")
+					}
+				case op.Jump >= 0:
+					var b bool
+					if b, err = vm.requireBool(result); err == nil && !b {
+						pc = op.Jump
+						continue
+					}
+				default:
+					push(result)
+				}
+			}
+			if err != nil {
+				np, handled, rerr := raise(err)
+				if handled {
+					pc = np
+					continue
+				}
+				return nil, rerr
+			}
+
 		case bytecode.ADD, bytecode.SUB, bytecode.MUL, bytecode.DIV, bytecode.MOD,
 			bytecode.EQ, bytecode.NEQ, bytecode.LT, bytecode.LTE, bytecode.GT, bytecode.GTE:
 			right := pop()
 			left := pop()
-			var result interface{}
-			var err error
-			if obj, isObj := left.(*Object); isObj && (instr.Op == bytecode.EQ || instr.Op == bytecode.NEQ) && vm.hasEqualsMethod(obj) {
-				result, err = vm.callEqualsMethod(obj, right, instr.Op == bytecode.NEQ)
-			} else {
-				result, err = vm.binaryOp(instr.Op, left, right)
+			if r, done := binaryFast(instr.Op, left, right); done {
+				push(r)
+				pc++
+				continue
 			}
+			result, err := vm.binaryWithEquals(instr.Op, left, right)
 			if err != nil {
 				np, handled, rerr := raise(err)
 				if handled {
@@ -368,6 +434,17 @@ func (vm *VM) exec(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 					}
 					return nil, rerr
 				}
+			}
+		case bytecode.SET_LIST_VAR:
+			op := instr.Operand.(*bytecode.ListSetOperand)
+			list, _ := pop().([]interface{})
+			if err := vm.assignListWrite(locals, syms[op.NameIndex], list, op.Change); err != nil {
+				np, handled, rerr := raise(err)
+				if handled {
+					pc = np
+					continue
+				}
+				return nil, rerr
 			}
 		case bytecode.CHECK_BOOL:
 			if _, err := vm.requireBool(stack[len(stack)-1]); err != nil {
@@ -590,7 +667,7 @@ func (vm *VM) exec(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 				}
 				return nil, rerr
 			}
-			push(float64(len(list)))
+			push(num.Box(float64(len(list))))
 
 		case bytecode.NEW_OBJECT:
 			op := instr.Operand.(*bytecode.NewObjectOperand)
@@ -1222,6 +1299,108 @@ func (vm *VM) callStringMethod(bm *boundStringMethod, args []interface{}) (inter
 	return nil, errs.New(errs.MethodNotFound, bm.Method)
 }
 
+// binaryFast is the operator applied to two numbers, the case that fills a loop. done is
+// false for anything else (and for division, where zero has to be looked at), which the
+// general path handles.
+func binaryFast(op bytecode.Opcode, left, right interface{}) (result interface{}, done bool) {
+	l, ok := left.(float64)
+	if !ok {
+		return nil, false
+	}
+	r, ok := right.(float64)
+	if !ok {
+		return nil, false
+	}
+	switch op {
+	case bytecode.ADD:
+		return num.Box(l + r), true
+	case bytecode.SUB:
+		return num.Box(l - r), true
+	case bytecode.MUL:
+		return num.Box(l * r), true
+	case bytecode.DIV:
+		if r != 0 {
+			return num.Box(l / r), true
+		}
+	case bytecode.MOD:
+		if ri := int64(r); ri != 0 {
+			return num.Box(float64(int64(l) % ri)), true
+		}
+	case bytecode.LT:
+		return l < r, true
+	case bytecode.LTE:
+		return l <= r, true
+	case bytecode.GT:
+		return l > r, true
+	case bytecode.GTE:
+		return l >= r, true
+	case bytecode.EQ:
+		return l == r, true
+	case bytecode.NEQ:
+		return l != r, true
+	}
+	return nil, false
+}
+
+// binaryWithEquals is binaryOp plus the equality magic method of an object on the left.
+func (vm *VM) binaryWithEquals(op bytecode.Opcode, left, right interface{}) (interface{}, error) {
+	if obj, isObj := left.(*Object); isObj && (op == bytecode.EQ || op == bytecode.NEQ) && vm.hasEqualsMethod(obj) {
+		return vm.callEqualsMethod(obj, right, op == bytecode.NEQ)
+	}
+	return vm.binaryOp(op, left, right)
+}
+
+// probe finds sym in f, trying the slot the instruction found it in last time (*hint)
+// before searching, and remembers the slot it finds. nil if f does not have it.
+func probe(f *frame, sym symbol.Symbol, hint *int32) *varSlot {
+	if h := int(*hint); h < len(f.slots) && f.slots[h].sym == sym {
+		return &f.slots[h]
+	}
+	if i := f.find(sym); i >= 0 {
+		*hint = int32(i)
+		return &f.slots[i]
+	}
+	return nil
+}
+
+// loadVar is lookupOrClass for the variable an instruction names, using the slots the
+// instruction found it in before.
+func (vm *VM) loadVar(in *bytecode.Instruction, locals *frame, sym symbol.Symbol, hint int) (interface{}, bool) {
+	if locals != nil {
+		if s := probe(locals, sym, &in.Hint[hint]); s != nil {
+			return s.val, true
+		}
+	}
+	if s := probe(vm.globalsFor(locals), sym, &in.Hint[hint+1]); s != nil {
+		return s.val, true
+	}
+	if name := sym.String(); vm.program.Classes[name] != nil {
+		return &classRef{ClassName: name}, true
+	}
+	return nil, false
+}
+
+// storeVar is the common case of SET_VAR: the variable exists, is not constant and was
+// declared without a type. It reports whether it did the store; otherwise the general
+// assignOrDeclare has to.
+func (vm *VM) storeVar(in *bytecode.Instruction, locals *frame, sym symbol.Symbol, val interface{}, hint int) bool {
+	var s *varSlot
+	if locals != nil {
+		s = probe(locals, sym, &in.Hint[hint])
+	}
+	if s == nil {
+		s = probe(vm.globalsFor(locals), sym, &in.Hint[hint+1])
+	}
+	if s == nil || s.isConst {
+		return false
+	}
+	if s.typ != "" && !typecheck.QuickAccepts(vm.Types, s.typ, val) {
+		return false
+	}
+	s.val = val
+	return true
+}
+
 func (vm *VM) lookup(locals *frame, sym symbol.Symbol) (interface{}, bool) {
 	if locals != nil {
 		if v, ok := locals.get(sym); ok {
@@ -1400,6 +1579,38 @@ func (vm *VM) assignOrDeclare(locals *frame, sym symbol.Symbol, val interface{},
 	return nil
 }
 
+// assignListWrite writes back a list that was changed at an end: like assignOrDeclare, but
+// a declared list type is only checked against the element that was added (nothing, when
+// the list only got shorter), because the rest of it fitted before.
+func (vm *VM) assignListWrite(locals *frame, sym symbol.Symbol, list []interface{}, change bytecode.ListChange) error {
+	var s *varSlot
+	if locals != nil {
+		if i := locals.find(sym); i >= 0 {
+			s = &locals.slots[i]
+		}
+	}
+	if s == nil {
+		if g := vm.globalsFor(locals); g != nil {
+			if i := g.find(sym); i >= 0 {
+				s = &g.slots[i]
+			}
+		}
+	}
+	if s == nil {
+		return vm.assignOrDeclare(locals, sym, list, false, "")
+	}
+	if s.typ != "" && change != bytecode.ListShrunk {
+		if err := typecheck.CheckAppended(vm.Types, s.typ, sym.String(), list, change == bytecode.ListPushedFront, vm.host()); err != nil {
+			return err
+		}
+	}
+	if s.isConst {
+		return errs.New(errs.ConstantAssignment, sym.String())
+	}
+	s.val = list
+	return nil
+}
+
 // binaryOp implements ADD/SUB/MUL/DIV/MOD/EQ/NEQ/LT/LTE/GT/GTE exactly like
 // vm/eval_expr.go's BinaryExpression case: numeric when both operands are
 // float64, string concatenation for "+" otherwise, reference equality for
@@ -1425,21 +1636,21 @@ func (vm *VM) binaryOp(op bytecode.Opcode, left, right interface{}) (interface{}
 	if leftIsNum && rightIsNum {
 		switch op {
 		case bytecode.ADD:
-			return leftNum + rightNum, nil
+			return num.Box(leftNum + rightNum), nil
 		case bytecode.SUB:
-			return leftNum - rightNum, nil
+			return num.Box(leftNum - rightNum), nil
 		case bytecode.MUL:
-			return leftNum * rightNum, nil
+			return num.Box(leftNum * rightNum), nil
 		case bytecode.DIV:
 			if rightNum == 0 {
 				return nil, errs.New(errs.DivideByZero)
 			}
-			return leftNum / rightNum, nil
+			return num.Box(leftNum / rightNum), nil
 		case bytecode.MOD:
-			if rightNum == 0 {
+			if int64(rightNum) == 0 {
 				return nil, errs.New(errs.DivideByZero)
 			}
-			return float64(int64(leftNum) % int64(rightNum)), nil
+			return num.Box(float64(int64(leftNum) % int64(rightNum))), nil
 		case bytecode.LT:
 			return leftNum < rightNum, nil
 		case bytecode.LTE:
