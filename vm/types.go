@@ -47,7 +47,7 @@ func (i *Interpreter) requireBool(v interface{}) (bool, error) {
 	if b, ok := v.(bool); ok {
 		return b, nil
 	}
-	return false, errs.New(errs.ConditionNotBoolean, typecheck.Describe(i.Config.Types, v, i.host()))
+	return false, errs.New(errs.ConditionNotBoolean, typecheck.Describe(&i.Config.Types, v, i.host()))
 }
 
 // fieldAnnotation finds the type a class (or an ancestor) declared for a field.
@@ -95,7 +95,7 @@ func (i *Interpreter) declaredTypeOf(env *Environment, id *ast.Identifier) (stri
 // declared with (Runtime spec 2.2: the constraint outlives the declaration).
 func (i *Interpreter) checkDeclaredType(env *Environment, id *ast.Identifier, val interface{}) error {
 	if declared, ok := i.declaredTypeOf(env, id); ok {
-		return typecheck.Check(i.Config.Types, declared, id.Value, val, i.host())
+		return typecheck.Check(&i.Config.Types, declared, id.Value, val, i.host())
 	}
 	return nil
 }
@@ -106,7 +106,7 @@ func (i *Interpreter) checkListWrite(env *Environment, id *ast.Identifier, list 
 		return nil
 	}
 	if declared, ok := i.declaredTypeOf(env, id); ok {
-		return typecheck.CheckAppended(i.Config.Types, declared, id.Value, list, change == listPushedFront, i.host())
+		return typecheck.CheckAppended(&i.Config.Types, declared, id.Value, list, change == listPushedFront, i.host())
 	}
 	return nil
 }
@@ -117,7 +117,7 @@ func (i *Interpreter) checkFieldListWrite(obj *HajaObject, prop string, list []i
 		return nil
 	}
 	if annotation, ok := i.fieldAnnotation(obj.ClassName, prop); ok {
-		return typecheck.CheckAppended(i.Config.Types, annotation, prop, list, change == listPushedFront, i.host())
+		return typecheck.CheckAppended(&i.Config.Types, annotation, prop, list, change == listPushedFront, i.host())
 	}
 	return nil
 }
@@ -125,7 +125,7 @@ func (i *Interpreter) checkFieldListWrite(obj *HajaObject, prop string, list []i
 // checkField enforces a class field's declared type on a write.
 func (i *Interpreter) checkField(obj *HajaObject, prop string, val interface{}) error {
 	if annotation, ok := i.fieldAnnotation(obj.ClassName, prop); ok {
-		return typecheck.Check(i.Config.Types, annotation, prop, val, i.host())
+		return typecheck.Check(&i.Config.Types, annotation, prop, val, i.host())
 	}
 	return nil
 }
@@ -136,12 +136,12 @@ func (i *Interpreter) checkField(obj *HajaObject, prop string, val interface{}) 
 // it (remembering the annotation so it keeps constraining later writes).
 func (i *Interpreter) assignVariable(env *Environment, id *ast.Identifier, val interface{}, annotation string, isConst bool) error {
 	if annotation != "" {
-		if err := typecheck.Check(i.Config.Types, annotation, id.Value, val, i.host()); err != nil {
+		if err := typecheck.Check(&i.Config.Types, annotation, id.Value, val, i.host()); err != nil {
 			return err
 		}
 	}
 	if declared, ok := i.declaredTypeOf(env, id); ok && declared != annotation {
-		if err := typecheck.Check(i.Config.Types, declared, id.Value, val, i.host()); err != nil {
+		if err := typecheck.Check(&i.Config.Types, declared, id.Value, val, i.host()); err != nil {
 			return err
 		}
 	}
@@ -168,7 +168,7 @@ func (i *Interpreter) assignVariable(env *Environment, id *ast.Identifier, val i
 // declared type; the type then keeps constraining assignments inside the body.
 func (i *Interpreter) declareParam(env *Environment, param *ast.Parameter, val interface{}) error {
 	if param.TypeAnnotation != nil {
-		if err := typecheck.CheckArgument(i.Config.Types, param.TypeAnnotation.Name, param.Name.Value, val, i.host()); err != nil {
+		if err := typecheck.CheckArgument(&i.Config.Types, param.TypeAnnotation.Name, param.Name.Value, val, i.host()); err != nil {
 			return err
 		}
 		sym := param.Name.Symbol()

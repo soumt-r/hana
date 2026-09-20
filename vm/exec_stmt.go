@@ -74,6 +74,10 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 			}
 		}
 
+		if rv, ok := err.(*ReturnValue); ok && rv == &i.retBuf {
+			// the finalizer runs code that returns from functions too, which reuses retBuf
+			err = &ReturnValue{Value: rv.Value}
+		}
 		if s.Finalizer != nil {
 			for _, bs := range s.Finalizer.Statements {
 				_, finErr := i.Execute(bs, env)
@@ -137,7 +141,8 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 			}
 			val = v
 		}
-		return nil, &ReturnValue{Value: val}
+		i.retBuf.Value = val
+		return nil, &i.retBuf
 	case *ast.BreakStatement:
 		return nil, &BreakValue{}
 	case *ast.ImportStatement:

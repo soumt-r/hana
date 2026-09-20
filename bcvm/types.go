@@ -45,7 +45,7 @@ func (vm *VM) requireBool(v interface{}) (bool, error) {
 	if b, ok := v.(bool); ok {
 		return b, nil
 	}
-	return false, errs.New(errs.ConditionNotBoolean, typecheck.Describe(vm.Types, v, vm.host()))
+	return false, errs.New(errs.ConditionNotBoolean, typecheck.Describe(&vm.Types, v, vm.host()))
 }
 
 // fieldType finds the [타입] a class (or an ancestor) declared for an instance field.
@@ -68,16 +68,16 @@ func (vm *VM) fieldType(className, prop string) string {
 // checkField enforces a field's declared type on a write.
 func (vm *VM) checkField(className, prop string, val interface{}) error {
 	if annotation := vm.fieldType(className, prop); annotation != "" {
-		return typecheck.Check(vm.Types, annotation, prop, val, vm.host())
+		return typecheck.Check(&vm.Types, annotation, prop, val, vm.host())
 	}
 	return nil
 }
 
 // bindParam binds one argument to its parameter in fr, enforcing the
 // parameter's declared type (which then keeps constraining the body's writes).
-func (vm *VM) bindParam(fr *frame, sym symbol.Symbol, p bytecode.Param, val interface{}) error {
-	if p.Type != "" {
-		if err := typecheck.CheckArgument(vm.Types, p.Type, p.Name, val, vm.host()); err != nil {
+func (vm *VM) bindParam(fr *frame, sym symbol.Symbol, p *bytecode.Param, val interface{}) error {
+	if p.Type != "" && !typecheck.QuickAccepts(&vm.Types, p.Type, val) {
+		if err := typecheck.CheckArgument(&vm.Types, p.Type, p.Name, val, vm.host()); err != nil {
 			return err
 		}
 	}

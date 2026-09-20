@@ -74,7 +74,7 @@ func (i *Interpreter) runFunctionBody(fn *ast.FunctionDeclaration, args []interf
 	if err != nil || fn.ReturnType == nil {
 		return result, err
 	}
-	if err := typecheck.CheckReturn(i.Config.Types, fn.ReturnType.Name, fn.Name.Value, result, i.host()); err != nil {
+	if err := typecheck.CheckReturn(&i.Config.Types, fn.ReturnType.Name, fn.Name.Value, result, i.host()); err != nil {
 		return nil, err
 	}
 	return result, nil

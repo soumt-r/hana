@@ -47,49 +47,23 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 		}
 		return e.Name, nil
 	case *ast.StringLiteral:
-		val := e.Value
-		val = strings.ReplaceAll(val, "\\n", "\n")
-		val = strings.ReplaceAll(val, "\\\"", "\"")
-		val = strings.ReplaceAll(val, "\\t", "\t")
-		val = strings.ReplaceAll(val, "\\\\", "\\")
-		return val, nil
+		if e.Cooked == nil {
+			e.Cooked = unescape(e.Value)
+		}
+		return e.Cooked, nil
 	case *ast.BooleanLiteral:
 		return e.Value, nil
 	case *ast.TemplateLiteral:
-		// {} 보간 구현: {expr} 부분을 파싱 후 평가
-		raw := e.Value
-		raw = strings.ReplaceAll(raw, "\\n", "\n")
-		raw = strings.ReplaceAll(raw, "\\\"", "\"")
-		raw = strings.ReplaceAll(raw, "\\t", "\t")
-		raw = strings.ReplaceAll(raw, "\\\\", "\\")
+		parts, ok := e.Parts.([]templatePart)
+		if !ok {
+			parts = i.parseTemplate(e.Value)
+			e.Parts = parts
+		}
 		var result strings.Builder
-		for len(raw) > 0 {
-			open := strings.Index(raw, "{")
-			if open == -1 {
-				result.WriteString(raw)
-				break
-			}
-			result.WriteString(raw[:open])
-			raw = raw[open+1:]
-			close := strings.Index(raw, "}")
-			if close == -1 {
-				result.WriteString("{")
-				result.WriteString(raw)
-				break
-			}
-			innerCode := raw[:close]
-			raw = raw[close+1:]
-			// innerCode를 파싱 후 평가
-			var innerExpr ast.Expression
-			if i.Config.ParseEmbeddedExpr != nil {
-				innerExpr = i.Config.ParseEmbeddedExpr(innerCode)
-			} else {
-				innerLexer := haja_lexer.New(innerCode)
-				innerParser := haja_parser.New(innerLexer)
-				innerExpr = innerParser.ParseExpression()
-			}
-			if innerExpr != nil {
-				val, err := i.Evaluate(innerExpr, env)
+		for _, part := range parts {
+			result.WriteString(part.text)
+			if part.expr != nil {
+				val, err := i.Evaluate(part.expr, env)
 				if err != nil {
 					return nil, err
 				}
@@ -100,7 +74,10 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 	case *ast.NullLiteral:
 		return nil, nil
 	case *ast.NumberLiteral:
-		return e.Value, nil
+		if e.Boxed == nil {
+			e.Boxed = num.Box(e.Value)
+		}
+		return e.Boxed, nil
 	case *ast.SelfReference:
 		cur := env
 		for cur != nil {
@@ -841,7 +818,58 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 			}
 		}
 		return nil, errs.New(errs.OperandTypeMismatch, e.Operator,
-			typecheck.Describe(i.Config.Types, left, i.host()), typecheck.Describe(i.Config.Types, right, i.host()))
+			typecheck.Describe(&i.Config.Types, left, i.host()), typecheck.Describe(&i.Config.Types, right, i.host()))
 	}
 	return nil, nil
+}
+
+// unescape turns the escapes of a string literal into the characters they mean.
+func unescape(s string) string {
+	s = strings.ReplaceAll(s, "\\n", "\n")
+	s = strings.ReplaceAll(s, "\\\"", "\"")
+	s = strings.ReplaceAll(s, "\\t", "\t")
+	return strings.ReplaceAll(s, "\\\\", "\\")
+}
+
+// templatePart is a piece of a template literal: some text, then (when expr is not nil)
+// the value of an expression written between braces.
+type templatePart struct {
+	text string
+	expr ast.Expression
+}
+
+// parseTemplate splits a template literal into its parts, parsing each {expression} with
+// the language of the code the template is in: a template inside an imported module
+// is parsed by that module's language, not the importer's.
+func (i *Interpreter) parseTemplate(raw string) []templatePart {
+	cfg := i.Config
+	if i.scope != nil {
+		cfg = i.scope.Config
+	}
+	raw = unescape(raw)
+	var parts []templatePart
+	for len(raw) > 0 {
+		open := strings.Index(raw, "{")
+		if open == -1 {
+			parts = append(parts, templatePart{text: raw})
+			break
+		}
+		text := raw[:open]
+		raw = raw[open+1:]
+		close := strings.Index(raw, "}")
+		if close == -1 {
+			parts = append(parts, templatePart{text: text + "{" + raw})
+			break
+		}
+		innerCode := raw[:close]
+		raw = raw[close+1:]
+		var innerExpr ast.Expression
+		if cfg.ParseEmbeddedExpr != nil {
+			innerExpr = cfg.ParseEmbeddedExpr(innerCode)
+		} else {
+			innerExpr = haja_parser.New(haja_lexer.New(innerCode)).ParseExpression()
+		}
+		parts = append(parts, templatePart{text: text, expr: innerExpr})
+	}
+	return parts
 }

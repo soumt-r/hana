@@ -36,6 +36,12 @@ type Interpreter struct {
 	// importer's. nil while the program's own code runs. See module_scope.go.
 	scope *Interpreter
 
+	// retBuf is what a `돌려주자` hands up to its function: a return happens on every call,
+	// and allocating the value each time was a large part of what a call cost. The
+	// function that receives it reads it at once; a try statement that has to run
+	// its finalizer while a return is on its way copies it first.
+	retBuf ReturnValue
+
 	// modules holds the modules loaded so far, shared by an interpreter and the ones
 	// it starts for imports: a module is loaded (and its top-level code run) once, and
 	// every import of it sees the same state.

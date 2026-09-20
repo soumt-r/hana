@@ -67,7 +67,7 @@ type Host interface {
 
 // Accepts reports whether v satisfies s. Null (비어있음) is accepted by every type
 // (spec 2.2: Nullable by default), and an omitted or [아무거나] type accepts anything.
-func (s Spec) Accepts(n Names, v interface{}, h Host) bool { return s.accepts(&n, v, h) }
+func (s Spec) Accepts(n *Names, v interface{}, h Host) bool { return s.accepts(n, v, h) }
 
 // accepts is Accepts with the type names by reference: a check of a long list asks
 // once per element, and copying the names every time was a large part of its cost.
@@ -170,7 +170,7 @@ func acceptsAll(n *Names, name string, list []interface{}, h Host) bool {
 }
 
 // Describe names v's type for an error message, in the language's own words.
-func Describe(n Names, v interface{}, h Host) string {
+func Describe(n *Names, v interface{}, h Host) string {
 	switch t := v.(type) {
 	case nil:
 		return n.Null
@@ -197,7 +197,7 @@ func Describe(n Names, v interface{}, h Host) string {
 // quickAccepts answers the overwhelmingly common cases (a null, or a plain
 // number/string/boolean against its own type name) without parsing the
 // annotation. False only means "ask Accepts".
-func quickAccepts(n Names, annotation string, v interface{}) bool {
+func quickAccepts(n *Names, annotation string, v interface{}) bool {
 	switch v.(type) {
 	case nil:
 		return true
@@ -213,12 +213,12 @@ func quickAccepts(n Names, annotation string, v interface{}) bool {
 
 // QuickAccepts is the fast answer for the common case: v is null, or a plain number,
 // string or boolean checked against its own type name. False only means "ask Check".
-func QuickAccepts(n Names, annotation string, v interface{}) bool { return quickAccepts(n, annotation, v) }
+func QuickAccepts(n *Names, annotation string, v interface{}) bool { return quickAccepts(n, annotation, v) }
 
 // Check is Accepts as an error: a VariableTypeMismatch naming the variable (or
 // property), the declared type as written, and what actually arrived.
-func Check(n Names, annotation, name string, v interface{}, h Host) error {
-	if quickAccepts(n, annotation, v) || parsed(annotation).accepts(&n, v, h) {
+func Check(n *Names, annotation, name string, v interface{}, h Host) error {
+	if quickAccepts(n, annotation, v) || parsed(annotation).accepts(n, v, h) {
 		return nil
 	}
 	return errs.New(errs.VariableTypeMismatch, name, annotation, Describe(n, v, h))
@@ -226,16 +226,16 @@ func Check(n Names, annotation, name string, v interface{}, h Host) error {
 
 // CheckReturn is Check for the value a function returns; a function that ends
 // without returning anything returns null, which every type accepts.
-func CheckReturn(n Names, annotation, function string, v interface{}, h Host) error {
-	if quickAccepts(n, annotation, v) || parsed(annotation).accepts(&n, v, h) {
+func CheckReturn(n *Names, annotation, function string, v interface{}, h Host) error {
+	if quickAccepts(n, annotation, v) || parsed(annotation).accepts(n, v, h) {
 		return nil
 	}
 	return errs.New(errs.ReturnTypeMismatch, function, annotation, Describe(n, v, h))
 }
 
 // CheckArgument is Check for a function parameter.
-func CheckArgument(n Names, annotation, name string, v interface{}, h Host) error {
-	if quickAccepts(n, annotation, v) || parsed(annotation).accepts(&n, v, h) {
+func CheckArgument(n *Names, annotation, name string, v interface{}, h Host) error {
+	if quickAccepts(n, annotation, v) || parsed(annotation).accepts(n, v, h) {
 		return nil
 	}
 	return errs.New(errs.ArgumentTypeMismatch, name, annotation, Describe(n, v, h))
@@ -245,7 +245,7 @@ func CheckArgument(n Names, annotation, name string, v interface{}, h Host) erro
 // (with front false) the back — where the list before was already known to fit: only
 // the new element needs testing. An annotation that is not a list of some type is
 // checked as a whole, like Check.
-func CheckAppended(n Names, annotation, name string, list []interface{}, front bool, h Host) error {
+func CheckAppended(n *Names, annotation, name string, list []interface{}, front bool, h Host) error {
 	spec := parsed(annotation)
 	if spec.Name == n.List && len(spec.Args) > 0 && len(list) > 0 {
 		e := list[len(list)-1]
@@ -253,7 +253,7 @@ func CheckAppended(n Names, annotation, name string, list []interface{}, front b
 			e = list[0]
 		}
 		elem := Spec{Name: spec.Args[0]}
-		if elem.accepts(&n, e, h) {
+		if elem.accepts(n, e, h) {
 			return nil
 		}
 		return errs.New(errs.VariableTypeMismatch, name, annotation, Describe(n, list, h))

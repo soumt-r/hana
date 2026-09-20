@@ -272,7 +272,17 @@ type TypedSetOperand struct {
 type CallOperand struct {
 	NameIndex int
 	Argc      int
+
+	fn *Function // the function the name meant last time (see CacheFunction)
 }
+
+// CachedFunction is the function a CALL by a plain name found before, or nil: the
+// function table does not change once the program runs, so the VM looks the name up
+// once per instruction instead of once per call.
+func (c *CallOperand) CachedFunction() *Function { return c.fn }
+
+// CacheFunction remembers the function the name of this CALL means.
+func (c *CallOperand) CacheFunction(fn *Function) { c.fn = fn }
 
 // NewObjectOperand is NEW_OBJECT's operand.
 type NewObjectOperand struct {

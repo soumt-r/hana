@@ -227,12 +227,21 @@ func (vm *VM) evalIndex(chunk *bytecode.Chunk, locals *frame) (interface{}, erro
 	return vm.exec(chunk, locals)
 }
 
+// exec runs chunk. The depth counter is kept here rather than with a defer in run: run has
+// dozens of return statements, which keeps Go from making a defer cheap, and every call
+// of a hana function goes through here.
 func (vm *VM) exec(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 	vm.depth++
-	defer func() { vm.depth-- }()
 	if vm.depth > maxExecDepth {
+		vm.depth--
 		return nil, errs.New(errs.CallTooDeep, maxExecDepth)
 	}
+	res, err := vm.run(chunk, locals)
+	vm.depth--
+	return res, err
+}
+
+func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 	syms := chunk.Symbols()
 	stack := make([]interface{}, 0, 16)
 	push := func(v interface{}) { stack = append(stack, v) }
@@ -490,7 +499,17 @@ func (vm *VM) exec(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 
 		case bytecode.CALL:
 			op := instr.Operand.(*bytecode.CallOperand)
-			name := vm.resolveDynamicName(chunk.Names[op.NameIndex], locals)
+			name := chunk.Names[op.NameIndex]
+			fn := op.CachedFunction()
+			if fn == nil {
+				name = vm.resolveDynamicName(name, locals)
+				if f, ok := vm.program.Functions[name]; ok {
+					fn = f
+					if name == chunk.Names[op.NameIndex] {
+						op.CacheFunction(f) // a plain name always means this function
+					}
+				}
+			}
 			args := make([]interface{}, op.Argc)
 			for i := op.Argc - 1; i >= 0; i-- {
 				args[i] = pop()
@@ -498,7 +517,7 @@ func (vm *VM) exec(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 
 			var result interface{}
 			var err error
-			if fn, ok := vm.program.Functions[name]; ok {
+			if fn != nil {
 				result, err = vm.callFunction(fn, args)
 			} else if native, ok := vm.natives[name]; ok {
 				result, err = native.Fn(vm, args)
@@ -910,7 +929,7 @@ func (vm *VM) checkedReturn(fn *bytecode.Function, res interface{}, err error) (
 	if err != nil || fn.ReturnType == "" {
 		return res, err
 	}
-	if err := typecheck.CheckReturn(vm.Types, fn.ReturnType, fn.Name, res, vm.host()); err != nil {
+	if err := typecheck.CheckReturn(&vm.Types, fn.ReturnType, fn.Name, res, vm.host()); err != nil {
 		return nil, err
 	}
 	return res, nil
@@ -927,7 +946,8 @@ func (vm *VM) bindArgs(fn *bytecode.Function, args []interface{}, fr *frame) err
 	if len(args) > len(params) {
 		return errs.New(errs.TooManyArguments, len(params), len(args))
 	}
-	for i, p := range params {
+	for i := range params {
+		p := &params[i]
 		if i < len(args) {
 			if err := vm.bindParam(fr, syms[i], p, args[i]); err != nil {
 				return err
@@ -975,7 +995,7 @@ func (vm *VM) newObject(className string, args []interface{}, callerFrame *frame
 			return nil, err
 		}
 		if f.Type != "" {
-			if err := typecheck.Check(vm.Types, f.Type, f.Name, val, vm.host()); err != nil {
+			if err := typecheck.Check(&vm.Types, f.Type, f.Name, val, vm.host()); err != nil {
 				return nil, err
 			}
 		}
@@ -1394,7 +1414,7 @@ func (vm *VM) storeVar(in *bytecode.Instruction, locals *frame, sym symbol.Symbo
 	if s == nil || s.isConst {
 		return false
 	}
-	if s.typ != "" && !typecheck.QuickAccepts(vm.Types, s.typ, val) {
+	if s.typ != "" && !typecheck.QuickAccepts(&vm.Types, s.typ, val) {
 		return false
 	}
 	s.val = val
@@ -1537,7 +1557,7 @@ func (vm *VM) declaringFrame(locals *frame) *frame {
 // ConstantAssignmentError, exactly like vm.Environment.Assign.
 func (vm *VM) assignOrDeclare(locals *frame, sym symbol.Symbol, val interface{}, isConst bool, annotation string) error {
 	if annotation != "" {
-		if err := typecheck.Check(vm.Types, annotation, sym.String(), val, vm.host()); err != nil {
+		if err := typecheck.Check(&vm.Types, annotation, sym.String(), val, vm.host()); err != nil {
 			return err
 		}
 	}
@@ -1559,7 +1579,7 @@ func (vm *VM) assignOrDeclare(locals *frame, sym symbol.Symbol, val interface{},
 		s := &owner.slots[idx]
 		// The type an earlier declaration gave the variable keeps constraining it.
 		if s.typ != "" && s.typ != annotation {
-			if err := typecheck.Check(vm.Types, s.typ, sym.String(), val, vm.host()); err != nil {
+			if err := typecheck.Check(&vm.Types, s.typ, sym.String(), val, vm.host()); err != nil {
 				return err
 			}
 		}
@@ -1600,7 +1620,7 @@ func (vm *VM) assignListWrite(locals *frame, sym symbol.Symbol, list []interface
 		return vm.assignOrDeclare(locals, sym, list, false, "")
 	}
 	if s.typ != "" && change != bytecode.ListShrunk {
-		if err := typecheck.CheckAppended(vm.Types, s.typ, sym.String(), list, change == bytecode.ListPushedFront, vm.host()); err != nil {
+		if err := typecheck.CheckAppended(&vm.Types, s.typ, sym.String(), list, change == bytecode.ListPushedFront, vm.host()); err != nil {
 			return err
 		}
 	}
@@ -1671,7 +1691,7 @@ func (vm *VM) binaryOp(op bytecode.Opcode, left, right interface{}) (interface{}
 		}
 	}
 	return nil, errs.New(errs.OperandTypeMismatch, symbol,
-		typecheck.Describe(vm.Types, left, vm.host()), typecheck.Describe(vm.Types, right, vm.host()))
+		typecheck.Describe(&vm.Types, left, vm.host()), typecheck.Describe(&vm.Types, right, vm.host()))
 }
 
 func operatorSymbol(op bytecode.Opcode) string {

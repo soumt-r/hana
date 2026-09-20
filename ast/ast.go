@@ -87,6 +87,10 @@ func (s *StaticReference) expressionNode()      {}
 
 type NumberLiteral struct {
 	Value float64
+
+	// Boxed is Value as an interface{}, made on first use: an engine that evaluates the
+	// literal returns it, instead of boxing the number again every time.
+	Boxed interface{}
 }
 
 func (n *NumberLiteral) TokenLiteral() string { return "NUMBER" }
@@ -95,6 +99,10 @@ func (n *NumberLiteral) expressionNode()      {}
 
 type StringLiteral struct {
 	Value string
+
+	// Cooked is the text the literal means (its escapes turned into characters), as an
+	// interface{}, made on first use so an engine does the work once, not on every evaluation.
+	Cooked interface{}
 }
 
 func (s *StringLiteral) TokenLiteral() string { return s.Value }
@@ -592,6 +600,10 @@ func (cd *ConstructorDeclaration) TokenLiteral() string { return "Constructor" }
 
 type TemplateLiteral struct {
 	Value string
+
+	// Parts is the template split into its text and its {expressions} (parsed), made on
+	// first use by the engine that evaluates it, so the parsing is done once.
+	Parts interface{}
 }
 
 func (t *TemplateLiteral) expressionNode()      {}

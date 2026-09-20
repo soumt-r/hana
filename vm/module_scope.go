@@ -159,7 +159,7 @@ func (i *Interpreter) initFields(cls *ast.ClassDeclaration, obj *HajaObject, env
 				return err
 			}
 			if vdecl.TypeRef != nil {
-				if err := typecheck.Check(i.Config.Types, vdecl.TypeRef.Name, vdecl.Name.Value, val, i.host()); err != nil {
+				if err := typecheck.Check(&i.Config.Types, vdecl.TypeRef.Name, vdecl.Name.Value, val, i.host()); err != nil {
 					return err
 				}
 			}
