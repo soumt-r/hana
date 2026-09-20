@@ -43,7 +43,7 @@ func (i *Interpreter) CallFunction(callee interface{}, args []interface{}) (inte
 	case *BuiltinFunction:
 		return fn.Fn(i, i.GlobalEnv, args...)
 	case *ast.FunctionDeclaration:
-		return i.runFunctionBody(fn, args, NewEnvironment(i.GlobalEnv))
+		return i.runFunctionBody(fn, args, NewEnvironment(i.globalOf(fn.Module)))
 	case *BoundMethod:
 		cls, ok := i.Classes[fn.Object.ClassName]
 		if !ok {
@@ -53,7 +53,7 @@ func (i *Interpreter) CallFunction(callee interface{}, args []interface{}) (inte
 		if method == nil {
 			return nil, errs.New(errs.MethodNotFound, fn.FuncName)
 		}
-		env := NewEnvironment(i.GlobalEnv)
+		env := NewEnvironment(i.globalOf(method.Module))
 		env.this = fn.Object
 		env.DeclareSym(thisSym, fn.Object)
 		env.DeclareSym(selfClassSym, fn.Object.ClassName)

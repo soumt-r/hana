@@ -199,7 +199,17 @@ const (
 	TO_ITERABLE // No operand — the value on top of the stack becomes what a
 	// 마다 반복하자 walks: a list stays, a string becomes the list of its characters
 	// (one-character strings), anything else raises NotIterable. Appended after POP_SCOPE.
+
+	INIT_MODULE // Operand: *ModuleInit — run a module's top-level code, once: the first
+	// INIT_MODULE of a name runs it in the module's own frame (where its variables
+	// live and its functions look for theirs); later ones do nothing. Appended after TO_ITERABLE.
 )
+
+// ModuleInit is INIT_MODULE's operand: the module's name and its top-level code.
+type ModuleInit struct {
+	Name string
+	Body *Chunk
+}
 
 // TypedSetOperand is SET_VAR_TYPED's operand.
 type TypedSetOperand struct {

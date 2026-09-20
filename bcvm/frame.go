@@ -12,6 +12,10 @@ type frame struct {
 	index     []int32 // Symbol -> slot position + 1 (0: none); only kept once the frame is big
 	this      *Object
 	selfClass string
+	// module is the frame that holds the top-level variables of the module this call's
+	// function came from: where names are looked up after the call's own, instead of the
+	// program's globals. nil for the program's own code.
+	module *frame
 }
 
 // varSlot is one variable: its value, the [타입] it was declared with (Runtime

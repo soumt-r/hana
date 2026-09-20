@@ -36,6 +36,15 @@ type Interpreter struct {
 	// importer's. nil while the program's own code runs. See module_scope.go.
 	scope *Interpreter
 
+	// modules holds the modules loaded so far, shared by an interpreter and the ones
+	// it starts for imports: a module is loaded (and its top-level code run) once, and
+	// every import of it sees the same state.
+	modules *moduleCache
+
+	// outputSink is the interpreter whose Output collects what a module's top-level code
+	// prints (the program's own); nil for the program itself.
+	outputSink *Interpreter
+
 	// classOwner remembers which module a class or interface came from (by the name
 	// it is registered under); a name that is missing is the program's own.
 	classOwner map[string]string
@@ -51,10 +60,21 @@ type Interpreter struct {
 // the browser engines use the same number.
 const MaxCallDepth = 10000
 
+// sink is the interpreter whose Output records what is printed.
+func (i *Interpreter) sink() *Interpreter {
+	if i.outputSink != nil {
+		return i.outputSink
+	}
+	return i
+}
+
 // newSubInterpreter creates the interpreter an imported module runs in: its
 // own language config, plus the standard library if this interpreter has one.
 func (i *Interpreter) newSubInterpreter(prog *ast.Program, cfg LangConfig) *Interpreter {
 	sub := NewInterpreter(prog, cfg)
+	sub.modules = i.moduleCache()
+	sub.ReadLine = i.ReadLine
+	sub.outputSink = i.sink()
 	if i.Bootstrap != nil {
 		sub.Bootstrap = i.Bootstrap
 		i.Bootstrap(sub)

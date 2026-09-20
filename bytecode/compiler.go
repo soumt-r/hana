@@ -55,6 +55,10 @@ type Compiler struct {
 	// is registered under); a name that is missing is the program's own.
 	classOwner map[string]string
 
+	// pkgInits are the modules an import statement makes run (its own and the ones those
+	// import): each has top-level code, run once when the program reaches the import.
+	pkgInits map[*ast.ImportStatement][]*ModuleInit
+
 	// libraries are the packages whose native library the program binds when it
 	// runs, in first-use order (see LibraryModules).
 	libraries []string
@@ -358,7 +362,7 @@ func (c *Compiler) compileLocalImport(s *ast.ImportStatement) {
 	if c.pkgBinds == nil {
 		c.pkgBinds = map[*ast.ImportStatement][]nativeBind{}
 	}
-	c.pkgBinds[s] = c.exportModule(s.Module, prog, sub, s.Items)
+	c.pkgBinds[s] = c.exportModule(s, prog, sub)
 	c.mergeImported(s.Module, s.All, s.Items, prog, sub)
 }
 

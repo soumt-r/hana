@@ -68,6 +68,7 @@ type Function struct {
 	BodyChunk  *Chunk
 	Access     string
 	ReturnType string // the [타입]을 돌려주는 annotation as written ("" = none); the returned value is checked against it
+	Module     string // the module the function was imported from ("" = the program's own); its top-level variables are the function's globals
 
 	paramSymbols symbolCache // the parameters' names as Symbols (see ParamSymbols)
 }
@@ -104,6 +105,7 @@ type ClassInfo struct {
 	Methods       map[string]*Function
 	StaticMethods map[string]*Function
 	Constructor   *Function // nil if this class doesn't declare its own
+	Module        string    // the module the class was imported from ("" = the program's own)
 }
 
 // FieldInfo is one instance or static field declaration. Default is nil for

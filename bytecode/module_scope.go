@@ -30,7 +30,8 @@ func isScoped(name string) bool { return strings.Contains(name, scopeSep) }
 // module) into this Program under private names. It returns the run-time binds of
 // the module's own package imports (the native functions it brought in), renamed
 // the same way, for the importer to run at the import's position.
-func (c *Compiler) exportModule(module string, prog *ast.Program, sub *Compiler, items []ast.ImportItem) (binds []nativeBind) {
+func (c *Compiler) exportModule(s *ast.ImportStatement, prog *ast.Program, sub *Compiler) (binds []nativeBind) {
+	module, items := s.Module, s.Items
 	for _, stmt := range prog.Statements {
 		if st, ok := stmt.(*ast.ImportStatement); ok {
 			binds = append(binds, sub.pkgBinds[st]...)
@@ -53,14 +54,59 @@ func (c *Compiler) exportModule(module string, prog *ast.Program, sub *Compiler,
 		}
 	}
 
+	// The module's top-level code (its variables and whatever sets them up) runs once, in
+	// a frame of its own; what the modules it imported need to run comes before it.
+	var inits []*ModuleInit
+	for _, stmt := range prog.Statements {
+		if st, ok := stmt.(*ast.ImportStatement); ok {
+			inits = append(inits, sub.pkgInits[st]...)
+		}
+	}
+	top := newChunk()
+	hasTop := false
+	errorsBefore := len(sub.errors)
+	for _, stmt := range prog.Statements {
+		switch stmt.(type) {
+		case *ast.FunctionDeclaration, *ast.InterfaceDeclaration, *ast.ImportStatement:
+			continue
+		}
+		sub.compileStatement(top, stmt)
+		hasTop = true
+	}
+	top.emit(HALT, nil)
+	c.errors = append(c.errors, sub.errors[errorsBefore:]...)
+	if hasTop {
+		rewriteChunk(top, scope)
+		inits = append(inits, &ModuleInit{Name: module, Body: top})
+	}
+	if c.pkgInits == nil {
+		c.pkgInits = map[*ast.ImportStatement][]*ModuleInit{}
+	}
+	c.pkgInits[s] = append(c.pkgInits[s], inits...)
+
 	// Rewrite the calls in the module's own code (what it imported was rewritten
-	// when that module was exported).
+	// when that module was exported), and mark it as the module's.
 	for _, stmt := range prog.Statements {
 		switch d := stmt.(type) {
 		case *ast.FunctionDeclaration:
 			rewriteFunction(sub.program.Functions[d.Name.Value], scope)
+			if fn := sub.program.Functions[d.Name.Value]; fn != nil {
+				fn.Module = module
+			}
 		case *ast.ClassDeclaration:
 			rewriteClass(sub.program.Classes[d.Name.Name], scope)
+			if cls := sub.program.Classes[d.Name.Name]; cls != nil {
+				cls.Module = module
+				for _, m := range cls.Methods {
+					m.Module = module
+				}
+				for _, m := range cls.StaticMethods {
+					m.Module = module
+				}
+				if cls.Constructor != nil {
+					cls.Constructor.Module = module
+				}
+			}
 		}
 	}
 

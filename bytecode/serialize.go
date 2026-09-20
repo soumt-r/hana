@@ -49,6 +49,7 @@ func init() {
 	gob.Register(&TryOperand{})
 	gob.Register(&ImportOperand{})
 	gob.Register(&TypedSetOperand{})
+	gob.Register(&ModuleInit{})
 	gob.Register(&Chunk{}) // RUN_FINALLY's operand is a bare *Chunk
 }
 

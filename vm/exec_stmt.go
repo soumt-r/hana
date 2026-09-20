@@ -185,7 +185,8 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 			return nil, err
 		}
 		strVal := i.FormatValue(val)
-		i.Output = append(i.Output, strVal)
+		sink := i.sink()
+		sink.Output = append(sink.Output, strVal)
 		if s.NewLine {
 			console.Println(strVal)
 		} else {
@@ -412,7 +413,7 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 					setter := i.classMember(i.classOf(hajaObj), propId.Symbol()).setter
 
 					if setter != nil {
-						setterEnv := NewEnvironment(i.GlobalEnv)
+						setterEnv := NewEnvironment(i.globalOf(i.classOf(hajaObj).Module))
 						setterEnv.this = hajaObj
 						setterEnv.DeclareSym(thisSym, hajaObj)
 						setterEnv.DeclareSym(selfClassSym, hajaObj.ClassName)

@@ -47,6 +47,8 @@ type VM struct {
 	ReadLine     func() string
 	Types        typecheck.Names
 	globals      *frame
+	modules      map[string]*frame      // the top-level variables of each imported module, by module name
+	moduleReady  map[string]bool        // the modules whose top-level code has run
 	staticFields map[string]interface{} // "ClassName.field" -> value
 	framePool    []*frame
 	members      map[string]map[symbol.Symbol]*memberEntry // see object.go: class member lookups, memoized
@@ -350,6 +352,22 @@ func (vm *VM) exec(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 					continue
 				}
 				return nil, rerr
+			}
+		case bytecode.INIT_MODULE:
+			op := instr.Operand.(*bytecode.ModuleInit)
+			if !vm.moduleReady[op.Name] {
+				if vm.moduleReady == nil {
+					vm.moduleReady = map[string]bool{}
+				}
+				vm.moduleReady[op.Name] = true
+				if _, err := vm.exec(op.Body, vm.moduleFrame(op.Name)); err != nil {
+					np, handled, rerr := raise(err)
+					if handled {
+						pc = np
+						continue
+					}
+					return nil, rerr
+				}
 			}
 		case bytecode.CHECK_BOOL:
 			if _, err := vm.requireBool(stack[len(stack)-1]); err != nil {
@@ -800,6 +818,7 @@ func (vm *VM) exec(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 // fresh frame.
 func (vm *VM) callFunction(fn *bytecode.Function, args []interface{}) (interface{}, error) {
 	callFrame := vm.takeFrame()
+	callFrame.module = vm.moduleFrame(fn.Module)
 	if err := vm.bindArgs(fn, args, callFrame); err != nil {
 		return nil, err
 	}
@@ -889,6 +908,7 @@ func (vm *VM) newObject(className string, args []interface{}, callerFrame *frame
 	ctor, found := vm.findMethod(className, "__init__")
 	if found {
 		ctorFrame := newFrame()
+		ctorFrame.module = vm.moduleFrame(ctor.Module)
 		ctorFrame.this = obj
 		ctorFrame.selfClass = className
 		if err := vm.bindArgs(ctor, args, ctorFrame); err != nil {
@@ -936,6 +956,7 @@ func (vm *VM) getMember(objVal interface{}, propName string, sym symbol.Symbol, 
 		}
 		if getter := entry.getter; getter != nil {
 			getterFrame := newFrame()
+			getterFrame.module = vm.moduleFrame(vm.classModule(v.ClassName))
 			getterFrame.this = v
 			getterFrame.selfClass = v.ClassName
 			return vm.exec(getter, getterFrame)
@@ -1026,6 +1047,7 @@ func (vm *VM) setMember(objVal interface{}, propName string, sym symbol.Symbol, 
 	case *Object:
 		if setter := vm.memberOf(v, sym).setter; setter != nil {
 			setterFrame := newFrame()
+			setterFrame.module = vm.moduleFrame(vm.classModule(v.ClassName))
 			setterFrame.this = v
 			setterFrame.selfClass = v.ClassName
 			if setter.ParamName != "" {
@@ -1095,6 +1117,7 @@ func (vm *VM) callMethod(calleeVal interface{}, args []interface{}) (interface{}
 			}
 		}
 		methodFrame := vm.takeFrame()
+		methodFrame.module = vm.moduleFrame(fn.Module)
 		methodFrame.this = bm.Receiver
 		methodFrame.selfClass = bm.Receiver.ClassName
 		if err := vm.bindArgs(fn, args, methodFrame); err != nil {
@@ -1114,6 +1137,7 @@ func (vm *VM) callMethod(calleeVal interface{}, args []interface{}) (interface{}
 			return nil, errs.New(errs.StaticMethodNotFound, bm.Method)
 		}
 		methodFrame := newFrame()
+		methodFrame.module = vm.moduleFrame(fn.Module)
 		methodFrame.selfClass = bm.ClassName
 		if err := vm.bindArgs(fn, args, methodFrame); err != nil {
 			return nil, err
@@ -1204,10 +1228,46 @@ func (vm *VM) lookup(locals *frame, sym symbol.Symbol) (interface{}, bool) {
 			return v, true
 		}
 	}
-	if v, ok := vm.globals.get(sym); ok {
+	if v, ok := vm.globalsFor(locals).get(sym); ok {
 		return v, true
 	}
 	return nil, false
+}
+
+// globalsFor is the frame a name is looked up in after the call's own variables: the
+// top-level variables of the module the running function came from, or the program's
+// globals for the program's own code.
+func (vm *VM) globalsFor(locals *frame) *frame {
+	if locals != nil && locals.module != nil {
+		return locals.module
+	}
+	return vm.globals
+}
+
+// moduleFrame is the frame that holds the top-level variables of the module called
+// id, made when first asked for. "" (the program itself) has none.
+func (vm *VM) moduleFrame(id string) *frame {
+	if id == "" {
+		return nil
+	}
+	if f, ok := vm.modules[id]; ok {
+		return f
+	}
+	f := newFrame()
+	f.module = f
+	if vm.modules == nil {
+		vm.modules = map[string]*frame{}
+	}
+	vm.modules[id] = f
+	return f
+}
+
+// classModule is the module a class was imported from ("" for the program's own).
+func (vm *VM) classModule(className string) string {
+	if cls, ok := vm.program.Classes[className]; ok {
+		return cls.Module
+	}
+	return ""
 }
 
 // resolveDynamicName implements dynamic reflection (spec 3.8,
@@ -1245,6 +1305,7 @@ func (vm *VM) hasEqualsMethod(obj *Object) bool {
 func (vm *VM) callEqualsMethod(obj *Object, right interface{}, negate bool) (interface{}, error) {
 	fn := vm.program.Classes[obj.ClassName].Methods[vm.EqualsMethod]
 	fr := newFrame()
+	fr.module = vm.moduleFrame(fn.Module)
 	fr.this = obj
 	fr.selfClass = obj.ClassName
 	if len(fn.Params) > 0 {
@@ -1309,8 +1370,10 @@ func (vm *VM) assignOrDeclare(locals *frame, sym symbol.Symbol, val interface{},
 		}
 	}
 	if owner == nil {
-		if i := vm.globals.find(sym); i >= 0 {
-			owner, idx = vm.globals, i
+		if g := vm.globalsFor(locals); g != nil {
+			if i := g.find(sym); i >= 0 {
+				owner, idx = g, i
+			}
 		}
 	}
 	if owner != nil {

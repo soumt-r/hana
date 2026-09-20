@@ -81,17 +81,18 @@ func (i *Interpreter) importBuiltin(s *ast.ImportStatement, env *Environment) (i
 	// 2. 언어별 진입점이 있는 소스 패키지
 	entryPath := i.entryPath(pkgDir, manifest, i.Config)
 	if _, err := os.Stat(entryPath); err == nil {
-		content, err := ioutil.ReadFile(entryPath)
+		sub, prog, err := i.loadModule("package:"+entryPath, i.Config, func() (*ast.Program, error) {
+			content, err := ioutil.ReadFile(entryPath)
+			if err != nil {
+				return nil, errs.New(errs.ImportFileNotFound, entryPath)
+			}
+			prog, parseErrs := i.Config.ParseProgram(string(content))
+			if len(parseErrs) > 0 {
+				return nil, errs.New(errs.ImportPackageSyntax, s.Module, entryPath)
+			}
+			return prog, nil
+		})
 		if err != nil {
-			return nil, errs.New(errs.ImportFileNotFound, entryPath)
-		}
-		prog, parseErrs := i.Config.ParseProgram(string(content))
-		if len(parseErrs) > 0 {
-			return nil, errs.New(errs.ImportPackageSyntax, s.Module, entryPath)
-		}
-		sub := i.newSubInterpreter(prog, i.Config)
-		markModule(prog, sub)
-		if err := sub.Run(); err != nil {
 			return nil, err
 		}
 		if err := i.bringModuleTypes(sub, s.Module, s); err != nil {
@@ -153,20 +154,19 @@ func nativeBuiltin(name string, fn native.Func) *BuiltinFunction {
 // chosen by its extension (.hj / .knd) — then binds the requested items.
 func (i *Interpreter) importLocalFile(s *ast.ImportStatement, env *Environment) (interface{}, error) {
 	filename := s.Module
-	content, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return nil, errs.New(errs.ImportFileNotFound, filename)
-	}
-
 	cfg := ConfigForFile(filename)
-	prog, parseErrs := cfg.ParseProgram(string(content))
-	if len(parseErrs) > 0 {
-		return nil, errs.New(errs.ImportFileSyntax, filename)
-	}
-
-	sub := i.newSubInterpreter(prog, cfg)
-	markModule(prog, sub)
-	if err := sub.Run(); err != nil {
+	sub, prog, err := i.loadModule("file:"+filename, cfg, func() (*ast.Program, error) {
+		content, err := ioutil.ReadFile(filename)
+		if err != nil {
+			return nil, errs.New(errs.ImportFileNotFound, filename)
+		}
+		prog, parseErrs := cfg.ParseProgram(string(content))
+		if len(parseErrs) > 0 {
+			return nil, errs.New(errs.ImportFileSyntax, filename)
+		}
+		return prog, nil
+	})
+	if err != nil {
 		return nil, err
 	}
 	if err := i.bringModuleTypes(sub, filename, s); err != nil {

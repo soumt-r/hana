@@ -121,7 +121,7 @@ func (c *Compiler) compilePackageImport(s *ast.ImportStatement, items []ast.Impo
 		}
 	}
 	c.errors = append(c.errors, sub.errors...)
-	binds = c.exportModule(s.Module, prog, sub, items)
+	binds = c.exportModule(s, prog, sub)
 	c.mergeImported(s.Module, s.All, items, prog, sub)
 	return binds, true
 }
@@ -191,5 +191,9 @@ func (c *Compiler) emitBuiltinImport(chunk *Chunk, s *ast.ImportStatement) {
 			op.BindNameIndex = chunk.addName(b.bind)
 		}
 		chunk.emit(IMPORT_NATIVE, op)
+	}
+	// the modules' own top-level code runs once their native functions are bound
+	for _, m := range c.pkgInits[s] {
+		chunk.emit(INIT_MODULE, m)
 	}
 }

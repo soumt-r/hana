@@ -39,6 +39,16 @@ func markModule(prog *ast.Program, sub *Interpreter) {
 	}
 }
 
+// globalOf is the outermost environment of code that came from module m: the module's
+// own, where its top-level variables live, so an imported function sees them (and not
+// the importer's). Code of the program itself (nil) has the interpreter's own.
+func (i *Interpreter) globalOf(m interface{}) *Environment {
+	if mod, ok := m.(*Interpreter); ok {
+		return mod.GlobalEnv
+	}
+	return i.GlobalEnv
+}
+
 // enterModule makes m (the Module of a declaration; nil for the program's own
 // code) the module in scope and returns the one that was, to be put back in
 // i.scope when the code is done.
@@ -170,7 +180,7 @@ func (i *Interpreter) initFields(cls *ast.ClassDeclaration, obj *HajaObject, env
 // runConstructor binds the arguments and runs a constructor's body, in the scope
 // of the module the constructor came from.
 func (i *Interpreter) runConstructor(ctor *ast.ConstructorDeclaration, obj *HajaObject, clsName string, args []interface{}) error {
-	ctorEnv := NewEnvironment(i.GlobalEnv)
+	ctorEnv := NewEnvironment(i.globalOf(ctor.Module))
 	ctorEnv.this = obj
 	ctorEnv.DeclareSym(selfClassSym, clsName)
 	if err := i.bindParams(ctor.Params, args, ctorEnv); err != nil {
@@ -188,4 +198,42 @@ func (i *Interpreter) runConstructor(ctor *ast.ConstructorDeclaration, obj *Haja
 		}
 	}
 	return nil
+}
+
+// A loaded module: the interpreter that ran it, and its program.
+type loadedModule struct {
+	sub  *Interpreter
+	prog *ast.Program
+}
+
+type moduleCache struct{ loaded map[string]*loadedModule }
+
+func (i *Interpreter) moduleCache() *moduleCache {
+	if i.modules == nil {
+		i.modules = &moduleCache{loaded: map[string]*loadedModule{}}
+	}
+	return i.modules
+}
+
+// loadModule returns the module called key, loading it first when it has not been:
+// parse builds its program, and its top-level code runs once. The module is entered
+// in the cache before it runs, so a module that imports itself, or one that imports it
+// back, gets what has been loaded so far instead of loading forever (spec 4.3).
+func (i *Interpreter) loadModule(key string, cfg LangConfig, parse func() (*ast.Program, error)) (*Interpreter, *ast.Program, error) {
+	cache := i.moduleCache()
+	if m, ok := cache.loaded[key]; ok {
+		return m.sub, m.prog, nil
+	}
+	prog, err := parse()
+	if err != nil {
+		return nil, nil, err
+	}
+	sub := i.newSubInterpreter(prog, cfg)
+	markModule(prog, sub)
+	cache.loaded[key] = &loadedModule{sub: sub, prog: prog}
+	if err := sub.Run(); err != nil {
+		delete(cache.loaded, key)
+		return nil, nil, err
+	}
+	return sub, prog, nil
 }

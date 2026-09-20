@@ -64,6 +64,7 @@ var opcodeNames = map[Opcode]string{
 	PUSH_SCOPE:        "PUSH_SCOPE",
 	POP_SCOPE:         "POP_SCOPE",
 	TO_ITERABLE:       "TO_ITERABLE",
+	INIT_MODULE:       "INIT_MODULE",
 }
 
 // Disassemble renders chunk as human-readable text: one line per
@@ -159,6 +160,8 @@ func operandString(chunk *Chunk, instr Instruction) string {
 			kind = " const"
 		}
 		return fmt.Sprintf("%s : [%s]%s", chunk.Names[op.NameIndex], op.Type, kind)
+	case INIT_MODULE:
+		return instr.Operand.(*ModuleInit).Name
 	case PUSH_BOOL:
 		return fmt.Sprintf("%v", instr.Operand)
 	case JUMP, JUMP_IF_FALSE, JUMP_IF_TRUE:

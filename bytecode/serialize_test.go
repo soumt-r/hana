@@ -5,6 +5,7 @@ package bytecode_test
 
 import (
 	"bytes"
+	"os"
 	"testing"
 
 	"github.com/soumt-r/hana/bcvm"
@@ -194,5 +195,32 @@ func TestProgramRoundTripExecutesIdentically(t *testing.T) {
 func TestReadProgramRejectsBadHeader(t *testing.T) {
 	if _, _, err := bytecode.ReadProgram(bytes.NewReader([]byte("not a bytecode file at all"))); err == nil {
 		t.Error("expected an error for a non-.hn file, got nil")
+	}
+}
+
+// A module's top-level code and the module a function belongs to survive a .hn file.
+func TestModuleStateSurvivesSerialization(t *testing.T) {
+	dir := t.TempDir()
+	old, _ := os.Getwd()
+	if err := os.Chdir(dir); err != nil {
+		t.Fatal(err)
+	}
+	defer os.Chdir(old)
+	lib := "'횟수'를 [숫자]인 0으로 정하자\n<세기>를 만들자 ():\n    '횟수'에 1을 더하자\n    '횟수'를 돌려주자\n"
+	if err := os.WriteFile("lib.hj", []byte(lib), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	prog := compileSource(t, "\"lib.hj\"에서 <세기>를 가져오자\n<세기>()를 출력하자\n<세기>()를 출력하자\n")
+
+	var buf bytes.Buffer
+	if err := prog.Encode(&buf, bytecode.LangHaja); err != nil {
+		t.Fatal(err)
+	}
+	decoded, _, err := bytecode.ReadProgram(&buf)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := runProgram(t, decoded); len(got) != 2 || got[0] != "1" || got[1] != "2" {
+		t.Errorf("output = %v, want [1 2]", got)
 	}
 }

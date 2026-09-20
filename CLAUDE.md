@@ -265,20 +265,23 @@ PUSH_NULL`로 컴파일. 메서드 *이름*으로 컴파일 타임에 감지하�
 - **`hana add 경로[@버전]`**은 최소 버전을 적고 다시 고르고 두 파일을 씁니다(버전을 안 주면 가장 높은 태그). **`hana install`**은 lock이 hana.json을 덮으면 lock대로, 아니면 다시 골라 내려받습니다. `hana run`/`build`는 **절대 내려받지 않습니다**(설치 안 됐으면 `ImportPackageNotInstalled`로 `hana install`을 안내). 내려받기는 `git clone --depth 1 --branch <태그>` 뒤 `.git`을 지우고 커밋을 `.hana-commit`에 적어 lock의 커밋과 대조합니다(태그가 옮겨졌으면 `CommitMismatch`).
 - **네이티브 라이브러리와 설치 스크립트**: `hana.pkg.json`의 `native.<플랫폼>.url`+`sha256`이면 이 플랫폼 것만 내려받아 해시를 검증합니다(sha256 없이 url만 있으면 거부). `scripts.install`(명령 배열, 셸 없음)은 `hana.json`의 `trustedScripts`에 있거나 `hana add … --allow-scripts`로 승인한 패키지에서만, **설치 명령 안에서만** 돌고, 그 해시를 lock에 적어 스크립트가 바뀌면 `ScriptChanged`로 거부합니다. 전이 의존성의 스크립트는 자동으로 허용되지 않습니다.
 - **`pkg`는 `net/http`를 부르지 않습니다**: `hana-runtime`이 `pkg`를 가져오므로 `Installer.Fetch`를 필드로 받고 진짜 HTTP는 `cmd/pkgcmd.go`에 있습니다(`net/http`를 runtime에 들이면 크기가 크게 늘어납니다). `git`은 명령을 부르고, 테스트(`pkg/install_test.go`)는 `GIT_CONFIG_*`의 `url.insteadOf`로 `https://example.test/…`를 디스크의 저장소로 돌려 진짜 git으로 검증합니다.
-- 임포트한 코드는 자기 모듈의 **범위**를 가집니다(아래 '모듈 범위' 절).
+- 임포트한 코드는 자기 모듈의 **이름 공간과 상태**를 가집니다(아래 '모듈' 절).
+- **`hana why <경로>`**(`Installer.Why`: lock과 캐시 속 `hana.pkg.json`의 dependencies를 따라 직접 추가한 패키지에서 그 패키지까지의 길, 최대 10개)와 **`hana outdated`**(`Installer.Outdated`: 잠근 것보다 높은 태그가 있는 패키지, 태그를 물어보므로 네트워크를 씁니다)가 있습니다.
+- **비공개 저장소**: 내려받기가 git 명령이라 git에 설정한 로그인(credential helper, ssh 키, `url.<기준>.insteadOf`)이 그대로 쓰입니다. 표준 입력이 터미널이면 git이 로그인을 물어볼 수 있고(`interactive`), 아니면 `GIT_TERMINAL_PROMPT=0`입니다(사용자가 `GIT_TERMINAL_PROMPT`를 정해 두었으면 그대로). `HANA_GIT_PROTOCOL=ssh`면 `git@호스트:주인/저장소`로 받습니다. git의 불평이 로그인 문제(`needsLogin`: Authentication failed, could not read Username, Permission denied (publickey), Repository not found …)면 `AuthFailed`로 바꿔 안내합니다.
 - CLI 문구는 `cmd/i18n.go`의 `pkg.err.<코드>`(오류)와 `add.`/`install.` 등 키, 오류 코드는 `pkg/errors.go`입니다.
 
 ## `마다 반복하자`는 문자열도 돕니다
 
 스펙 5.4: `마다 반복하자`는 문자열도 돕니다. 코드포인트마다 길이 1의 문자열이고, 트리워커·브라우저 엔진은 목록으로 바꿔 돌며 바이트코드는 `TO_ITERABLE` 옵코드로 바꿉니다(목록이나 문자열이 아니면 `NotIterable`). `따라 나누자`에 맞는 경우도 `나머지는:`도 없으면 오류 없이 아무 일도 하지 않습니다(스펙에 있던 `UnhandledSwitchCaseError`는 필요 없다고 결정해 뺐습니다). `tests/switch_foreach_test.go`와 `compare_tests.ts`의 '분기:'·'반복:'이 지킵니다.
 
-## 모듈 범위: 임포트한 코드는 자기 모듈의 함수 이름을 봅니다
+## 모듈: 임포트한 코드는 자기 모듈의 이름 공간과 상태를 가집니다
 
-`"파일"`이나 `[패키지]`에서 가져온 함수·메서드·생성자는 안에서 같은 모듈의 다른 함수(도우미)와 그 모듈이 스스로 가져온 것(다른 패키지, `[모듈]`의 네이티브 함수)을 부를 수 있고, 가져오는 쪽이 그것들을 가져오지 않아도 됩니다. 가져오는 쪽에 같은 이름의 함수가 있어도 서로 가리지 않고, 두 모듈이 같은 도우미 이름을 써도 됩니다. 변수는 해당하지 않습니다: 모듈 최상위의 변수는 함수 안에서 보이지 않습니다(두 엔진 모두 `ReferenceError`; 모듈의 최상위 문장은 트리워커에서만 실행되고 바이트코드는 선언만 합칩니다).
+`"파일"`이나 `[패키지]`에서 가져온 함수·메서드·생성자는 안에서 같은 모듈의 다른 함수(도우미)와 그 모듈이 스스로 가져온 것(다른 패키지, `[모듈]`의 네이티브 함수)을 부를 수 있고, 가져오는 쪽이 그것들을 가져오지 않아도 됩니다. 가져오는 쪽에 같은 이름의 함수가 있어도 서로 가리지 않고, 두 모듈이 같은 도우미 이름을 써도 됩니다. **모듈 최상위의 변수와 문장도 모듈 것**입니다: 모듈은 처음 임포트될 때 한 번만 적재되어 최상위 코드가 한 번 실행되고(다시 임포트해도 같은 상태), 그 모듈의 함수는 그 변수를 읽고 바꿉니다. 가져오는 쪽의 변수는 모듈 함수에서 보이지 않습니다(`ReferenceError`). 서로를 가져오는 순환 임포트는 그 시점까지 적재된 것을 돌려받아 멈추지 않습니다(스펙 4.3).
 
-- **트리워커**(`vm/module_scope.go`): 가져온 함수는 여전히 가져온 쪽 인터프리터에서 실행되지만, 임포트 때 `markModule`이 모듈의 선언(함수, 클래스, 메서드, 생성자)에 `Module`(그 모듈의 하위 인터프리터)을 적어 두고, 본문이 실행되는 동안 `i.scope`가 그 모듈입니다(`runFunctionBody`, `runConstructor`, 필드 초기값, getter/setter가 `enterModule`로 켜고 끕니다). 함수 이름을 찾을 때 `scopedFunction`이 `i.scope`의 선언과 그 환경(가져온 함수·네이티브)을 먼저 봅니다. 가져오는 쪽의 함수는 `Module`이 nil이라 항상 원래 범위로 돌아갑니다. 모듈의 클래스·인터페이스 중 가져오는 쪽에 없는 이름은 자기 이름으로 등록됩니다(`bringModuleTypes`, 이미 있으면 덮지 않음 — 서로 다른 패키지의 같은 클래스 이름은 여전히 충돌).
-- **바이트코드**(`bytecode/module_scope.go`): 함수 표가 하나뿐이라 모듈의 함수를 `<모듈>::<이름>`으로 넣고 모듈 자기 코드의 `CALL`/`PUSH_FUNC_REF`를 그 이름으로 고칩니다(`exportModule`, 가져온 항목은 별칭으로도 등록). 모듈이 부른 네이티브 바인드(`IMPORT_NATIVE`)도 같은 이름으로 바뀝니다. 이미 `::`가 있는 이름은 다른 모듈 것이라 건드리지 않습니다. 새 옵코드로 함수 이름을 다루게 되면 `rewriteChunk`에 넣으세요. 로컬 파일이 `[모듈]`을 가져오는 것은 바이트코드에서 아직 안 됩니다.
-- 새 문법으로 함수를 부르는 자리를 만들면 트리워커는 `scopedFunction`을, 바이트코드는 `rewriteChunk`를 지나가게 하세요. `tests/module_scope_test.go`가 두 엔진(하자·카나데)을 같이 지킵니다.
+- **트리워커**(`vm/module_scope.go`): 가져온 함수는 여전히 가져온 쪽 인터프리터에서 실행되지만, `loadModule`이 모듈을 한 번 적재하고(키: 파일 경로나 패키지 진입점, 캐시는 하위 인터프리터들이 공유하는 `moduleCache`, 실행 전에 캐시에 넣어 순환을 막음) `markModule`이 모듈의 선언(함수, 클래스, 메서드, 생성자)에 `Module`(그 모듈의 하위 인터프리터)을 적어 둡니다. 함수 본문은 호출 환경의 부모가 `globalOf(decl.Module)` — 즉 **모듈의 `GlobalEnv`**라서 모듈 변수가 보이고 가져오는 쪽의 변수는 안 보입니다. 함수 이름은 `scopedFunction`이 `i.scope`(실행 중인 본문의 모듈)의 선언과 환경을 먼저 봅니다(`runFunctionBody`, `runConstructor`, 필드 초기값, getter/setter가 `enterModule`로 켜고 끔). 가져오는 쪽의 함수는 `Module`이 nil이라 원래 범위로 돌아갑니다. 모듈 최상위가 출력한 글은 `outputSink`로 프로그램의 `Output`에 모입니다.
+- **바이트코드**(`bytecode/module_scope.go`): 함수 표가 하나뿐이라 모듈의 함수를 `<모듈>::<이름>`으로 넣고 모듈 자기 코드의 `CALL`/`PUSH_FUNC_REF`를 그 이름으로 고칩니다(`exportModule`, 가져온 항목은 별칭으로도 등록). 모듈이 부른 네이티브 바인드(`IMPORT_NATIVE`)도 같은 이름으로 바뀝니다. 이미 `::`가 있는 이름은 다른 모듈 것이라 건드리지 않습니다. 모듈의 최상위 문장은 `INIT_MODULE` 옵코드(`ModuleInit`)로 컴파일되어 임포트 자리에서(네이티브 바인드 다음, 그 모듈이 가져온 모듈들의 것 뒤에) 한 번만 실행되고, VM은 모듈마다 `frame`을 하나 두어(`moduleFrame`) 그 모듈 함수의 호출 프레임(`frame.module`)이 이름을 찾을 때 프로그램의 전역 대신 그 프레임을 봅니다(`globalsFor`). `Function.Module`/`ClassInfo.Module`이 어느 모듈 것인지 기억합니다(`.hn`에 저장됨). 새 옵코드로 함수 이름을 다루게 되면 `rewriteChunk`에 넣으세요. 로컬 파일이 `[모듈]`을 가져오는 것도 되며 그 바인드는 로컬 임포트 자리에서 실행됩니다.
+- **클래스 이름은 프로그램 하나에 하나**입니다(오류 문구·타입 검사가 이름으로 클래스를 가리키기 때문에). 모듈이 선언한(또는 스스로 가져온) 클래스와 인터페이스는 가져오는 쪽에 그 이름이 없을 때 자기 이름으로 등록되어 모듈의 함수가 만들 수 있고, **이미 다른 모듈(이나 프로그램 자신)의 같은 이름이 있으면 `ImportClassConflict`(`…Own`)**입니다. `<이름>을 <별칭>으로 가져오자`로 그 클래스에 다른 이름을 붙이면 충돌하지 않습니다(`bringModuleTypes`, 바이트코드는 `exportModule`의 `classOwner`). 같은 모듈을 두 번 임포트하는 것은 충돌이 아닙니다.
+- 새 문법으로 함수를 부르는 자리를 만들면 트리워커는 `scopedFunction`을, 바이트코드는 `rewriteChunk`를 지나가게 하세요. `tests/module_scope_test.go`, `module_state_test.go`, `class_conflict_test.go`, `local_module_import_test.go`가 두 엔진(하자·카나데)을 같이 지킵니다.
 
 ## `hana pack`: 프로그램을 실행 파일 하나로
 

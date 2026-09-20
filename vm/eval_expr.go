@@ -310,7 +310,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 			if funcDecl == nil {
 				return nil, errs.New(errs.GlobalFunctionNotFound, funcName)
 			}
-			funcEnv := i.newScope(i.GlobalEnv)
+			funcEnv := i.newScope(i.globalOf(funcDecl.Module))
 			res, err := i.runFunctionBody(funcDecl, args, funcEnv)
 			i.freeScope(funcEnv)
 			return res, err
@@ -321,7 +321,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 		}
 
 		if fnDecl, ok := callee.(*ast.FunctionDeclaration); ok {
-			callEnv := i.newScope(i.GlobalEnv)
+			callEnv := i.newScope(i.globalOf(fnDecl.Module))
 			res, err := i.runFunctionBody(fnDecl, args, callEnv)
 			i.freeScope(callEnv)
 			return res, err
@@ -339,7 +339,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 			if funcDecl == nil {
 				return nil, errs.New(errs.StaticMethodNotFound, bm.FuncName)
 			}
-			funcEnv := i.newScope(i.GlobalEnv)
+			funcEnv := i.newScope(i.globalOf(funcDecl.Module))
 			funcEnv.DeclareSym(selfClassSym, bm.ClassName)
 			res, err := i.runFunctionBody(funcDecl, args, funcEnv)
 			i.freeScope(funcEnv)
@@ -452,7 +452,13 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 			if funcDecl == nil && ctorDecl == nil {
 				return nil, errs.New(errs.MethodNotFound, bm.FuncName)
 			}
-			funcEnv := i.newScope(i.GlobalEnv)
+			var module interface{}
+			if funcDecl != nil {
+				module = funcDecl.Module
+			} else {
+				module = ctorDecl.Module
+			}
+			funcEnv := i.newScope(i.globalOf(module))
 			funcEnv.this = bm.Object
 			funcEnv.DeclareSym(thisSym, bm.Object)
 			funcEnv.DeclareSym(selfClassSym, bm.Object.ClassName)
@@ -576,7 +582,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 			// Check for getter
 			getterBody := member.getter
 			if getterBody != nil {
-				getterEnv := NewEnvironment(i.GlobalEnv)
+				getterEnv := NewEnvironment(i.globalOf(i.classOf(hajaObj).Module))
 				getterEnv.this = hajaObj
 				getterEnv.DeclareSym(thisSym, hajaObj)
 				getterEnv.DeclareSym(selfClassSym, hajaObj.ClassName)
@@ -747,7 +753,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 					}
 				}
 				if funcDecl != nil {
-					funcEnv := NewEnvironment(i.GlobalEnv)
+					funcEnv := NewEnvironment(i.globalOf(funcDecl.Module))
 					funcEnv.this = leftObj
 					funcEnv.DeclareSym(selfClassSym, leftObj.ClassName)
 					if len(funcDecl.Params) > 0 {
