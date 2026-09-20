@@ -211,7 +211,13 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 		if err != nil {
 			return nil, err
 		}
-		// V1: slice of interface{} 만 지원
+		if text, ok := listVal.(string); ok {
+			chars := make([]interface{}, 0, len(text))
+			for _, r := range text {
+				chars = append(chars, string(r))
+			}
+			listVal = chars
+		}
 		if list, ok := listVal.([]interface{}); ok {
 			itemSym := symbol.Intern(itemName)
 			for _, item := range list {
@@ -355,6 +361,9 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 				break
 			}
 		}
+		if !matched {
+			return nil, errs.New(errs.SwitchNoMatch, i.quotedForm(val))
+		}
 	case *ast.FallthroughStatement:
 		return nil, nil
 	case *ast.IfStatement:
@@ -471,4 +480,12 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 		// 지원 안 하는 문법 무시
 	}
 	return nil, nil
+}
+
+// quotedForm is a value as an error message shows it: text in double quotes.
+func (i *Interpreter) quotedForm(v interface{}) string {
+	if s, ok := v.(string); ok {
+		return "\"" + s + "\""
+	}
+	return i.FormatValue(v)
 }

@@ -833,6 +833,7 @@ func (c *Compiler) compileForEach(chunk *Chunk, s *ast.ForEachLoop) {
 	chunk.emit(PUSH_SCOPE, chunk.addName(outerScope))
 
 	c.compileExpression(chunk, listExpr)
+	chunk.emit(TO_ITERABLE, nil)
 	chunk.emit(SET_VAR, chunk.addName(listName))
 	chunk.emit(PUSH_CONST, chunk.addConstant(1.0))
 	chunk.emit(SET_VAR, chunk.addName(idxName))
@@ -925,6 +926,15 @@ func (c *Compiler) compileSwitch(chunk *Chunk, s *ast.SwitchStatement) {
 		} else {
 			endJumps = append(endJumps, chunk.emit(JUMP, nil))
 		}
+	}
+
+	if len(pendingTestFail) > 0 {
+		// 맞는 경우도 나머지는도 없이 끝까지 왔다: 오류
+		for _, j := range pendingTestFail {
+			chunk.patchOperand(j, chunk.nextIndex())
+		}
+		pendingTestFail = nil
+		chunk.emit(SWITCH_NO_MATCH, chunk.addName(discName))
 	}
 
 	end := chunk.nextIndex()

@@ -334,6 +334,31 @@ func (vm *VM) exec(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 				return nil, rerr
 			}
 			push(!b)
+		case bytecode.SWITCH_NO_MATCH:
+			switched, _ := vm.lookupOrClass(locals, syms[instr.Operand.(int)])
+			np, handled, rerr := raise(errs.New(errs.SwitchNoMatch, vm.quotedForm(switched)))
+			if handled {
+				pc = np
+				continue
+			}
+			return nil, rerr
+		case bytecode.TO_ITERABLE:
+			switch v := stack[len(stack)-1].(type) {
+			case []interface{}:
+			case string:
+				chars := make([]interface{}, 0, len(v))
+				for _, r := range v {
+					chars = append(chars, string(r))
+				}
+				stack[len(stack)-1] = chars
+			default:
+				np, handled, rerr := raise(errs.New(errs.NotIterable))
+				if handled {
+					pc = np
+					continue
+				}
+				return nil, rerr
+			}
 		case bytecode.CHECK_BOOL:
 			if _, err := vm.requireBool(stack[len(stack)-1]); err != nil {
 				np, handled, rerr := raise(err)

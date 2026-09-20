@@ -83,3 +83,11 @@ func (vm *VM) bindLibraryFunction(module, target, bind string) error {
 }
 
 var _ native.Host = (*VM)(nil)
+
+// quotedForm is a value as an error message shows it: text in double quotes.
+func (vm *VM) quotedForm(v interface{}) string {
+	if s, ok := v.(string); ok {
+		return "\"" + s + "\""
+	}
+	return vm.FormatValue(v)
+}
