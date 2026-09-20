@@ -15,6 +15,7 @@ package bytecode
 //	LOAD_VAR b, op                  -> BIN{L: stack, R: var b}
 //	BIN, SET_VAR x                  -> the same BIN storing into x
 //	BIN, JUMP_IF_FALSE t            -> the same BIN jumping to t when the result is false
+//	op, SET_VAR x                   -> BIN{L: stack, R: stack} storing into x (likewise JUMP_IF_FALSE)
 //
 // A sequence is only fused when no jump lands in the middle of it, and every jump
 // target is moved to where its instruction went. Whatever the fused instruction cannot
@@ -120,6 +121,8 @@ func optimizeChunk(c *Chunk) {
 			emit(Instruction{Op: BIN, Operand: &BinOperand{Op: old[i+1].Op, L: BinArg{ArgStack, 0}, R: BinArg{ArgConst, in.Operand.(int)}, Set: -1, Jump: -1}}, 2)
 		case in.Op == LOAD_VAR && free(i, 2) && isBinaryOp(old[i+1].Op):
 			emit(Instruction{Op: BIN, Operand: &BinOperand{Op: old[i+1].Op, L: BinArg{ArgStack, 0}, R: BinArg{ArgVar, in.Operand.(int)}, Set: -1, Jump: -1}}, 2)
+		case isBinaryOp(in.Op) && i+1 < len(old) && !targets[i+1] && (old[i+1].Op == SET_VAR || old[i+1].Op == JUMP_IF_FALSE):
+			emit(Instruction{Op: BIN, Operand: &BinOperand{Op: in.Op, L: BinArg{ArgStack, 0}, R: BinArg{ArgStack, 0}, Set: -1, Jump: -1}}, 1)
 		default:
 			moved[i] = len(out)
 			out = append(out, in)

@@ -510,16 +510,20 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 					}
 				}
 			}
-			args := make([]interface{}, op.Argc)
-			for i := op.Argc - 1; i >= 0; i-- {
-				args[i] = pop()
-			}
-
 			var result interface{}
 			var err error
 			if fn != nil {
+				// a function of the program binds the arguments into its own frame, which
+				// copies them, so they can be read where they lie on the stack
+				args := stack[len(stack)-op.Argc:]
 				result, err = vm.callFunction(fn, args)
+				clear(args)
+				stack = stack[:len(stack)-op.Argc]
 			} else if native, ok := vm.natives[name]; ok {
+				args := make([]interface{}, op.Argc)
+				for i := op.Argc - 1; i >= 0; i-- {
+					args[i] = pop()
+				}
 				result, err = native.Fn(vm, args)
 			} else {
 				err = errs.New(errs.GlobalFunctionNotFound, name)
@@ -690,11 +694,10 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 
 		case bytecode.NEW_OBJECT:
 			op := instr.Operand.(*bytecode.NewObjectOperand)
-			args := make([]interface{}, op.Argc)
-			for i := op.Argc - 1; i >= 0; i-- {
-				args[i] = pop()
-			}
+			args := stack[len(stack)-op.Argc:]
 			obj, err := vm.newObject(chunk.Names[op.ClassNameIndex], args, locals)
+			clear(args)
+			stack = stack[:len(stack)-op.Argc]
 			if err != nil {
 				np, handled, rerr := raise(err)
 				if handled {
@@ -734,12 +737,11 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 
 		case bytecode.CALL_METHOD:
 			argc := instr.Operand.(int)
-			args := make([]interface{}, argc)
-			for i := argc - 1; i >= 0; i-- {
-				args[i] = pop()
-			}
-			calleeVal := pop()
+			args := stack[len(stack)-argc:]
+			calleeVal := stack[len(stack)-argc-1]
 			result, err := vm.callMethod(calleeVal, args)
+			clear(stack[len(stack)-argc-1:])
+			stack = stack[:len(stack)-argc-1]
 			if err != nil {
 				np, handled, rerr := raise(err)
 				if handled {
