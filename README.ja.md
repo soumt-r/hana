@@ -39,6 +39,10 @@ go build -ldflags="-s -w" -trimpath -o hana-runtime ./cmd/hana-runtime
 | `hana pack <ファイル>` | プログラムを1つの実行ファイルにまとめます。ほかのOS用も作れます（`--target linux-amd64`） |
 | `hana init [フォルダ]` | スタートファイルと`.gitignore`のある新しいプロジェクトを作ります（`--lang haja`または`kanade`） |
 | `hana lsp` | エディター用の言語サーバー（LSP）を標準入出力で実行します |
+| `hana add <gitパス>[@バージョン]` | パッケージをプロジェクトに追加し、`hana.json`と`hana-lock.json`に書きます |
+| `hana install` | `hana-lock.json`に書かれたパッケージをすべてダウンロードします |
+| `hana remove <gitパス>` | パッケージをプロジェクトから外します |
+| `hana list` | このプロジェクトが使うパッケージとバージョンを表示します |
 
 `run`は、標準ではツリーウォーク方式のインタープリタで実行し、`--bc`を付けるとバイトコードコンパイラとVMで実行します。`-t`はパースと実行にかかった時間を表示します。`--allow-file=false`と`--allow-net=false`で、`【ファイル】`、`【ソケット】`、`【HTTP】`モジュールを止められます。
 
@@ -68,6 +72,8 @@ Hajaは`'나이'를 [숫자]인 20으로 정하자`のように型を角括弧�
 | --- | --- |
 | [`http_server`](packages/http_server) | Goの`net/http`によるHTTPサーバー |
 | [`timezone`](packages/timezone) | IANAタイムゾーンによる時刻の書式・読み取り・曜日・オフセット |
+
+外部パッケージはgitのパスが名前です。`hana add github.com/owner/repo`で追加し、`【github.com/owner/repo】から〈道具〉を持ってこよう`で使います。バージョンは最小バージョンとして書き（`hana.json`）、選ばれたバージョンとコミットは`hana-lock.json`に固定されます。パッケージの作り方は[ドキュメントサイト](https://kanade.soumt.moe/docs/hana/packages)にあります。
 
 ネイティブライブラリは、各パッケージの`native/`で`build.sh`（または`build.ps1`）を使って作ります。GoとCコンパイラ（cgo）が必要です。`hana pack`は、プログラムが使うパッケージのライブラリを実行ファイルの隣（`libraries/`）に書き出すか、`--embed`で実行ファイルの中に入れます。
 

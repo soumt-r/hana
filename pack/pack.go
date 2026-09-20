@@ -47,6 +47,13 @@ const (
 	librariesList = "libraries.json"
 )
 
+// LibraryFile is the name a package's library has inside the libraries folder:
+// the package name (with / turned into _ for a git path like
+// github.com/owner/repo) and the library extension of the operating system.
+func LibraryFile(module, goos string) string {
+	return strings.ReplaceAll(module, "/", "_") + pkg.LibraryExt(goos)
+}
+
 // Library is the native library of one package the program uses. File is its
 // name inside the libraries folder: <package><extension of the target OS>.
 type Library struct {
@@ -301,7 +308,7 @@ func (a *App) Activate() error {
 	}
 	native.Bundled = map[string]string{}
 	for _, module := range modules {
-		native.Bundled[module] = filepath.Join(root, librariesDir, module+pkg.LibraryExt(runtime.GOOS))
+		native.Bundled[module] = filepath.Join(root, librariesDir, LibraryFile(module, runtime.GOOS))
 	}
 	return nil
 }

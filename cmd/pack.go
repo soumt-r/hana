@@ -91,7 +91,7 @@ func libraryFor(module, target, targetOS string) (pack.Library, error) {
 	if err != nil {
 		return pack.Library{}, fmt.Errorf("%s", T("pack.readFail", module, err))
 	}
-	return pack.Library{Module: module, File: strings.ReplaceAll(module, "/", "_") + ext, Data: data}, nil
+	return pack.Library{Module: module, File: pack.LibraryFile(module, targetOS), Data: data}, nil
 }
 
 // defaultRuntime finds the runtime executable next to hana: hana-runtime for

@@ -41,6 +41,10 @@ go build -ldflags="-s -w" -trimpath -o hana-runtime ./cmd/hana-runtime
 | `hana pack <파일>` | 프로그램을 실행 파일 하나로 묶어요. 다른 운영체제용도 만들 수 있어요(`--target linux-amd64`) |
 | `hana init [폴더]` | 시작 파일과 `.gitignore`가 있는 새 프로젝트를 만들어요(`--lang haja` 또는 `kanade`) |
 | `hana lsp` | 에디터용 언어 서버(LSP)를 표준 입출력으로 실행해요 |
+| `hana add <git 경로>[@버전]` | 패키지를 프로젝트에 추가하고 `hana.json`, `hana-lock.json`에 적어요 |
+| `hana install` | `hana-lock.json`에 적힌 패키지를 모두 내려받아요 |
+| `hana remove <git 경로>` | 패키지를 프로젝트에서 빼요 |
+| `hana list` | 이 프로젝트가 쓰는 패키지와 버전을 보여줘요 |
 
 `run`은 기본으로 트리워킹 인터프리터로 실행하고, `--bc`를 주면 바이트코드 컴파일러와 VM으로 실행해요. `-t`는 파싱과 실행에 걸린 시간을 보여줘요. `--allow-file=false`와 `--allow-net=false`는 `[파일]`, `[소켓]`, `[HTTP]` 모듈을 막아요.
 
@@ -70,6 +74,8 @@ go build -ldflags="-s -w" -trimpath -o hana-runtime ./cmd/hana-runtime
 | --- | --- |
 | [`http_server`](packages/http_server) | Go `net/http` 위의 HTTP 서버 |
 | [`timezone`](packages/timezone) | IANA 시간대로 시각 서식·읽기·요일·오프셋 |
+
+외부 패키지는 git 경로가 이름이에요. `hana add github.com/주인/저장소`로 추가하고 `[github.com/주인/저장소]에서 <함수>를 가져오자`로 써요. 버전은 최소 버전으로 적고(`hana.json`), 고른 버전과 커밋은 `hana-lock.json`에 고정해요. 패키지 만드는 법은 [문서 사이트](https://haja.soumt.moe/docs/hana/packages)에 있어요.
 
 네이티브 라이브러리는 각 패키지의 `native/`에서 `build.sh`(또는 `build.ps1`)로 만들어요. Go와 C 컴파일러(cgo)가 필요해요. `hana pack`은 프로그램이 쓰는 패키지의 라이브러리를 실행 파일 옆(`libraries/`)에 내보내거나, `--embed`로 실행 파일 안에 넣어요.
 

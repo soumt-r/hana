@@ -256,6 +256,18 @@ PUSH_NULL`로 컴파일. 메서드 *이름*으로 컴파일 타임에 감지하�
 `native/build.sh`·`build.ps1`로 이 플랫폼 것만 빌드, 결과물은 git이 무시). 핸들러는 요청 딕셔너리(`method`, `path`, `query`, `headers`, `body`, `remote`)를 받아 글자나 `<응답>`(`status`,
 `body`, `type`, `headers`)을 돌려줍니다.
 
+## 패키지 매니저: `hana add`/`install`/`remove`/`list` (`pkg` 패키지)
+
+서드파티 패키지는 git 경로가 이름입니다: `[github.com/owner/repo]에서 <함수>를 가져오자`(렉서의 TYPE 정규식이 대괄호 안의 경로 꼴 `host.tld/owner/repo`를 받고, 두 docs의 TS 렉서도 같습니다). 경로 판별은 `pkg.IsPackagePath` 한 곳이고, `pkg.Dir(module)`이 그 경로를 프로젝트의 `hana.json`(가까운 위쪽 폴더에서 찾음)에 따라 `replace` 폴더나 `hana-lock.json`이 고정한 캐시 폴더(`$HANA_HOME/pkg` 또는 `~/.hana/pkg`의 `<경로>@<버전>`)로 풀어 줍니다. 그래서 두 엔진·`pack`·네이티브 로더는 패키지 폴더를 어디서 찾는지 모르고 `pkg.Dir`만 부릅니다. 이름이 경로가 아니면(`timezone`) 예전처럼 hana와 함께 배포한 `packages/`입니다.
+
+- **`hana.json`**은 프로젝트가 원하는 것(`dependencies`: 경로 → **최소 버전**, `replace`, `trustedScripts`), **`hana-lock.json`**은 고른 것(경로 → 정확한 버전, 태그가 가리키던 커밋, 승인한 설치 스크립트의 해시)이고 둘 다 git에 커밋합니다. 버전은 `1.2.3`뿐(범위·`^`·프리릴리스 없음).
+- **버전 고르기는 MVS**(`Installer.Resolve`): 직접·전이 의존성 전체에서 같은 경로에 요구된 최소 버전 중 가장 높은 것. 요구되는 모든 버전을 내려받아 살펴보고(`hana.pkg.json`의 `dependencies`), 순환은 `Circular` 오류입니다. `replace`는 이 프로젝트에서만 유효하고 잠그지 않습니다.
+- **`hana add 경로[@버전]`**은 최소 버전을 적고 다시 고르고 두 파일을 씁니다(버전을 안 주면 가장 높은 태그). **`hana install`**은 lock이 hana.json을 덮으면 lock대로, 아니면 다시 골라 내려받습니다. `hana run`/`build`는 **절대 내려받지 않습니다**(설치 안 됐으면 `ImportPackageNotInstalled`로 `hana install`을 안내). 내려받기는 `git clone --depth 1 --branch <태그>` 뒤 `.git`을 지우고 커밋을 `.hana-commit`에 적어 lock의 커밋과 대조합니다(태그가 옮겨졌으면 `CommitMismatch`).
+- **네이티브 라이브러리와 설치 스크립트**: `hana.pkg.json`의 `native.<플랫폼>.url`+`sha256`이면 이 플랫폼 것만 내려받아 해시를 검증합니다(sha256 없이 url만 있으면 거부). `scripts.install`(명령 배열, 셸 없음)은 `hana.json`의 `trustedScripts`에 있거나 `hana add … --allow-scripts`로 승인한 패키지에서만, **설치 명령 안에서만** 돌고, 그 해시를 lock에 적어 스크립트가 바뀌면 `ScriptChanged`로 거부합니다. 전이 의존성의 스크립트는 자동으로 허용되지 않습니다.
+- **`pkg`는 `net/http`를 부르지 않습니다**: `hana-runtime`이 `pkg`를 가져오므로 `Installer.Fetch`를 필드로 받고 진짜 HTTP는 `cmd/pkgcmd.go`에 있습니다(`net/http`를 runtime에 들이면 크기가 크게 늘어납니다). `git`은 명령을 부르고, 테스트(`pkg/install_test.go`)는 `GIT_CONFIG_*`의 `url.insteadOf`로 `https://example.test/…`를 디스크의 저장소로 돌려 진짜 git으로 검증합니다.
+- **알려진 한계(언어 차원, 패키지 매니저와 별개)**: 임포트한 함수는 가져온 쪽 환경에서 실행되므로 패키지 안의 도우미 함수와 그 패키지가 가져온 다른 패키지는 보이지 않습니다(`전부 가져오자`로 도우미 함수는 가져올 수 있음). 모듈 범위를 갖추는 일은 아직 안 했습니다.
+- CLI 문구는 `cmd/i18n.go`의 `pkg.err.<코드>`(오류)와 `add.`/`install.` 등 키, 오류 코드는 `pkg/errors.go`입니다.
+
 ## `hana pack`: 프로그램을 실행 파일 하나로
 
 `hana pack 앱.hj -o 앱`은 `hana-runtime`(`cmd/hana-runtime`: 바이트코드 VM + 표준 라이브러리만, 파서·트리워커·LSP·cobra 없음, `-ldflags="-s -w" -trimpath`로 약 6MB — 표준 라이브러리에 네트워크(`[HTTP]`의 https)가 들어오기 전에는 3.5MB였습니다)을 복사한 뒤 뒤에 페이로드를 붙입니다.
