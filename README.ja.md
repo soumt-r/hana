@@ -117,3 +117,7 @@ go run ./cmd/doctest ../kanade-docs/src/pages/docs
 ## 開発ノート
 
 内部構造と守るべきルール（エラー文言の追加方法、標準関数を追加する順序、2つのエンジンを揃える方法など）は、[CLAUDE.md](CLAUDE.md)にまとめています（韓国語）。
+
+## ライセンス
+
+[MIT License](LICENSE)です。

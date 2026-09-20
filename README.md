@@ -119,3 +119,7 @@ go run ./cmd/doctest ../kanade-docs/src/pages/docs
 ## 개발 노트
 
 내부 구조와 지켜야 할 규칙(오류 문구를 새로 넣는 법, 표준 함수를 추가하는 순서, 두 엔진을 맞추는 법 등)은 [CLAUDE.md](CLAUDE.md)에 정리해 두었어요.
+
+## 라이선스
+
+[MIT License](LICENSE)예요.
