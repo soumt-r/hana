@@ -111,13 +111,13 @@ func TestDescribeAndErrors(t *testing.T) {
 	if Describe(&ko, 3.0, nil) != "숫자" || Describe(&ko, nil, nil) != "비어있음" || Describe(&ko, []interface{}{}, nil) != "목록" {
 		t.Error("Describe should use the language's names")
 	}
-	if err := Check(ko, "숫자", "나이", "스물", nil); err == nil {
+	if err := Check(&ko, "숫자", "나이", "스물", nil); err == nil {
 		t.Error("expected a mismatch error")
 	}
-	if err := Check(ko, "숫자", "나이", nil, nil); err != nil {
+	if err := Check(&ko, "숫자", "나이", nil, nil); err != nil {
 		t.Errorf("null passes: %v", err)
 	}
-	if err := CheckArgument(ko, "문자열", "이름", 3.0, nil); err == nil {
+	if err := CheckArgument(&ko, "문자열", "이름", 3.0, nil); err == nil {
 		t.Error("expected an argument mismatch error")
 	}
 }
