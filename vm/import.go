@@ -125,6 +125,9 @@ func (i *Interpreter) importBuiltin(s *ast.ImportStatement, env *Environment) (i
 			env.Declare(item.BindName(), fn)
 			continue
 		}
+		if hasCore {
+			return nil, errs.New(errs.ImportTargetNotFound, s.Module, item.Name)
+		}
 		return nil, errs.New(errs.ImportPackageNotFound, s.Module)
 	}
 	if s.All && !hasCore {

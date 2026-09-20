@@ -763,15 +763,18 @@ func (vm *VM) exec(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 				continue
 			}
 			var fn *NativeFunction
+			moduleExists := ok
 			if ok {
 				fn, ok = module[chunk.Names[op.TargetNameIndex]]
 			}
 			if !ok {
-				code := errs.ImportPackageNotFound
+				code, args := errs.ImportPackageNotFound, []interface{}{moduleName}
 				if pkg.IsPackagePath(moduleName) {
 					code = errs.ImportPackageNotInstalled
+				} else if moduleExists {
+					code, args = errs.ImportTargetNotFound, []interface{}{moduleName, chunk.Names[op.TargetNameIndex]}
 				}
-				np, handled, rerr := raise(errs.New(code, moduleName))
+				np, handled, rerr := raise(errs.New(code, args...))
 				if handled {
 					pc = np
 					continue
