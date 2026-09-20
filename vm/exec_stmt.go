@@ -361,9 +361,6 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 				break
 			}
 		}
-		if !matched {
-			return nil, errs.New(errs.SwitchNoMatch, i.quotedForm(val))
-		}
 	case *ast.FallthroughStatement:
 		return nil, nil
 	case *ast.IfStatement:
@@ -480,12 +477,4 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 		// 지원 안 하는 문법 무시
 	}
 	return nil, nil
-}
-
-// quotedForm is a value as an error message shows it: text in double quotes.
-func (i *Interpreter) quotedForm(v interface{}) string {
-	if s, ok := v.(string); ok {
-		return "\"" + s + "\""
-	}
-	return i.FormatValue(v)
 }

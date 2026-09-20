@@ -1,7 +1,6 @@
 package tests
 
-// Runtime spec 4.1: a switch with no matching case and no default is an error, not a
-// silent skip. Spec 5.4: a string can be walked with 마다 반복하자, one character
+// A switch with no matching case and no default does nothing. Spec 5.4: a string can be walked with 마다 반복하자, one character
 // (code point) at a time. Both engines agree.
 
 import (
@@ -9,12 +8,19 @@ import (
 	"testing"
 )
 
-func TestSwitchWithoutAMatchIsAnError(t *testing.T) {
-	code := "'x'를 [문자열]인 \"수\"로 정하자\n'x'에 따라 나누자:\n    \"월\" 인 경우:\n        \"가\"를 출력하자\n"
-	_, err := runHaja(t, code)
-	requireErrorContains(t, err, "UnhandledSwitchCaseError")
-	_, err = runBytecode(t, code)
-	requireErrorContains(t, err, "UnhandledSwitchCaseError")
+func TestSwitchWithoutAMatchDoesNothing(t *testing.T) {
+	code := "'x'를 [문자열]인 \"수\"로 정하자\n'x'에 따라 나누자:\n    \"월\" 인 경우:\n        \"가\"를 출력하자\n\"끝\"을 출력하자\n"
+	tree, err := runHaja(t, code)
+	if err != nil {
+		t.Fatal(err)
+	}
+	bc, err := runBytecode(t, code)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.Join(tree.Output, "|") + "#" + strings.Join(bc.Output, "|"); got != "끝#끝" {
+		t.Errorf("printed %q", got)
+	}
 }
 
 func TestSwitchWithADefaultOrAMatchIsFine(t *testing.T) {

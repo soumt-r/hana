@@ -132,7 +132,6 @@ var koCatalog = Catalog{
 	NullOperand:           "'%s' 연산에는 비어있음 값을 쓸 수 없어요.",
 	UnknownOperator:       "'%s'은(는) 여기서 쓸 수 없는 연산자예요.",
 	CallTooDeep:           "호출이 너무 깊게 쌓여서 %d단계를 넘었어요.",
-	SwitchNoMatch:         "'따라 나누자'에 값 %s에 맞는 경우가 없고 '나머지는'도 없어요.",
 	SyntaxUnexpectedToken: "%[1]d번째 줄 %[2]d번째 글자의 '%[3]s'를 이해할 수 없어요.",
 	SyntaxUnexpectedEnd:   "%[1]d번째 줄에서 문장이 끝나지 않았어요.",
 

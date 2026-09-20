@@ -132,7 +132,6 @@ var jaCatalog = Catalog{
 	NullOperand:           "『%s』演算には空っぽの値を使えません。",
 	UnknownOperator:       "『%s』はここでは使えない演算子です。",
 	CallTooDeep:           "呼び出しが深く重なりすぎて、%d階層を超えました。",
-	SwitchNoMatch:         "「によって分けよう」に値%sに合う場合がなく、「残りは」もありません。",
 	SyntaxUnexpectedToken: "%[1]d行目、%[2]d文字目の「%[3]s」を解釈できません。",
 	SyntaxUnexpectedEnd:   "%[1]d行目で文が途中で終わっています。",
 

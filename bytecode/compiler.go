@@ -928,15 +928,6 @@ func (c *Compiler) compileSwitch(chunk *Chunk, s *ast.SwitchStatement) {
 		}
 	}
 
-	if len(pendingTestFail) > 0 {
-		// 맞는 경우도 나머지는도 없이 끝까지 왔다: 오류
-		for _, j := range pendingTestFail {
-			chunk.patchOperand(j, chunk.nextIndex())
-		}
-		pendingTestFail = nil
-		chunk.emit(SWITCH_NO_MATCH, chunk.addName(discName))
-	}
-
 	end := chunk.nextIndex()
 	for _, j := range pendingTestFail {
 		chunk.patchOperand(j, end)

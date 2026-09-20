@@ -196,12 +196,9 @@ const (
 	// outer marker also drops the inner ones, so a `반복을 끝내자` needs only its own
 	// loop's marker. Appended after CHECK_BOOL so .hn files keep their meaning.
 
-	SWITCH_NO_MATCH // Operand: int (index into Chunk.Names) — a `따라 나누자` found no
-	// case and has no default: raise UnhandledSwitchCaseError for the value of the hidden
-	// variable of that name (the switched value). Appended after POP_SCOPE.
 	TO_ITERABLE // No operand — the value on top of the stack becomes what a
 	// 마다 반복하자 walks: a list stays, a string becomes the list of its characters
-	// (one-character strings), anything else raises NotIterable.
+	// (one-character strings), anything else raises NotIterable. Appended after POP_SCOPE.
 )
 
 // TypedSetOperand is SET_VAR_TYPED's operand.

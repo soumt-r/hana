@@ -268,9 +268,9 @@ PUSH_NULL`로 컴파일. 메서드 *이름*으로 컴파일 타임에 감지하�
 - 임포트한 코드는 자기 모듈의 **범위**를 가집니다(아래 '모듈 범위' 절).
 - CLI 문구는 `cmd/i18n.go`의 `pkg.err.<코드>`(오류)와 `add.`/`install.` 등 키, 오류 코드는 `pkg/errors.go`입니다.
 
-## `따라 나누자`와 `마다 반복하자`의 스펙 맞춤
+## `마다 반복하자`는 문자열도 돕니다
 
-`따라 나누자`에서 맞는 경우도 `나머지는:`도 없으면 `UnhandledSwitchCaseError`(`errs.SwitchNoMatch`, 스펙 4.1)입니다: 트리워커는 `exec_stmt.go`의 SwitchStatement 끝에서, 바이트코드는 `SWITCH_NO_MATCH` 옵코드(`compileSwitch`가 실패한 시험의 도착점으로 냄), 브라우저 엔진은 `execStmt.ts`에서 냅니다. `마다 반복하자`는 문자열도 돕니다(스펙 5.4): 코드포인트마다 길이 1의 문자열이고, 트리워커·브라우저 엔진은 목록으로 바꿔 돌며 바이트코드는 `TO_ITERABLE` 옵코드로 바꿉니다(목록이나 문자열이 아니면 `NotIterable`). `tests/switch_foreach_test.go`와 `compare_tests.ts`의 '분기:'·'반복:'이 지킵니다.
+스펙 5.4: `마다 반복하자`는 문자열도 돕니다. 코드포인트마다 길이 1의 문자열이고, 트리워커·브라우저 엔진은 목록으로 바꿔 돌며 바이트코드는 `TO_ITERABLE` 옵코드로 바꿉니다(목록이나 문자열이 아니면 `NotIterable`). `따라 나누자`에 맞는 경우도 `나머지는:`도 없으면 오류 없이 아무 일도 하지 않습니다(스펙에 있던 `UnhandledSwitchCaseError`는 필요 없다고 결정해 뺐습니다). `tests/switch_foreach_test.go`와 `compare_tests.ts`의 '분기:'·'반복:'이 지킵니다.
 
 ## 모듈 범위: 임포트한 코드는 자기 모듈의 함수 이름을 봅니다
 

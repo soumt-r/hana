@@ -227,8 +227,7 @@ const (
 	HTTPBadMethod       Code = "NetworkError.HTTPBadMethod" // method
 
 	// RecursionError
-	CallTooDeep   Code = "RecursionError.CallTooDeep"       // limit
-	SwitchNoMatch Code = "UnhandledSwitchCaseError.NoMatch" // value
+	CallTooDeep Code = "RecursionError.CallTooDeep" // limit
 
 	// SyntaxError (reported by the parser; see parser/haja Diagnostic)
 	SyntaxUnexpectedToken Code = "SyntaxError.UnexpectedToken" // line, column, token
@@ -323,7 +322,7 @@ var allCodes = []Code{
 	InstantiateInterface, InstantiateAbstract, StringIndexAssign,
 	OperandTypeMismatch, NullOperand,
 	VariableTypeMismatch, ArgumentTypeMismatch, ReturnTypeMismatch,
-	CallTooDeep, SwitchNoMatch,
+	CallTooDeep,
 	SyntaxUnexpectedToken, SyntaxUnexpectedEnd,
 	ThisNotBound, SuperOutsideMethod, StaticOutsideMethod, VariableNotFound, ClassNotFound,
 	GlobalFunctionNotFound, StaticMethodNotFound, MethodNotFound,

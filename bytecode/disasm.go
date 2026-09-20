@@ -63,7 +63,6 @@ var opcodeNames = map[Opcode]string{
 	CHECK_BOOL:        "CHECK_BOOL",
 	PUSH_SCOPE:        "PUSH_SCOPE",
 	POP_SCOPE:         "POP_SCOPE",
-	SWITCH_NO_MATCH:   "SWITCH_NO_MATCH",
 	TO_ITERABLE:       "TO_ITERABLE",
 }
 
@@ -150,7 +149,7 @@ func operandString(chunk *Chunk, instr Instruction) string {
 			return fmt.Sprintf("%d ; %s", idx, chunk.Names[idx])
 		}
 		return ""
-	case LOAD_VAR, SET_VAR, SET_CONST, PUSH_FUNC_REF, PUSH_SCOPE, POP_SCOPE, SWITCH_NO_MATCH:
+	case LOAD_VAR, SET_VAR, SET_CONST, PUSH_FUNC_REF, PUSH_SCOPE, POP_SCOPE:
 		idx := instr.Operand.(int)
 		return fmt.Sprintf("%d ; %s", idx, chunk.Names[idx])
 	case SET_VAR_TYPED:

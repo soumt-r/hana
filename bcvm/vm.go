@@ -334,14 +334,6 @@ func (vm *VM) exec(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 				return nil, rerr
 			}
 			push(!b)
-		case bytecode.SWITCH_NO_MATCH:
-			switched, _ := vm.lookupOrClass(locals, syms[instr.Operand.(int)])
-			np, handled, rerr := raise(errs.New(errs.SwitchNoMatch, vm.quotedForm(switched)))
-			if handled {
-				pc = np
-				continue
-			}
-			return nil, rerr
 		case bytecode.TO_ITERABLE:
 			switch v := stack[len(stack)-1].(type) {
 			case []interface{}:
