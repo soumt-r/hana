@@ -32,8 +32,10 @@ type Manifest struct {
 	Entry map[string]string `json:"entry"`
 	// Native maps a platform ("windows-amd64", "linux-arm64", ...) to the
 	// prebuilt native library for it.
-	Native       map[string]NativeFile `json:"native"`
-	Dependencies map[string]string     `json:"dependencies"`
+	Native map[string]NativeFile `json:"native"`
+	// Dependencies maps the git path of each package this one needs to the lowest
+	// version it accepts.
+	Dependencies map[string]string `json:"dependencies"`
 }
 
 // NativeFile is one platform's native library: File is its path inside the
@@ -97,6 +99,14 @@ func (m *Manifest) validate() error {
 		}
 		if n.SHA256 != "" && !sha256Re.MatchString(n.SHA256) {
 			return fmt.Errorf("native.%s.sha256 must be 64 hex digits", platform)
+		}
+	}
+	for path, v := range m.Dependencies {
+		if !IsPackagePath(path) {
+			return fmt.Errorf("dependencies: %q is not a package path like github.com/owner/repo", path)
+		}
+		if _, err := ParseVersion(v); err != nil {
+			return fmt.Errorf("dependencies.%s: %v", path, err)
 		}
 	}
 	return nil

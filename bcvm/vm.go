@@ -10,6 +10,7 @@ import (
 	"github.com/soumt-r/hana/conv"
 	"github.com/soumt-r/hana/errs"
 	"github.com/soumt-r/hana/native"
+	"github.com/soumt-r/hana/pkg"
 	"github.com/soumt-r/hana/strcat"
 	"github.com/soumt-r/hana/typecheck"
 	"sort"
@@ -749,7 +750,11 @@ func (vm *VM) exec(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 				fn, ok = module[chunk.Names[op.TargetNameIndex]]
 			}
 			if !ok {
-				np, handled, rerr := raise(errs.New(errs.ImportPackageNotFound, moduleName))
+				code := errs.ImportPackageNotFound
+				if pkg.IsPackagePath(moduleName) {
+					code = errs.ImportPackageNotInstalled
+				}
+				np, handled, rerr := raise(errs.New(code, moduleName))
 				if handled {
 					pc = np
 					continue

@@ -1,0 +1,296 @@
+package pkg
+
+import (
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
+)
+
+// commitFile, inside a downloaded package folder, remembers the commit it came
+// from, so a later install can tell it is the one the lock file names.
+const commitFile = ".hana-commit"
+
+// Installer downloads packages into the cache and decides which versions a
+// project gets.
+type Installer struct {
+	Src  Source
+	Proj *Project
+	// Log, when set, is told about progress: "download" with (path, version).
+	Log func(event string, args ...interface{})
+
+	tags map[string][]Tag
+}
+
+func (in *Installer) log(event string, args ...interface{}) {
+	if in.Log != nil {
+		in.Log(event, args...)
+	}
+}
+
+func (in *Installer) tagsOf(path string) ([]Tag, error) {
+	if tags, ok := in.tags[path]; ok {
+		return tags, nil
+	}
+	tags, err := in.Src.Tags(path)
+	if err != nil {
+		return nil, err
+	}
+	if in.tags == nil {
+		in.tags = map[string][]Tag{}
+	}
+	in.tags[path] = tags
+	return tags, nil
+}
+
+// Latest is the highest version a package has.
+func (in *Installer) Latest(path string) (Version, error) {
+	tags, err := in.tagsOf(path)
+	if err != nil {
+		return Version{}, err
+	}
+	if len(tags) == 0 {
+		return Version{}, newError(NoVersions, path)
+	}
+	return tags[0].Version, nil
+}
+
+// ensure makes sure the folder of path@v is in the cache and returns it and the
+// commit it holds. A non-empty wantCommit (from the lock file) must match.
+func (in *Installer) ensure(path string, v Version, wantCommit string) (dir, commit string, err error) {
+	dir, err = CacheDir(path, v.String())
+	if err != nil {
+		return "", "", err
+	}
+	if data, err := os.ReadFile(filepath.Join(dir, commitFile)); err == nil {
+		commit = strings.TrimSpace(string(data))
+		if wantCommit != "" && commit != wantCommit {
+			return "", "", newError(CommitMismatch, path, v.String(), shortCommit(wantCommit), shortCommit(commit))
+		}
+		return dir, commit, nil
+	}
+	tags, err := in.tagsOf(path)
+	if err != nil {
+		return "", "", err
+	}
+	var tag *Tag
+	for i := range tags {
+		if tags[i].Version.Compare(v) == 0 {
+			tag = &tags[i]
+			break
+		}
+	}
+	if tag == nil {
+		return "", "", newError(VersionMissing, path, v.String())
+	}
+	in.log("download", path, v.String())
+	commit, err = in.Src.Download(path, *tag, dir, wantCommit)
+	if err != nil {
+		return "", "", err
+	}
+	if err := os.WriteFile(filepath.Join(dir, commitFile), []byte(commit+"\n"), 0o644); err != nil {
+		return "", "", err
+	}
+	return dir, commit, nil
+}
+
+// manifestOf reads a package folder's manifest and checks it is the package it
+// should be.
+func manifestOf(path, version, dir string) (*Manifest, error) {
+	m, err := Load(dir)
+	if err != nil {
+		return nil, newError(BadManifest, path, version, err.Error())
+	}
+	if m != nil && m.Name != "" && m.Name != path {
+		return nil, newError(NameMismatch, path, m.Name)
+	}
+	return m, nil
+}
+
+// Resolve picks a version for every package the roots need, directly or through
+// other packages: for each package, the highest version anyone asks for (minimal
+// version selection — versions are minimums, so there is never a conflict to
+// solve). It downloads what it looks at, and returns the lock for it. Packages the
+// project replaces with a local folder are followed but not locked.
+func (in *Installer) Resolve(roots map[string]string) (Lock, error) {
+	type node struct{ path, version string }
+	visited := map[node]bool{}
+	best := map[string]Version{}
+	commits := map[node]string{}
+
+	var visit func(path string, v Version, stack []string) error
+	visit = func(path string, v Version, stack []string) error {
+		for _, p := range stack {
+			if p == path {
+				return newError(Circular, strings.Join(append(append([]string{}, stack...), path), " -> "))
+			}
+		}
+		replaced, isReplaced := "", false
+		if in.Proj != nil {
+			replaced, isReplaced = in.Proj.ReplaceDir(path)
+		}
+		n := node{path, v.String()}
+		if isReplaced {
+			n.version = ""
+		}
+		if visited[n] {
+			return nil
+		}
+		visited[n] = true
+
+		var dir, commit string
+		var err error
+		if isReplaced {
+			dir = replaced
+		} else {
+			dir, commit, err = in.ensure(path, v, "")
+			if err != nil {
+				return err
+			}
+			commits[n] = commit
+			if cur, ok := best[path]; !ok || v.Compare(cur) > 0 {
+				best[path] = v
+			}
+		}
+		m, err := manifestOf(path, v.String(), dir)
+		if err != nil {
+			return err
+		}
+		if m == nil {
+			return nil
+		}
+		deps := make([]string, 0, len(m.Dependencies))
+		for dep := range m.Dependencies {
+			deps = append(deps, dep)
+		}
+		sort.Strings(deps)
+		for _, dep := range deps {
+			dv, err := ParseVersion(m.Dependencies[dep])
+			if err != nil {
+				return newError(BadManifest, path, v.String(), err.Error())
+			}
+			if err := visit(dep, dv, append(stack, path)); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	paths := make([]string, 0, len(roots))
+	for p := range roots {
+		paths = append(paths, p)
+	}
+	sort.Strings(paths)
+	for _, p := range paths {
+		v, err := ParseVersion(roots[p])
+		if err != nil {
+			return nil, newError(BadManifest, p, roots[p], err.Error())
+		}
+		if err := visit(p, v, nil); err != nil {
+			return nil, err
+		}
+	}
+
+	lock := Lock{}
+	for p, v := range best {
+		lock[p] = LockEntry{Version: v.String(), Commit: commits[node{p, v.String()}]}
+	}
+	return lock, nil
+}
+
+// Add records a package in the project's hana.json (at version, or at its latest
+// version when version is nil), chooses versions for the whole project, and
+// writes hana.json and hana-lock.json. It returns the version recorded.
+func (in *Installer) Add(path string, version *Version) (Version, error) {
+	if !IsPackagePath(path) {
+		return Version{}, newError(NotPath, path)
+	}
+	var v Version
+	if version != nil {
+		v = *version
+	} else {
+		latest, err := in.Latest(path)
+		if err != nil {
+			return Version{}, err
+		}
+		v = latest
+	}
+	if in.Proj.Dependencies == nil {
+		in.Proj.Dependencies = map[string]string{}
+	}
+	in.Proj.Dependencies[path] = v.String()
+	lock, err := in.Resolve(in.Proj.Dependencies)
+	if err != nil {
+		return Version{}, err
+	}
+	if err := in.Proj.Save(); err != nil {
+		return Version{}, err
+	}
+	return v, SaveLock(in.Proj.Dir, lock)
+}
+
+// Install makes the cache hold everything the lock file names. When the lock file
+// does not cover hana.json (a package missing, or locked below the minimum),
+// it first chooses versions again and rewrites the lock file.
+func (in *Installer) Install() (Lock, error) {
+	lock, err := LoadLock(in.Proj.Dir)
+	if err != nil {
+		return nil, err
+	}
+	if !in.covers(lock) {
+		lock, err = in.Resolve(in.Proj.Dependencies)
+		if err != nil {
+			return nil, err
+		}
+		if err := SaveLock(in.Proj.Dir, lock); err != nil {
+			return nil, err
+		}
+	}
+	for _, path := range lock.Paths() {
+		e := lock[path]
+		v, err := ParseVersion(e.Version)
+		if err != nil {
+			return nil, err
+		}
+		if _, _, err := in.ensure(path, v, e.Commit); err != nil {
+			return nil, err
+		}
+	}
+	return lock, nil
+}
+
+func (in *Installer) covers(lock Lock) bool {
+	for path, min := range in.Proj.Dependencies {
+		if _, replaced := in.Proj.Replace[path]; replaced {
+			continue
+		}
+		e, ok := lock[path]
+		if !ok {
+			return false
+		}
+		have, err1 := ParseVersion(e.Version)
+		want, err2 := ParseVersion(min)
+		if err1 != nil || err2 != nil || have.Compare(want) < 0 {
+			return false
+		}
+	}
+	return true
+}
+
+// Remove takes a package out of hana.json and chooses versions again, so what only
+// it needed leaves the lock file too. It reports whether the package was there.
+func (in *Installer) Remove(path string) (bool, error) {
+	if _, ok := in.Proj.Dependencies[path]; !ok {
+		return false, nil
+	}
+	delete(in.Proj.Dependencies, path)
+	delete(in.Proj.Replace, path)
+	lock, err := in.Resolve(in.Proj.Dependencies)
+	if err != nil {
+		return false, err
+	}
+	if err := in.Proj.Save(); err != nil {
+		return false, err
+	}
+	return true, SaveLock(in.Proj.Dir, lock)
+}

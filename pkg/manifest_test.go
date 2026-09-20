@@ -15,7 +15,7 @@ const goodManifest = `{
     "windows-amd64": {"file": "native/mypkg-windows-amd64.dll", "sha256": "0000000000000000000000000000000000000000000000000000000000000000"},
     "linux-arm64": {"file": "native/libmypkg.so", "url": "https://example.com/libmypkg.so"}
   },
-  "dependencies": {"example/utils": "2.0.0"}
+  "dependencies": {"example.com/o/utils": "2.0.0"}
 }`
 
 func TestParseAGoodManifest(t *testing.T) {
@@ -23,7 +23,7 @@ func TestParseAGoodManifest(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if m.Name != "example/mypkg" || m.Version != "1.2.0" || m.Dependencies["example/utils"] != "2.0.0" {
+	if m.Name != "example/mypkg" || m.Version != "1.2.0" || m.Dependencies["example.com/o/utils"] != "2.0.0" {
 		t.Errorf("unexpected manifest: %+v", m)
 	}
 	if n, ok := m.NativeFor("linux-arm64"); !ok || n.File != "native/libmypkg.so" || n.URL == "" {

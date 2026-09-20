@@ -119,6 +119,7 @@ var jaCatalog = Catalog{
 	ImportUnsupportedLocale:      "パッケージ『%[1]s』には『%[2]s』用のエントリがないため、持ってこられません。",
 	ImportPackageSyntax:          "パッケージ『%s』のファイル『%s』に文法エラーがあります。",
 	ImportPackageNotFound:        "パッケージ『[%s]』が見つかりません。",
+	ImportPackageNotInstalled:    "パッケージ『[%s]』がインストールされていません。「hana install」でダウンロードできます。",
 	ImportFileNotFound:           "ファイル『%s』が見つかりません。",
 	ImportFileSyntax:             "ファイル『%s』に文法エラーがあります。",
 	ImportTargetNotFound:         "『%s』に『%s』が見つかりません。",

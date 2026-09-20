@@ -35,6 +35,11 @@ func (i *Interpreter) executeImport(s *ast.ImportStatement, env *Environment) (i
 // module.
 func (i *Interpreter) importBuiltin(s *ast.ImportStatement, env *Environment) (interface{}, error) {
 	pkgDir := pkg.Dir(s.Module)
+	if pkg.IsPackagePath(s.Module) {
+		if _, err := os.Stat(pkgDir); err != nil {
+			return nil, errs.New(errs.ImportPackageNotInstalled, s.Module)
+		}
+	}
 	manifest, err := pkg.Load(pkgDir)
 	if err != nil {
 		return nil, errs.New(errs.ImportManifestInvalid, s.Module, err.Error())

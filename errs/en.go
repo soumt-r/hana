@@ -118,6 +118,7 @@ var enCatalog = Catalog{
 	ImportUnsupportedLocale:      "Package '%[1]s' has no '%[2]s' entry point.",
 	ImportPackageSyntax:          "Syntax error in file '%[2]s' of package '%[1]s'.",
 	ImportPackageNotFound:        "Package '[%s]' not found.",
+	ImportPackageNotInstalled:    "Package '[%s]' is not installed. 'hana install' downloads it.",
 	ImportFileNotFound:           "File '%s' not found.",
 	ImportFileSyntax:             "Syntax error in file '%s'.",
 	ImportTargetNotFound:         "Target '%[2]s' not found in '%[1]s'.",

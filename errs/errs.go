@@ -296,6 +296,7 @@ const (
 	ImportUnsupportedLocale      Code = "ImportError.ImportUnsupportedLocale"      // package, language
 	ImportPackageSyntax          Code = "ImportError.ImportPackageSyntax"          // package, file
 	ImportPackageNotFound        Code = "ImportError.ImportPackageNotFound"        // package
+	ImportPackageNotInstalled    Code = "ImportError.ImportPackageNotInstalled"    // package
 	ImportFileNotFound           Code = "ImportError.ImportFileNotFound"           // file
 	ImportFileSyntax             Code = "ImportError.ImportFileSyntax"             // file
 	ImportTargetNotFound         Code = "ImportError.ImportTargetNotFound"         // source, target
@@ -338,7 +339,7 @@ var allCodes = []Code{
 	DivideByZero,
 	ConvertToNumberFailed, ConvertToNumberInvalid, ConvertToCodeNeedsOneChar, ConvertToTextNeedsNumber,
 	ImportManifestInvalid, ImportNativeMissing, ImportNativeLoadFailed, NativeCallFailed,
-	ImportNativeFunctionNotFound, ImportDLLNotFound, ImportPluginUnsupported, ImportUnsupportedLocale, ImportPackageSyntax, ImportPackageNotFound,
+	ImportNativeFunctionNotFound, ImportDLLNotFound, ImportPluginUnsupported, ImportUnsupportedLocale, ImportPackageSyntax, ImportPackageNotFound, ImportPackageNotInstalled,
 	ImportFileNotFound, ImportFileSyntax, ImportTargetNotFound, ImportNativeOnly,
 	ImportUnsupported, InputTypeUnsupported, InputToNumberFailed, InputToBooleanFailed,
 }

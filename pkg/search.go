@@ -33,11 +33,20 @@ func Roots() []string {
 	return roots
 }
 
-// Dir is the folder of the package called module: the first root that has such
-// a folder. When none does it is the project path (./packages/<module>), which
-// simply does not exist, so callers report the package as not found. A name that
-// could climb out of a root (a path, "..") never matches anything.
+// Dir is the folder of the package called module. A git path like
+// github.com/owner/repo is an installed package: the folder `hana add` put in the
+// cache for the project's locked version, or the project's `replace` folder. Any
+// other name is a package shipped with hana: the first root that has such a
+// folder. When there is none, the result is a path that does not exist, so callers
+// report the package as not found. A name that could climb out of a root ("..")
+// never matches anything.
 func Dir(module string) string {
+	if IsPackagePath(module) {
+		if dir, ok := installedDir(module); ok {
+			return dir
+		}
+		return filepath.Join("packages", ".no-such-package")
+	}
 	if module == "" || module == "." || module == ".." || strings.ContainsAny(module, `/\`) || strings.ContainsRune(module, 0) {
 		return filepath.Join("packages", ".no-such-package")
 	}

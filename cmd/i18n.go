@@ -77,6 +77,36 @@ var catalog = map[string]message{
 	"pack.noNative":     {"패키지 %s에는 %s용 네이티브 라이브러리가 없어요", "パッケージ%sには%s用のネイティブライブラリがありません"},
 	"pack.readFail":     {"패키지 %s의 네이티브 라이브러리를 읽지 못했어요: %v", "パッケージ%sのネイティブライブラリを読み込めませんでした: %v"},
 	"pack.noRuntime":    {"%s을(를) hana 옆에서 찾지 못했어요. --runtime으로 위치를 알려 주세요.", "%sがhanaの隣に見つかりません。--runtimeで場所を指定してください。"},
+
+	"add.use":         {"add <git 경로>[@버전]", "add <gitパス>[@バージョン]"},
+	"add.short":       {"패키지를 프로젝트에 추가해요 (예: hana add github.com/주인/저장소@1.2.0). 버전을 안 주면 가장 높은 버전이에요", "パッケージをプロジェクトに追加します（例：hana add github.com/owner/repo@1.2.0）。バージョンを指定しないと最新のバージョンになります"},
+	"add.badVersion":  {"버전은 1.2.3처럼 적어요: %s", "バージョンは1.2.3のように書いてください: %s"},
+	"add.done":        {"%s %s을(를) 추가했어요 (hana.json, hana-lock.json)", "%s %sを追加しました（hana.json、hana-lock.json）"},
+	"add.alsoNeeded":  {"함께 필요한 패키지 %d개도 내려받았어요", "あわせて必要なパッケージ%d個もダウンロードしました"},
+	"install.use":     {"install", "install"},
+	"install.short":   {"hana-lock.json에 적힌 패키지를 모두 내려받아요 (hana.json에 비해 lock이 모자라면 버전을 다시 골라요)", "hana-lock.jsonに書かれたパッケージをすべてダウンロードします（hana.jsonに対してlockが足りなければバージョンを選び直します）"},
+	"install.done":    {"패키지 %d개를 준비했어요", "パッケージ%d個を用意しました"},
+	"remove.use":      {"remove <git 경로>", "remove <gitパス>"},
+	"remove.short":    {"패키지를 프로젝트에서 빼요", "パッケージをプロジェクトから外します"},
+	"remove.done":     {"%s을(를) 뺐어요", "%sを外しました"},
+	"remove.notThere": {"%s은(는) 이 프로젝트의 의존 패키지가 아니에요", "%sはこのプロジェクトの依存パッケージではありません"},
+	"list.use":        {"list", "list"},
+	"list.short":      {"이 프로젝트가 쓰는 패키지와 버전을 보여줘요 (*는 직접 추가한 것)", "このプロジェクトが使うパッケージとバージョンを表示します（*は直接追加したもの）"},
+	"list.replaced":   {"→ %s (로컬 폴더)", "→ %s（ローカルフォルダ）"},
+	"list.empty":      {"설치된 패키지가 없어요", "インストールされたパッケージはありません"},
+	"pkg.noProject":   {"hana.json이 없어요. 먼저 hana add로 패키지를 추가하세요", "hana.jsonがありません。まずhana addでパッケージを追加してください"},
+	"pkg.download":    {"내려받는 중: %s %s", "ダウンロード中: %s %s"},
+
+	"pkg.err.GitMissing":     {"git을 찾을 수 없어요. git을 설치하고 PATH에 넣어 주세요", "gitが見つかりません。gitをインストールしてPATHに追加してください"},
+	"pkg.err.TagsFailed":     {"%s의 버전 목록을 가져오지 못했어요: %s", "%sのバージョン一覧を取得できませんでした: %s"},
+	"pkg.err.NoVersions":     {"%s에는 v1.2.0 같은 버전 태그가 없어요", "%sにはv1.2.0のようなバージョンタグがありません"},
+	"pkg.err.VersionMissing": {"%s에는 %s 버전이 없어요", "%sにはバージョン%sがありません"},
+	"pkg.err.DownloadFailed": {"%s %s을(를) 내려받지 못했어요: %s", "%s %sをダウンロードできませんでした: %s"},
+	"pkg.err.CommitMismatch": {"%s %s은(는) 커밋 %s로 잠겨 있는데 태그가 이제 %s를 가리켜요. 태그가 옮겨졌는지 확인하세요", "%s %sはコミット%sでロックされていますが、タグは今%sを指しています。タグが動かされていないか確認してください"},
+	"pkg.err.NameMismatch":   {"%s에 있는 패키지가 hana.pkg.json에서는 자기 이름을 %q라고 해요", "%sにあるパッケージがhana.pkg.jsonでは自分の名前を%qとしています"},
+	"pkg.err.BadManifest":    {"%s %s의 hana.pkg.json이 올바르지 않아요: %s", "%s %sのhana.pkg.jsonが正しくありません: %s"},
+	"pkg.err.Circular":       {"패키지가 서로를 돌고 돌아 필요로 해요: %s", "パッケージが互いを循環して必要としています: %s"},
+	"pkg.err.NotPath":        {"%q은(는) github.com/주인/저장소 같은 패키지 경로가 아니에요", "%qはgithub.com/owner/repoのようなパッケージパスではありません"},
 }
 
 // help lists what cobra's own usage template says, with the words that replace it.
@@ -179,6 +209,10 @@ func applyLocale() {
 	lspCmd.Short = T("lsp.short")
 	initCmd.Use, initCmd.Short = T("init.use"), T("init.short")
 	packCmd.Use, packCmd.Short = T("pack.use"), T("pack.short")
+	addCmd.Use, addCmd.Short = T("add.use"), T("add.short")
+	installCmd.Use, installCmd.Short = T("install.use"), T("install.short")
+	removeCmd.Use, removeCmd.Short = T("remove.use"), T("remove.short")
+	listCmd.Use, listCmd.Short = T("list.use"), T("list.short")
 
 	for cmd, flags := range map[*cobra.Command]map[string]string{
 		rootCmd:  {"locale": "flag.locale"},
@@ -195,7 +229,7 @@ func applyLocale() {
 			set.Lookup(name).Usage = T(key)
 		}
 	}
-	for _, cmd := range []*cobra.Command{rootCmd, runCmd, buildCmd, disasmCmd, lspCmd, initCmd, packCmd} {
+	for _, cmd := range []*cobra.Command{rootCmd, runCmd, buildCmd, disasmCmd, lspCmd, initCmd, packCmd, addCmd, installCmd, removeCmd, listCmd} {
 		cmd.InitDefaultHelpFlag()
 		cmd.Flags().Lookup("help").Usage = T("flag.help", cmd.Name())
 	}

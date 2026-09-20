@@ -60,7 +60,7 @@ var tokenSpecs = []struct {
 	{"FUNCTION", regexp.MustCompile(`^〈[^〉]+〉`)},
 	// TYPE: 【(genericArgs)Name】 — generic arg list keeps ASCII
 	// parens (kanade-docs: 【(文字列)リスト】, 【(文字列,数字)辞書】).
-	{"TYPE", regexp.MustCompile(`^【(?:\([^)]+\))?` + jaWord + `】`)},
+	{"TYPE", regexp.MustCompile(`^【(?:\([^)]+\))?(?:` + jaWord + `|[a-z0-9-]+(?:\.[a-z0-9-]+)+(?:/[A-Za-z0-9][A-Za-z0-9._-]*){2,})】`)},
 	// List/type brackets share 【】 in kanade-docs (a list literal
 	// is 【要素,要素】, not a distinct ASCII-bracket form) — TYPE
 	// above only matches when what's inside looks like a type

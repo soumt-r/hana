@@ -119,6 +119,7 @@ var koCatalog = Catalog{
 	ImportUnsupportedLocale:      "패키지 '%[1]s'에는 '%[2]s'용 진입점이 없어서 가져올 수 없어요.",
 	ImportPackageSyntax:          "패키지 '%s'의 '%s' 파일에 문법 오류가 있어요.",
 	ImportPackageNotFound:        "패키지 '[%s]'를 찾을 수 없어요.",
+	ImportPackageNotInstalled:    "패키지 '[%s]'가 설치되어 있지 않아요. 'hana install'로 내려받을 수 있어요.",
 	ImportFileNotFound:           "'%s' 파일을 찾을 수 없어요.",
 	ImportFileSyntax:             "'%s' 파일에 문법 오류가 있어요.",
 	ImportTargetNotFound:         "'%s'에서 '%s'을(를) 찾을 수 없어요.",
