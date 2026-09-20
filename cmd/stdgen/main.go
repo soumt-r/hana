@@ -11,6 +11,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/soumt-r/hana/std"
 )
@@ -33,7 +34,7 @@ func main() {
 		want := std.TypeScriptNames(lang)
 		if *check {
 			got, err := os.ReadFile(path)
-			if err != nil || string(got) != want {
+			if err != nil || strings.ReplaceAll(string(got), "\r\n", "\n") != want {
 				fmt.Fprintf(os.Stderr, "stale: %s (run stdgen without -check)\n", path)
 				stale = true
 			}

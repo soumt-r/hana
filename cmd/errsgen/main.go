@@ -10,6 +10,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/soumt-r/hana/errs"
 )
@@ -30,7 +31,7 @@ func main() {
 	for _, path := range args {
 		if check {
 			got, err := os.ReadFile(path)
-			if err != nil || string(got) != want {
+			if err != nil || strings.ReplaceAll(string(got), "\r\n", "\n") != want {
 				fmt.Fprintf(os.Stderr, "stale: %s (run errsgen without -check)\n", path)
 				stale = true
 			}

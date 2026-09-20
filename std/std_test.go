@@ -64,7 +64,7 @@ func TestGeneratedTypeScriptNamesAreCurrent(t *testing.T) {
 			t.Logf("skipping %s: %v", rel, err)
 			continue
 		}
-		if string(got) != TypeScriptNames(lang) {
+		if strings.ReplaceAll(string(got), "\r\n", "\n") != TypeScriptNames(lang) {
 			t.Errorf("%s is stale — run: go run ./cmd/stdgen -haja <file> -kanade <file>", rel)
 		}
 	}

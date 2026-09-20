@@ -1,0 +1,119 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# The tests look for the two documentation repositories next to this one (the
+# generated TypeScript files, the doctest of every code block), so all three are
+# checked out side by side: hana/, haja-docs/ and kanade-docs/.
+jobs:
+  test:
+    name: Go tests (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: hana
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: hana
+      - uses: actions/checkout@v7
+        with:
+          repository: soumt-r/haja-document
+          path: haja-docs
+      - uses: actions/checkout@v7
+        with:
+          repository: soumt-r/kanade-document
+          path: kanade-docs
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: hana/go.mod
+          cache-dependency-path: hana/go.sum
+      - run: go vet ./...
+      - run: go build ./...
+      - run: go test ./...
+
+  cross-build:
+    name: Builds without cgo
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hana
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: hana
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: hana/go.mod
+          cache-dependency-path: hana/go.sum
+      - name: Build hana and hana-runtime for every platform
+        env:
+          CGO_ENABLED: "0"
+        run: |
+          for target in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64; do
+            echo "== $target"
+            GOOS=${target%/*} GOARCH=${target#*/} go build -o /dev/null .
+            GOOS=${target%/*} GOARCH=${target#*/} go build -o /dev/null ./cmd/hana-runtime
+          done
+
+  docs:
+    name: Docs sites agree with the engine
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: hana
+      - uses: actions/checkout@v7
+        with:
+          repository: soumt-r/haja-document
+          path: haja-docs
+      - uses: actions/checkout@v7
+        with:
+          repository: soumt-r/kanade-document
+          path: kanade-docs
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: hana/go.mod
+          cache-dependency-path: hana/go.sum
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            haja-docs/package-lock.json
+            kanade-docs/package-lock.json
+      - name: Build hana
+        working-directory: hana
+        run: go build -o hana .
+      - name: Generated files are current
+        working-directory: hana
+        run: |
+          go run ./cmd/errsgen -check ../haja-docs/src/utils/haja/errCatalog.ts ../kanade-docs/src/utils/kanade/errCatalog.ts
+          go run ./cmd/stdgen -check -haja ../haja-docs/src/utils/haja/stdNames.ts -kanade ../kanade-docs/src/utils/kanade/stdNames.ts
+          go run ./cmd/lspgen -check -haja ../haja-docs/src/utils/haja/lspKeywords.ts -kanade ../kanade-docs/src/utils/kanade/lspKeywords.ts
+      - name: Every code block in the docs runs
+        working-directory: hana
+        run: |
+          go run ./cmd/doctest ../haja-docs/src/pages/docs
+          go run ./cmd/doctest ../kanade-docs/src/pages/docs
+      - name: The browser engines print what hana prints (Haja)
+        working-directory: haja-docs
+        run: |
+          npm ci
+          npx tsx compare_tests.ts
+      - name: The browser engines print what hana prints (Kanade)
+        working-directory: kanade-docs
+        run: |
+          npm ci
+          npx tsx compare_tests.ts

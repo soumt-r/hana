@@ -3,6 +3,7 @@ package lsp
 import (
 	"encoding/json"
 	"os"
+	"strings"
 	"testing"
 
 	hajalexer "github.com/soumt-r/hana/lexer/haja"
@@ -178,7 +179,7 @@ func TestGeneratedTypeScriptKeywordsAreCurrent(t *testing.T) {
 			t.Logf("skipping %s: %v", rel, err)
 			continue
 		}
-		if string(got) != TypeScriptKeywords(lang) {
+		if strings.ReplaceAll(string(got), "\r\n", "\n") != TypeScriptKeywords(lang) {
 			t.Errorf("%s is stale — run: go run ./cmd/lspgen -haja <file> -kanade <file>", rel)
 		}
 	}

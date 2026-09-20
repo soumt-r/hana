@@ -184,7 +184,7 @@ func TestGeneratedTypeScriptCatalogsAreCurrent(t *testing.T) {
 			t.Logf("skipping %s: %v", rel, err)
 			continue
 		}
-		if string(got) != want {
+		if strings.ReplaceAll(string(got), "\r\n", "\n") != want {
 			t.Errorf("%s is stale — run: go run ./cmd/errsgen <both errCatalog.ts paths>", rel)
 		}
 	}
