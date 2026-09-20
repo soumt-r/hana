@@ -413,6 +413,8 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 						if setter.Param != nil {
 							setterEnv.DeclareSym(setter.Param.Symbol(), val)
 						}
+						prev := i.enterModule(i.classOf(hajaObj).Module)
+						defer func() { i.scope = prev }()
 						for _, bs := range setter.Body {
 							_, err := i.Execute(bs, setterEnv)
 							if err != nil {

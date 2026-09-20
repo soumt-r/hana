@@ -340,6 +340,7 @@ func (c *Compiler) compileLocalImport(s *ast.ImportStatement) {
 	}
 	c.errors = append(c.errors, sub.errors...)
 
+	c.exportModule(s.Module, prog, sub)
 	c.mergeImported(s.Module, s.All, s.Items, prog, sub)
 }
 

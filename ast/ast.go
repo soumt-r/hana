@@ -370,6 +370,10 @@ type ClassDeclaration struct {
 	Interfaces []*TypeReference
 	Body       []Statement
 	IsAbstract bool // declared with the abstract verb (밑설계하자); cannot be instantiated
+
+	// Module is the module the class was imported from (the interpreter that
+	// ran it), or nil for the program's own classes. See vm's module scope.
+	Module interface{}
 }
 
 func (c *ClassDeclaration) TokenLiteral() string { return "Class" }
@@ -546,6 +550,9 @@ type FunctionDeclaration struct {
 	AccessModifier string // "public", "private", "protected"
 	IsStatic       bool
 	ReturnType     *TypeReference
+
+	// Module is the module the function was imported from, or nil (see ClassDeclaration).
+	Module interface{}
 }
 
 func (f *FunctionDeclaration) TokenLiteral() string { return f.Name.Value }
@@ -572,6 +579,9 @@ type ConstructorDeclaration struct {
 	Id     *Identifier
 	Params []*Parameter
 	Body   []Statement
+
+	// Module is the module the constructor was imported from, or nil (see ClassDeclaration).
+	Module interface{}
 }
 
 func (cd *ConstructorDeclaration) statementNode() {}

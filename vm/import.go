@@ -90,9 +90,11 @@ func (i *Interpreter) importBuiltin(s *ast.ImportStatement, env *Environment) (i
 			return nil, errs.New(errs.ImportPackageSyntax, s.Module, entryPath)
 		}
 		sub := i.newSubInterpreter(prog, i.Config)
+		markModule(prog, sub)
 		if err := sub.Run(); err != nil {
 			return nil, err
 		}
+		i.bringModuleTypes(sub, prog)
 		return nil, i.bindImports(sub, prog, s, remaining, s.Module, env)
 	}
 	// 패키지 폴더는 있는데 이 언어의 진입점만 없는 경우: 다른 언어용 진입점이 있는지 확인한다.
@@ -158,9 +160,11 @@ func (i *Interpreter) importLocalFile(s *ast.ImportStatement, env *Environment) 
 	}
 
 	sub := i.newSubInterpreter(prog, cfg)
+	markModule(prog, sub)
 	if err := sub.Run(); err != nil {
 		return nil, err
 	}
+	i.bringModuleTypes(sub, prog)
 	return nil, i.bindImports(sub, prog, s, s.Items, filename, env)
 }
 

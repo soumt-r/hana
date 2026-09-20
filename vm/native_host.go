@@ -68,7 +68,9 @@ func (i *Interpreter) runFunctionBody(fn *ast.FunctionDeclaration, args []interf
 	if err := i.bindParams(fn.Params, args, env); err != nil {
 		return nil, err
 	}
+	prev := i.enterModule(fn.Module)
 	result, err := i.runStatements(fn.Body.Statements, env)
+	i.scope = prev
 	if err != nil || fn.ReturnType == nil {
 		return result, err
 	}

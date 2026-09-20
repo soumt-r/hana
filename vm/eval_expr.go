@@ -175,6 +175,10 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 			}
 		}
 
+		if v, ok := i.scopedFunction(e.Name); ok {
+			return v, nil
+		}
+
 		var fnDecl *ast.FunctionDeclaration
 		for _, stmt := range i.ast.Statements {
 			if f, ok := stmt.(*ast.FunctionDeclaration); ok && f.Name.Value == e.Name {
@@ -208,28 +212,8 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 		}
 		obj := NewHajaObject(clsName)
 
-		// 속성 초기화 (VariableDeclaration 및 Assignment 처리)
-		for _, stmt := range cls.Body {
-			if vdecl, ok := stmt.(*ast.VariableDeclaration); ok && !vdecl.IsStatic {
-				val, err := i.Evaluate(vdecl.Value, env)
-				if err != nil {
-					return nil, err
-				}
-				if vdecl.TypeRef != nil {
-					if err := typecheck.Check(i.Config.Types, vdecl.TypeRef.Name, vdecl.Name.Value, val, i.host()); err != nil {
-						return nil, err
-					}
-				}
-				obj.Props[vdecl.Name.Value] = val
-			} else if assign, ok := stmt.(*ast.Assignment); ok {
-				if id, ok := assign.Target.(*ast.Identifier); ok {
-					val, err := i.Evaluate(assign.Value, env)
-					if err != nil {
-						return nil, err
-					}
-					obj.Props[id.Value] = val
-				}
-			}
+		if err := i.initFields(cls, obj, env); err != nil {
+			return nil, err
 		}
 
 		// 생성자 호출. 자식 클래스에 생성자가 없으면 부모 체인에서 찾아 자동 호출한다
@@ -255,20 +239,8 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 				}
 				args[idx] = argVal
 			}
-			ctorEnv := NewEnvironment(i.GlobalEnv)
-			ctorEnv.this = obj
-			ctorEnv.DeclareSym(selfClassSym, clsName)
-			if err := i.bindParams(ctor.Params, args, ctorEnv); err != nil {
+			if err := i.runConstructor(ctor, obj, clsName, args); err != nil {
 				return nil, err
-			}
-			for _, bs := range ctor.Body {
-				_, err := i.Execute(bs, ctorEnv)
-				if err != nil {
-					if _, ok := err.(*ReturnValue); ok {
-						break
-					}
-					return nil, err
-				}
 			}
 		}
 
@@ -608,6 +580,8 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 				getterEnv.this = hajaObj
 				getterEnv.DeclareSym(thisSym, hajaObj)
 				getterEnv.DeclareSym(selfClassSym, hajaObj.ClassName)
+				prev := i.enterModule(i.classOf(hajaObj).Module)
+				defer func() { i.scope = prev }()
 				for _, bs := range getterBody {
 					_, err := i.Execute(bs, getterEnv)
 					if err != nil {

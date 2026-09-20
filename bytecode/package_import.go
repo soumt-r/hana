@@ -121,13 +121,8 @@ func (c *Compiler) compilePackageImport(s *ast.ImportStatement, items []ast.Impo
 		}
 	}
 	c.errors = append(c.errors, sub.errors...)
+	binds = c.exportModule(s.Module, prog, sub)
 	c.mergeImported(s.Module, s.All, items, prog, sub)
-
-	for _, stmt := range prog.Statements {
-		if st, isImport := stmt.(*ast.ImportStatement); isImport && st.IsBuiltin {
-			binds = append(binds, sub.pkgBinds[st]...)
-		}
-	}
 	return binds, true
 }
 
