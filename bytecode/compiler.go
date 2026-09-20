@@ -812,15 +812,16 @@ func (c *Compiler) compileForRange(chunk *Chunk, s *ast.ForRangeStatement) {
 		}
 	}
 
+	counter := c.loopCounter(s.Body, loopVar, tmp)
 	c.compileExpression(chunk, s.Start)
-	chunk.emit(SET_VAR, chunk.addName(loopVar))
+	chunk.emit(SET_VAR, chunk.addName(counter))
 
 	c.compileExpression(chunk, s.End)
 	chunk.emit(SET_VAR, chunk.addName(endName))
 
 	// step = (end < start) ? -1 : 1
 	chunk.emit(LOAD_VAR, chunk.addName(endName))
-	chunk.emit(LOAD_VAR, chunk.addName(loopVar))
+	chunk.emit(LOAD_VAR, chunk.addName(counter))
 	chunk.emit(LT, nil)
 	jPositive := chunk.emit(JUMP_IF_FALSE, nil)
 	chunk.emit(PUSH_CONST, chunk.addConstant(-1.0))
@@ -833,7 +834,7 @@ func (c *Compiler) compileForRange(chunk *Chunk, s *ast.ForRangeStatement) {
 	c.pushLoop(c.bodyScope(s.Body))
 	loopStart := chunk.nextIndex()
 	chunk.emit(LOAD_VAR, chunk.addName(endName))
-	chunk.emit(LOAD_VAR, chunk.addName(loopVar))
+	chunk.emit(LOAD_VAR, chunk.addName(counter))
 	chunk.emit(SUB, nil)
 	chunk.emit(LOAD_VAR, chunk.addName(stepName))
 	chunk.emit(MUL, nil)
@@ -841,17 +842,36 @@ func (c *Compiler) compileForRange(chunk *Chunk, s *ast.ForRangeStatement) {
 	chunk.emit(GTE, nil)
 	jEnd := chunk.emit(JUMP_IF_FALSE, nil)
 
+	c.copyCounter(chunk, counter, loopVar)
 	c.compileScopedBody(chunk, s.Body)
 
-	chunk.emit(LOAD_VAR, chunk.addName(loopVar))
+	chunk.emit(LOAD_VAR, chunk.addName(counter))
 	chunk.emit(LOAD_VAR, chunk.addName(stepName))
 	chunk.emit(ADD, nil)
-	chunk.emit(SET_VAR, chunk.addName(loopVar))
+	chunk.emit(SET_VAR, chunk.addName(counter))
 	chunk.emit(JUMP, loopStart)
 
 	chunk.patchOperand(jEnd, chunk.nextIndex())
 	c.popLoopAndPatchBreaks(chunk)
 	chunk.emit(POP_SCOPE, chunk.addName(outerScope))
+}
+
+// loopCounter is the variable a counting loop keeps its position in: the loop variable
+// itself when the body cannot assign it, otherwise a hidden one (see loopvar.go).
+func (c *Compiler) loopCounter(body *ast.BlockStatement, loopVar, tmp string) string {
+	if writesVariable(body, loopVar) {
+		return tmp + "_i"
+	}
+	return loopVar
+}
+
+// copyCounter starts a pass of a loop that counts in a hidden variable: the loop variable
+// is the counter's value for this pass.
+func (c *Compiler) copyCounter(chunk *Chunk, counter, loopVar string) {
+	if counter != loopVar {
+		chunk.emit(LOAD_VAR, chunk.addName(counter))
+		chunk.emit(SET_VAR, chunk.addName(loopVar))
+	}
 }
 
 // compileConstantRange is compileForRange for a loop whose start and end are numbers written
@@ -861,22 +881,24 @@ func (c *Compiler) compileConstantRange(chunk *Chunk, s *ast.ForRangeStatement, 
 	if end < start {
 		step, test = -1.0, GTE
 	}
+	counter := c.loopCounter(s.Body, loopVar, c.newTempName())
 	chunk.emit(PUSH_CONST, chunk.addConstant(start))
-	chunk.emit(SET_VAR, chunk.addName(loopVar))
+	chunk.emit(SET_VAR, chunk.addName(counter))
 
 	c.pushLoop(c.bodyScope(s.Body))
 	loopStart := chunk.nextIndex()
-	chunk.emit(LOAD_VAR, chunk.addName(loopVar))
+	chunk.emit(LOAD_VAR, chunk.addName(counter))
 	chunk.emit(PUSH_CONST, chunk.addConstant(end))
 	chunk.emit(test, nil)
 	jEnd := chunk.emit(JUMP_IF_FALSE, nil)
 
+	c.copyCounter(chunk, counter, loopVar)
 	c.compileScopedBody(chunk, s.Body)
 
-	chunk.emit(LOAD_VAR, chunk.addName(loopVar))
+	chunk.emit(LOAD_VAR, chunk.addName(counter))
 	chunk.emit(PUSH_CONST, chunk.addConstant(step))
 	chunk.emit(ADD, nil)
-	chunk.emit(SET_VAR, chunk.addName(loopVar))
+	chunk.emit(SET_VAR, chunk.addName(counter))
 	chunk.emit(JUMP, loopStart)
 
 	chunk.patchOperand(jEnd, chunk.nextIndex())
