@@ -108,7 +108,7 @@ func TestClassesUpcastingAndInterfaces(t *testing.T) {
 }
 
 func TestDescribeAndErrors(t *testing.T) {
-	if Describe(ko, 3.0, nil) != "숫자" || Describe(ko, nil, nil) != "비어있음" || Describe(ko, []interface{}{}, nil) != "목록" {
+	if Describe(&ko, 3.0, nil) != "숫자" || Describe(&ko, nil, nil) != "비어있음" || Describe(&ko, []interface{}{}, nil) != "목록" {
 		t.Error("Describe should use the language's names")
 	}
 	if err := Check(ko, "숫자", "나이", "스물", nil); err == nil {
