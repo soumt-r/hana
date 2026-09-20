@@ -1,7 +1,11 @@
 package pkg
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -16,10 +20,24 @@ const commitFile = ".hana-commit"
 type Installer struct {
 	Src  Source
 	Proj *Project
-	// Log, when set, is told about progress: "download" with (path, version).
+	// Log, when set, is told about progress: "download" with (path, version),
+	// "native" with (path, platform), "script" with (path, command line) just
+	// before an install script runs, and "skipScript" with (path, command line)
+	// for one that was not run because the project does not trust the package.
 	Log func(event string, args ...interface{})
+	// Fetch opens a web address (the prebuilt native libraries a package declares).
+	// It is a field so that this package does not need net/http, which would
+	// make the small hana-runtime much bigger.
+	Fetch func(url string) (io.ReadCloser, error)
+	// Out is where an install script's output goes (default: standard error).
+	Out io.Writer
+	// Approve names packages whose changed install script the user approves now
+	// (hana add <path> --allow-scripts); the lock file then records the new one.
+	Approve map[string]bool
 
-	tags map[string][]Tag
+	tags    map[string][]Tag
+	locked  Lock
+	scripts map[string]string // path -> hash of the script that was run or approved
 }
 
 func (in *Installer) log(event string, args ...interface{}) {
@@ -67,7 +85,7 @@ func (in *Installer) ensure(path string, v Version, wantCommit string) (dir, com
 		if wantCommit != "" && commit != wantCommit {
 			return "", "", newError(CommitMismatch, path, v.String(), shortCommit(wantCommit), shortCommit(commit))
 		}
-		return dir, commit, nil
+		return dir, commit, in.prepare(path, v, dir)
 	}
 	tags, err := in.tagsOf(path)
 	if err != nil {
@@ -91,7 +109,106 @@ func (in *Installer) ensure(path string, v Version, wantCommit string) (dir, com
 	if err := os.WriteFile(filepath.Join(dir, commitFile), []byte(commit+"\n"), 0o644); err != nil {
 		return "", "", err
 	}
-	return dir, commit, nil
+	return dir, commit, in.prepare(path, v, dir)
+}
+
+// scriptFile, inside a package folder, holds the hash of the install script that
+// has run there.
+const scriptFile = ".hana-script"
+
+// prepare finishes a downloaded package: it fetches the prebuilt native library
+// the manifest declares for this platform, and runs the install script when the
+// project trusts the package.
+func (in *Installer) prepare(path string, v Version, dir string) error {
+	m, err := manifestOf(path, v.String(), dir)
+	if err != nil || m == nil {
+		return err
+	}
+	if err := in.fetchNative(path, m, dir); err != nil {
+		return err
+	}
+	cmd := m.Scripts["install"]
+	if len(cmd) == 0 {
+		return nil
+	}
+	line := strings.Join(cmd, " ")
+	hash := hashScript(cmd)
+	if !in.trusts(path) {
+		in.log("skipScript", path, line)
+		return nil
+	}
+	if want := in.locked[path].Scripts; want != "" && want != hash && !in.Approve[path] {
+		return newError(ScriptChanged, path, v.String())
+	}
+	if in.scripts == nil {
+		in.scripts = map[string]string{}
+	}
+	in.scripts[path] = hash
+	if done, err := os.ReadFile(filepath.Join(dir, scriptFile)); err == nil && strings.TrimSpace(string(done)) == hash {
+		return nil
+	}
+	in.log("script", path, line)
+	c := exec.Command(cmd[0], cmd[1:]...)
+	c.Dir = dir
+	c.Stdout, c.Stderr = in.out(), in.out()
+	if err := c.Run(); err != nil {
+		return newError(ScriptFailed, path, err.Error())
+	}
+	return os.WriteFile(filepath.Join(dir, scriptFile), []byte(hash+"\n"), 0o644)
+}
+
+func (in *Installer) out() io.Writer {
+	if in.Out != nil {
+		return in.Out
+	}
+	return os.Stderr
+}
+
+func (in *Installer) trusts(path string) bool {
+	return in.Approve[path] || in.trustedInProject(path)
+}
+
+func hashScript(cmd []string) string {
+	sum := sha256.Sum256([]byte(strings.Join(cmd, "\x00")))
+	return hex.EncodeToString(sum[:])
+}
+
+// fetchNative downloads the native library the manifest lists for this platform
+// when it is not in the package folder already, and checks its sha256.
+func (in *Installer) fetchNative(path string, m *Manifest, dir string) error {
+	platform := Platform()
+	n, ok := m.NativeFor(platform)
+	if !ok || n.URL == "" {
+		return nil
+	}
+	file := filepath.Join(dir, filepath.FromSlash(n.File))
+	if _, err := os.Stat(file); err == nil {
+		return nil
+	}
+	if n.SHA256 == "" {
+		return newError(NativeNoHash, path, platform)
+	}
+	if in.Fetch == nil {
+		return newError(NativeDownloadFail, path, n.URL, "no way to download")
+	}
+	in.log("native", path, platform)
+	body, err := in.Fetch(n.URL)
+	if err != nil {
+		return newError(NativeDownloadFail, path, n.URL, err.Error())
+	}
+	defer body.Close()
+	data, err := io.ReadAll(body)
+	if err != nil {
+		return newError(NativeDownloadFail, path, n.URL, err.Error())
+	}
+	sum := sha256.Sum256(data)
+	if !strings.EqualFold(hex.EncodeToString(sum[:]), n.SHA256) {
+		return newError(NativeHashMismatch, path, platform)
+	}
+	if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(file, data, 0o755)
 }
 
 // manifestOf reads a package folder's manifest and checks it is the package it
@@ -113,6 +230,9 @@ func manifestOf(path, version, dir string) (*Manifest, error) {
 // solve). It downloads what it looks at, and returns the lock for it. Packages the
 // project replaces with a local folder are followed but not locked.
 func (in *Installer) Resolve(roots map[string]string) (Lock, error) {
+	if in.locked == nil {
+		in.locked, _ = LoadLock(in.Proj.Dir)
+	}
 	type node struct{ path, version string }
 	visited := map[node]bool{}
 	best := map[string]Version{}
@@ -193,7 +313,7 @@ func (in *Installer) Resolve(roots map[string]string) (Lock, error) {
 
 	lock := Lock{}
 	for p, v := range best {
-		lock[p] = LockEntry{Version: v.String(), Commit: commits[node{p, v.String()}]}
+		lock[p] = LockEntry{Version: v.String(), Commit: commits[node{p, v.String()}], Scripts: in.scripts[p]}
 	}
 	return lock, nil
 }
@@ -219,6 +339,10 @@ func (in *Installer) Add(path string, version *Version) (Version, error) {
 		in.Proj.Dependencies = map[string]string{}
 	}
 	in.Proj.Dependencies[path] = v.String()
+	if in.Approve[path] && !in.trustedInProject(path) {
+		in.Proj.TrustedScripts = append(in.Proj.TrustedScripts, path)
+		sort.Strings(in.Proj.TrustedScripts)
+	}
 	lock, err := in.Resolve(in.Proj.Dependencies)
 	if err != nil {
 		return Version{}, err
@@ -237,6 +361,7 @@ func (in *Installer) Install() (Lock, error) {
 	if err != nil {
 		return nil, err
 	}
+	in.locked = lock
 	if !in.covers(lock) {
 		lock, err = in.Resolve(in.Proj.Dependencies)
 		if err != nil {
@@ -256,7 +381,29 @@ func (in *Installer) Install() (Lock, error) {
 			return nil, err
 		}
 	}
+	changed := false
+	for path, hash := range in.scripts {
+		if e, ok := lock[path]; ok && e.Scripts != hash {
+			e.Scripts = hash
+			lock[path] = e
+			changed = true
+		}
+	}
+	if changed {
+		if err := SaveLock(in.Proj.Dir, lock); err != nil {
+			return nil, err
+		}
+	}
 	return lock, nil
+}
+
+func (in *Installer) trustedInProject(path string) bool {
+	for _, p := range in.Proj.TrustedScripts {
+		if p == path {
+			return true
+		}
+	}
+	return false
 }
 
 func (in *Installer) covers(lock Lock) bool {

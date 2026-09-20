@@ -18,6 +18,12 @@ const (
 	BadManifest    Code = "BadManifest"    // path, version, detail
 	Circular       Code = "Circular"       // chain like a -> b -> a
 	NotPath        Code = "NotPath"        // what was given
+
+	NativeNoHash       Code = "NativeNoHash"       // path, platform
+	NativeDownloadFail Code = "NativeDownloadFail" // path, url, detail
+	NativeHashMismatch Code = "NativeHashMismatch" // path, platform
+	ScriptChanged      Code = "ScriptChanged"      // path, version
+	ScriptFailed       Code = "ScriptFailed"       // path, detail
 )
 
 // Error is a package-manager failure.
@@ -39,6 +45,12 @@ var english = map[Code]string{
 	BadManifest:    "the hana.pkg.json of %s %s is not valid: %s",
 	Circular:       "circular dependency: %s",
 	NotPath:        "%q is not a package path like github.com/owner/repo",
+
+	NativeNoHash:       "%s declares a native library download for %s without a sha256",
+	NativeDownloadFail: "could not download the native library of %s from %s: %s",
+	NativeHashMismatch: "the native library of %s for %s does not match its sha256",
+	ScriptChanged:      "the install script of %[1]s %[2]s is not the one that was approved; run hana add %[1]s --allow-scripts to approve the new one",
+	ScriptFailed:       "the install script of %s failed: %s",
 }
 
 func (e *Error) Error() string { return fmt.Sprintf(english[e.Code], e.Args...) }

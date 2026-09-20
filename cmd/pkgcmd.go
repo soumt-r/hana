@@ -3,8 +3,11 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/soumt-r/hana/pkg"
 	"github.com/spf13/cobra"
@@ -23,6 +26,9 @@ var addCmd = &cobra.Command{
 			path, version = path[:at], &v
 		}
 		in := newInstaller(true)
+		if allow, _ := cmd.Flags().GetBool("allow-scripts"); allow {
+			in.Approve = map[string]bool{path: true}
+		}
 		v, err := in.Add(path, version)
 		if err != nil {
 			fatalPkg(err)
@@ -114,10 +120,34 @@ func newInstaller(create bool) *pkg.Installer {
 		proj = &pkg.Project{Dir: dir}
 	}
 	return &pkg.Installer{Src: pkg.Git{}, Proj: proj, Log: func(event string, args ...interface{}) {
-		if event == "download" {
+		switch event {
+		case "download":
 			fmt.Println("   " + T("pkg.download", args...))
+		case "native":
+			fmt.Println("   " + T("pkg.native", args...))
+		case "script":
+			fmt.Println("   " + T("pkg.script", args...))
+		case "skipScript":
+			fmt.Println("   " + T("pkg.skipScript", args...))
 		}
-	}}
+	}, Fetch: fetchHTTPS, Out: os.Stdout}
+}
+
+// fetchHTTPS opens an https address for the installer (native libraries).
+func fetchHTTPS(url string) (io.ReadCloser, error) {
+	if !strings.HasPrefix(url, "https://") {
+		return nil, fmt.Errorf("%s", T("pkg.httpsOnly"))
+	}
+	client := &http.Client{Timeout: 5 * time.Minute}
+	resp, err := client.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		resp.Body.Close()
+		return nil, fmt.Errorf("HTTP %d", resp.StatusCode)
+	}
+	return http.MaxBytesReader(nil, resp.Body, 256<<20), nil
 }
 
 // fatalPkg ends the command with a package-manager error in the UI language.
@@ -130,6 +160,7 @@ func fatalPkg(err error) {
 }
 
 func init() {
+	addCmd.Flags().Bool("allow-scripts", false, "")
 	for _, c := range []*cobra.Command{addCmd, installCmd, removeCmd, listCmd} {
 		rootCmd.AddCommand(c)
 	}

@@ -36,6 +36,11 @@ type Manifest struct {
 	// Dependencies maps the git path of each package this one needs to the lowest
 	// version it accepts.
 	Dependencies map[string]string `json:"dependencies"`
+	// Scripts holds commands the installer may run. Only "install" exists: a
+	// command (program and arguments, no shell) run in the package folder once it
+	// is downloaded, for a package whose native library has to be built. It runs
+	// only when the project trusts the package (Project.TrustedScripts).
+	Scripts map[string][]string `json:"scripts"`
 }
 
 // NativeFile is one platform's native library: File is its path inside the
@@ -99,6 +104,14 @@ func (m *Manifest) validate() error {
 		}
 		if n.SHA256 != "" && !sha256Re.MatchString(n.SHA256) {
 			return fmt.Errorf("native.%s.sha256 must be 64 hex digits", platform)
+		}
+	}
+	for name, cmd := range m.Scripts {
+		if name != "install" {
+			return fmt.Errorf("scripts: unknown script %q (only install exists)", name)
+		}
+		if len(cmd) == 0 || cmd[0] == "" {
+			return fmt.Errorf("scripts.%s is empty", name)
 		}
 	}
 	for path, v := range m.Dependencies {
