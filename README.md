@@ -5,38 +5,93 @@
   </picture>
 </h1>
 
-<p align="center"><a href="README.md">한국어</a> | <a href="README.ja.md">日本語</a></p>
+<p align="center">
+  <a href="README.md">한국어</a> | <a href="README.ja.md">日本語</a>
+</p>
 
-<p align="center"><sub>이름 <b>하나</b>는 숫자 하나(one)와 花(はな, 꽃)를 함께 뜻해요.</sub></p>
+<p align="center">
+  <a href="https://github.com/soumt-r/hana/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/soumt-r/hana/actions/workflows/ci.yml/badge.svg"></a>
+  <img alt="Go 1.25+" src="https://img.shields.io/badge/go-1.25%2B-00ADD8?logo=go&logoColor=white">
+  <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-ff5c8a"></a>
+</p>
 
-**Hana** is a Go implementation of two programming languages: **Haja** (하자, written in Korean) and **Kanade** (カナデ, written in Japanese). It is the interpreter, the bytecode compiler and VM, the command line tool, and the language server, in one binary.
+<p align="center">
+  <b>Hana</b> runs two programming languages written in Korean and Japanese:<br>
+  <b>Haja</b> (하자) and <b>Kanade</b> (カナデ). One Go binary.<br>
+  <sub>이름 <b>하나</b>는 숫자 하나(one)와 花(はな, 꽃)를 함께 뜻해요.</sub>
+</p>
 
-하자(Haja)와 카나데(Kanade)를 위한 Go 구현이에요. 인터프리터, 바이트코드 컴파일러와 VM, 명령줄 도구, 언어 서버가 바이너리 하나에 들어 있어요.
+<br>
+
+<table>
+<tr>
+<th align="center">하자 (Haja) · 한국어</th>
+<th align="center">カナデ (Kanade) · 日本語</th>
+</tr>
+<tr>
+<td valign="top">
 
 ```haja
-'이름'을 [문자열]인 "하자"로 정하자
-틀"안녕, {'이름'}!"을 출력하자
+<인사>를 만들자 ([문자열]인 '이름'):
+    틀"안녕, {'이름'}!"을 출력하자
+
+'이름들'을 [(문자열)목록]인 ["하자", "카나데"]로 정하자
+'이름들'의 '이름'마다 반복하자:
+    <인사>('이름')을 실행하자
 ```
+
+</td>
+<td valign="top">
 
 ```kanade
-『名前』を【文字列】の「カナデ」にしよう
-枠「こんにちは、{『名前』}！」を出力しよう
+〈挨拶〉を作ろう(【文字列】の『名前』):
+    枠「こんにちは、{『名前』}！」を出力しよう
+
+『名前たち』を【(文字列)リスト】の【「ハジャ」,「カナデ」】にしよう
+『名前たち』の『名前』ごとに繰り返そう:
+    〈挨拶〉(『名前』)を実行しよう
 ```
 
-## 만들고 실행하기
+</td>
+</tr>
+</table>
+
+두 언어는 같은 AST를 만들어서, 어느 쪽으로 쓰든 실행 엔진 하나를 함께 써요.
+
+<br>
+
+<table>
+<tr>
+<td width="33%" valign="top"><b>두 가지 실행 방식</b><br>트리워킹 인터프리터와 바이트코드 컴파일러·VM(<code>--bc</code>)이 언제나 같은 결과를 내요.</td>
+<td width="33%" valign="top"><b>실행 파일 하나로</b><br><code>hana pack</code>이 프로그램을 작은 런타임(약 6MB)과 함께 실행 파일 하나로 묶어요. 다른 운영체제용도 만들 수 있어요.</td>
+<td width="33%" valign="top"><b>에디터와 브라우저</b><br>언어 서버(LSP)가 들어 있고, 문서 사이트의 실행 버튼은 같은 엔진을 옮긴 브라우저 엔진으로 돌아요.</td>
+</tr>
+<tr>
+<td valign="top"><b>표준 모듈과 패키지</b><br>수학·JSON·정규식·파일·HTTP 같은 표준 모듈과, git 경로로 받는 패키지 매니저가 있어요.</td>
+<td valign="top"><b>세 언어의 오류 문구</b><br>오류는 한국어·일본어·영어로 나오고, 스크립트의 언어를 따라가요.</td>
+<td valign="top"><b>선언한 타입을 검사해요</b><br><code>[숫자]</code>, <code>[(문자열)목록]</code>처럼 적은 타입은 실행 때 지켜져요.</td>
+</tr>
+</table>
+
+<br>
+
+## 빠른 시작
 
 [Go](https://go.dev/dl/) 1.25 이상이 필요해요.
 
 ```bash
-go build -o hana .
-./hana run hello.hj
+go build -o hana .                       # 윈도우에서는 hana.exe가 만들어져요
+./hana init hello                        # 시작 파일이 있는 새 프로젝트 (--lang kanade 도 있어요)
+./hana run hello/main.hj
 ```
 
-윈도우에서는 `hana.exe`가 만들어져요. 실행 파일 하나로 묶는 `hana pack`을 쓰려면 작은 런타임([`cmd/hana-runtime`](cmd/hana-runtime))도 `hana` 옆에 함께 두어야 해요.
+실행 파일 하나로 묶는 `hana pack`을 쓰려면 작은 런타임([`cmd/hana-runtime`](cmd/hana-runtime))도 `hana` 옆에 함께 두어야 해요.
 
 ```bash
 go build -ldflags="-s -w" -trimpath -o hana-runtime ./cmd/hana-runtime
 ```
+
+문서: [하자 문서](https://haja.soumt.moe) · [カナデ ドキュメント](https://kanade.soumt.moe)
 
 ## 명령
 
@@ -59,7 +114,7 @@ go build -ldflags="-s -w" -trimpath -o hana-runtime ./cmd/hana-runtime
 
 ## 언어와 표준 모듈
 
-하자는 `'나이'를 [숫자]인 20으로 정하자`처럼 타입을 대괄호로 쓰고, 조사(`을`, `를`, `로`, `의` …)가 문법의 일부인 언어예요. 카나데는 같은 구조를 일본어 어순으로 써요. 두 언어는 같은 AST를 만들어서, 실행 엔진은 하나를 함께 써요.
+하자는 `'나이'를 [숫자]인 20으로 정하자`처럼 타입을 대괄호로 쓰고, 조사(`을`, `를`, `로`, `의` …)가 문법의 일부인 언어예요. 카나데는 같은 구조를 일본어 어순으로 써요.
 
 임포트 없이 쓰는 것은 문법과 몇 가지 형변환뿐이고, 나머지는 `[모듈]에서 <도구>를 가져오자`로 가져와요.
 
@@ -86,7 +141,12 @@ go build -ldflags="-s -w" -trimpath -o hana-runtime ./cmd/hana-runtime
 
 네이티브 라이브러리는 각 패키지의 `native/`에서 `build.sh`(또는 `build.ps1`)로 만들어요. Go와 C 컴파일러(cgo)가 필요해요. `hana pack`은 프로그램이 쓰는 패키지의 라이브러리를 실행 파일 옆(`libraries/`)에 내보내거나, `--embed`로 실행 파일 안에 넣어요.
 
-## 폴더 구성
+## 저장소 안내
+
+<details>
+<summary><b>폴더 구성</b></summary>
+
+<br>
 
 | 폴더 | 내용 |
 | --- | --- |
@@ -94,22 +154,34 @@ go build -ldflags="-s -w" -trimpath -o hana-runtime ./cmd/hana-runtime
 | [`vm/`](vm), [`stdlib/`](stdlib) | 트리워킹 인터프리터와 그 표준 라이브러리 |
 | [`bytecode/`](bytecode), [`bcvm/`](bcvm), [`bcstdlib/`](bcstdlib) | 바이트코드 컴파일러, 스택 VM, 그 표준 라이브러리 |
 | [`std/`](std) | 표준 모듈의 이름표([`std.go`](std/std.go))와 공유 구현([`stdimpl/`](std/stdimpl)) |
+| [`value/`](value) | 목록처럼 참조로 다루는 값 |
 | [`errs/`](errs) | 세 언어(한국어·일본어·영어)로 나오는 오류 문구 카탈로그 |
 | [`typecheck/`](typecheck), [`symbol/`](symbol), [`strcat/`](strcat) | 타입 검사, 이름을 정수로 바꾼 Symbol, 긴 글자 이어붙이기 |
 | [`native/`](native), [`pkg/`](pkg), [`pack/`](pack), [`runner/`](runner) | 네이티브 라이브러리 로더, 패키지 매니페스트, 실행 파일로 묶기, 공통 실행 |
 | [`lsp/`](lsp) | 언어 서버(자동완성, 진단, 호버) |
 | [`cmd/`](cmd) | 명령줄과 개발 도구([`doctest`](cmd/doctest), [`errsgen`](cmd/errsgen), [`stdgen`](cmd/stdgen), [`lspgen`](cmd/lspgen)) |
-| [`packages/`](packages), [`tests/`](tests) | 함께 배포하는 패키지, 통합 테스트 |
+| [`packages/`](packages), [`tests/`](tests), [`bench/`](bench) | 함께 배포하는 패키지, 통합 테스트, 속도 측정용 프로그램 |
 
-## 테스트
+</details>
+
+<details>
+<summary><b>테스트와 속도 측정</b></summary>
+
+<br>
 
 ```bash
 go test ./...
+go test ./tests -run XXX -bench Programs -benchtime 4x     # bench/*.hj를 두 엔진에서 재요
 ```
 
-네이티브 라이브러리를 실제로 불러 보는 테스트는 C 컴파일러가 없으면 건너뛰어요. 트리워킹 인터프리터와 바이트코드 VM이 같은 결과를 내는지 확인하는 테스트가 많아요. 두 엔진은 언제나 같게 동작해야 해요. [`bench.hj`](bench.hj)는 두 엔진의 속도를 비교하는 부하 프로그램이에요(`hana run -t bench.hj`와 `hana run --bc -t bench.hj`).
+네이티브 라이브러리를 실제로 불러 보는 테스트는 C 컴파일러가 없으면 건너뛰어요. 트리워킹 인터프리터와 바이트코드 VM이 같은 결과를 내는지 확인하는 테스트가 많아요. 두 엔진은 언제나 같게 동작해야 해요. [`bench.hj`](bench.hj)는 `hana run -t bench.hj`와 `hana run --bc -t bench.hj`로 두 엔진의 속도를 비교하는 부하 프로그램이에요.
 
-## 문서 사이트와 브라우저 엔진
+</details>
+
+<details>
+<summary><b>문서 사이트와 브라우저 엔진</b></summary>
+
+<br>
 
 문서 사이트는 별도 저장소예요. 사이트의 실행 버튼은 이 저장소의 엔진을 TypeScript로 옮긴 브라우저 엔진을 써요.
 
@@ -129,9 +201,16 @@ go run ./cmd/doctest ../kanade-docs/src/pages/docs
 
 오류 문구, 표준 모듈 이름표, 자동완성 키워드는 여기서 만든 파일을 문서 저장소가 가져다 써요([`cmd/errsgen`](cmd/errsgen), [`cmd/stdgen`](cmd/stdgen), [`cmd/lspgen`](cmd/lspgen)). 옆에 문서 저장소가 있으면 `go test`가 그 파일이 최신인지도 검사해요.
 
-## 개발 노트
+</details>
+
+<details>
+<summary><b>개발 노트</b></summary>
+
+<br>
 
 내부 구조와 지켜야 할 규칙(오류 문구를 새로 넣는 법, 표준 함수를 추가하는 순서, 두 엔진을 맞추는 법 등)은 [CLAUDE.md](CLAUDE.md)에 정리해 두었어요.
+
+</details>
 
 ## 라이선스
 

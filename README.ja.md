@@ -5,36 +5,93 @@
   </picture>
 </h1>
 
-<p align="center"><a href="README.md">한국어</a> | <a href="README.ja.md">日本語</a></p>
+<p align="center">
+  <a href="README.md">한국어</a> | <a href="README.ja.md">日本語</a>
+</p>
 
-<p align="center"><sub>名前の<b>ハナ</b>は、韓国語の「1つ(하나)」と、日本語の「花(はな)」の両方の意味を持ちます。</sub></p>
+<p align="center">
+  <a href="https://github.com/soumt-r/hana/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/soumt-r/hana/actions/workflows/ci.yml/badge.svg"></a>
+  <img alt="Go 1.25+" src="https://img.shields.io/badge/go-1.25%2B-00ADD8?logo=go&logoColor=white">
+  <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-ff5c8a"></a>
+</p>
 
-**Hana**は、2つのプログラミング言語 **Haja**（ハジャ、韓国語で書きます）と **Kanade**（カナデ、日本語で書きます）のGo実装です。インタープリタ、バイトコードコンパイラとVM、コマンドラインツール、言語サーバーが1つのバイナリに入っています。
+<p align="center">
+  <b>Hana</b> runs two programming languages written in Korean and Japanese:<br>
+  <b>Haja</b> (ハジャ) and <b>Kanade</b> (カナデ). One Go binary.<br>
+  <sub>名前の<b>ハナ</b>は、韓国語の「1つ(하나)」と、日本語の「花(はな)」の両方の意味を持ちます。</sub>
+</p>
+
+<br>
+
+<table>
+<tr>
+<th align="center">ハジャ (Haja) · 韓国語</th>
+<th align="center">カナデ (Kanade) · 日本語</th>
+</tr>
+<tr>
+<td valign="top">
 
 ```haja
-'이름'을 [문자열]인 "하자"로 정하자
-틀"안녕, {'이름'}!"을 출력하자
+<인사>를 만들자 ([문자열]인 '이름'):
+    틀"안녕, {'이름'}!"을 출력하자
+
+'이름들'을 [(문자열)목록]인 ["하자", "카나데"]로 정하자
+'이름들'의 '이름'마다 반복하자:
+    <인사>('이름')을 실행하자
 ```
+
+</td>
+<td valign="top">
 
 ```kanade
-『名前』を【文字列】の「カナデ」にしよう
-枠「こんにちは、{『名前』}！」を出力しよう
+〈挨拶〉を作ろう(【文字列】の『名前』):
+    枠「こんにちは、{『名前』}！」を出力しよう
+
+『名前たち』を【(文字列)リスト】の【「ハジャ」,「カナデ」】にしよう
+『名前たち』の『名前』ごとに繰り返そう:
+    〈挨拶〉(『名前』)を実行しよう
 ```
 
-## ビルドと実行
+</td>
+</tr>
+</table>
+
+2つの言語は同じASTを作るので、どちらで書いても実行エンジンを1つ共有します。
+
+<br>
+
+<table>
+<tr>
+<td width="33%" valign="top"><b>2つの実行方式</b><br>ツリーウォーク方式のインタープリタと、バイトコードコンパイラ・VM（<code>--bc</code>）は、いつも同じ結果になります。</td>
+<td width="33%" valign="top"><b>実行ファイル1つに</b><br><code>hana pack</code>が、プログラムを小さなランタイム（約6MB）と一緒に1つの実行ファイルにまとめます。ほかのOS用も作れます。</td>
+<td width="33%" valign="top"><b>エディターとブラウザ</b><br>言語サーバー（LSP）が入っていて、ドキュメントサイトの実行ボタンは、同じエンジンを移したブラウザエンジンで動きます。</td>
+</tr>
+<tr>
+<td valign="top"><b>標準モジュールとパッケージ</b><br>数学・JSON・正規表現・ファイル・HTTPなどの標準モジュールと、gitのパスで取ってくるパッケージマネージャーがあります。</td>
+<td valign="top"><b>3つの言語のエラー文言</b><br>エラーは韓国語・日本語・英語で出て、スクリプトの言語に合わせます。</td>
+<td valign="top"><b>宣言した型を検査します</b><br><code>【数字】</code>や<code>【(文字列)リスト】</code>のように書いた型は、実行時に守られます。</td>
+</tr>
+</table>
+
+<br>
+
+## クイックスタート
 
 [Go](https://go.dev/dl/) 1.25以上が必要です。
 
 ```bash
-go build -o hana .
-./hana run hello.knd
+go build -o hana .                       # Windowsでは hana.exe ができます
+./hana init hello --lang kanade          # スタートファイルのある新しいプロジェクト
+./hana run hello/main.knd
 ```
 
-Windowsでは`hana.exe`ができます。プログラムを1つの実行ファイルにまとめる`hana pack`を使うには、小さなランタイム（[`cmd/hana-runtime`](cmd/hana-runtime)）も`hana`の隣に置く必要があります。
+プログラムを1つの実行ファイルにまとめる`hana pack`を使うには、小さなランタイム（[`cmd/hana-runtime`](cmd/hana-runtime)）も`hana`の隣に置く必要があります。
 
 ```bash
 go build -ldflags="-s -w" -trimpath -o hana-runtime ./cmd/hana-runtime
 ```
+
+ドキュメント: [カナデ ドキュメント](https://kanade.soumt.moe) · [ハジャ ドキュメント](https://haja.soumt.moe)
 
 ## コマンド
 
@@ -57,7 +114,7 @@ go build -ldflags="-s -w" -trimpath -o hana-runtime ./cmd/hana-runtime
 
 ## 言語と標準モジュール
 
-Hajaは`'나이'를 [숫자]인 20으로 정하자`のように型を角括弧で書き、助詞（`을`、`를`、`로`、`의`など）が文法の一部になっている言語です。Kanadeは同じ構造を日本語の語順で書きます。2つの言語は同じASTを作るので、実行エンジンは1つを共有しています。
+Hajaは`'나이'를 [숫자]인 20으로 정하자`のように型を角括弧で書き、助詞（`을`、`를`、`로`、`의`など）が文法の一部になっている言語です。Kanadeは同じ構造を日本語の語順で書きます。
 
 インポートなしで使えるのは構文といくつかの型変換だけで、残りは`【モジュール】から〈道具〉を持ってこよう`で持ってきます。
 
@@ -84,7 +141,12 @@ Hajaは`'나이'를 [숫자]인 20으로 정하자`のように型を角括弧�
 
 ネイティブライブラリは、各パッケージの`native/`で`build.sh`（または`build.ps1`）を使って作ります。GoとCコンパイラ（cgo）が必要です。`hana pack`は、プログラムが使うパッケージのライブラリを実行ファイルの隣（`libraries/`）に書き出すか、`--embed`で実行ファイルの中に入れます。
 
-## フォルダ構成
+## リポジトリ案内
+
+<details>
+<summary><b>フォルダ構成</b></summary>
+
+<br>
 
 | フォルダ | 内容 |
 | --- | --- |
@@ -92,22 +154,34 @@ Hajaは`'나이'를 [숫자]인 20으로 정하자`のように型を角括弧�
 | [`vm/`](vm)、[`stdlib/`](stdlib) | ツリーウォーク方式のインタープリタとその標準ライブラリ |
 | [`bytecode/`](bytecode)、[`bcvm/`](bcvm)、[`bcstdlib/`](bcstdlib) | バイトコードコンパイラ、スタックVM、その標準ライブラリ |
 | [`std/`](std) | 標準モジュールの名前表（[`std.go`](std/std.go)）と共有実装（[`stdimpl/`](std/stdimpl)） |
+| [`value/`](value) | リストのように参照で扱う値 |
 | [`errs/`](errs) | 3つの言語（韓国語・日本語・英語）で出るエラー文言のカタログ |
 | [`typecheck/`](typecheck)、[`symbol/`](symbol)、[`strcat/`](strcat) | 型検査、名前を整数にしたSymbol、長い文字列の連結 |
 | [`native/`](native)、[`pkg/`](pkg)、[`pack/`](pack)、[`runner/`](runner) | ネイティブライブラリのローダー、パッケージのマニフェスト、実行ファイルへのパッケージ化、共通の実行処理 |
 | [`lsp/`](lsp) | 言語サーバー（補完、診断、ホバー） |
 | [`cmd/`](cmd) | コマンドラインと開発ツール（[`doctest`](cmd/doctest)、[`errsgen`](cmd/errsgen)、[`stdgen`](cmd/stdgen)、[`lspgen`](cmd/lspgen)） |
-| [`packages/`](packages)、[`tests/`](tests) | 一緒に配布するパッケージ、統合テスト |
+| [`packages/`](packages)、[`tests/`](tests)、[`bench/`](bench) | 一緒に配布するパッケージ、統合テスト、速度測定用のプログラム |
 
-## テスト
+</details>
+
+<details>
+<summary><b>テストと速度測定</b></summary>
+
+<br>
 
 ```bash
 go test ./...
+go test ./tests -run XXX -bench Programs -benchtime 4x     # bench/*.hj を2つのエンジンで測ります
 ```
 
-ネイティブライブラリを実際に読み込むテストは、Cコンパイラがないとスキップされます。ツリーウォーク方式のインタープリタとバイトコードVMが同じ結果になるかを確認するテストが多くあります。2つのエンジンは常に同じように動く必要があります。[`bench.hj`](bench.hj)は、2つのエンジンの速度を比べるための負荷プログラムです（`hana run -t bench.hj`と`hana run --bc -t bench.hj`）。
+ネイティブライブラリを実際に読み込むテストは、Cコンパイラがないとスキップされます。ツリーウォーク方式のインタープリタとバイトコードVMが同じ結果になるかを確認するテストが多くあります。2つのエンジンは常に同じように動く必要があります。[`bench.hj`](bench.hj)は、`hana run -t bench.hj`と`hana run --bc -t bench.hj`で2つのエンジンの速度を比べるための負荷プログラムです。
 
-## ドキュメントサイトとブラウザエンジン
+</details>
+
+<details>
+<summary><b>ドキュメントサイトとブラウザエンジン</b></summary>
+
+<br>
 
 ドキュメントサイトは別のリポジトリです。サイトの実行ボタンは、このリポジトリのエンジンをTypeScriptに移したブラウザエンジンを使っています。
 
@@ -127,9 +201,16 @@ go run ./cmd/doctest ../kanade-docs/src/pages/docs
 
 エラー文言、標準モジュールの名前表、補完キーワードは、ここで作ったファイルをドキュメントのリポジトリが使っています（[`cmd/errsgen`](cmd/errsgen)、[`cmd/stdgen`](cmd/stdgen)、[`cmd/lspgen`](cmd/lspgen)）。隣にドキュメントのリポジトリがあれば、`go test`がそのファイルが最新かどうかも検査します。
 
-## 開発ノート
+</details>
+
+<details>
+<summary><b>開発ノート</b></summary>
+
+<br>
 
 内部構造と守るべきルール（エラー文言の追加方法、標準関数を追加する順序、2つのエンジンを揃える方法など）は、[CLAUDE.md](CLAUDE.md)にまとめています（韓国語）。
+
+</details>
 
 ## ライセンス
 
