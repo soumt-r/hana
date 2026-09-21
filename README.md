@@ -60,21 +60,6 @@
 
 <br>
 
-<table>
-<tr>
-<td width="33%" valign="top"><b>두 가지 실행 방식</b><br>트리워킹 인터프리터와 바이트코드 컴파일러·VM(<code>--bc</code>)이 언제나 같은 결과를 내요.</td>
-<td width="33%" valign="top"><b>실행 파일 하나로</b><br><code>hana pack</code>이 프로그램을 작은 런타임(약 6MB)과 함께 실행 파일 하나로 묶어요. 다른 운영체제용도 만들 수 있어요.</td>
-<td width="33%" valign="top"><b>에디터와 브라우저</b><br>언어 서버(LSP)가 들어 있고, 문서 사이트의 실행 버튼은 같은 엔진을 옮긴 브라우저 엔진으로 돌아요.</td>
-</tr>
-<tr>
-<td valign="top"><b>표준 모듈과 패키지</b><br>수학·JSON·정규식·파일·HTTP 같은 표준 모듈과, git 경로로 받는 패키지 매니저가 있어요.</td>
-<td valign="top"><b>세 언어의 오류 문구</b><br>오류는 한국어·일본어·영어로 나오고, 스크립트의 언어를 따라가요.</td>
-<td valign="top"><b>선언한 타입을 검사해요</b><br><code>[숫자]</code>, <code>[(문자열)목록]</code>처럼 적은 타입은 실행 때 지켜져요.</td>
-</tr>
-</table>
-
-<br>
-
 ## 빠른 시작
 
 [Go](https://go.dev/dl/) 1.25 이상이 필요해요.
