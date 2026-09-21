@@ -98,6 +98,8 @@ var catalog = map[string]message{
 	"outdated.short":        {"더 높은 버전이 나온 패키지를 보여줘요 (*는 직접 추가한 것)", "より新しいバージョンが出ているパッケージを表示します（*は直接追加したもの）"},
 	"outdated.none":         {"모두 최신이에요", "すべて最新です"},
 	"outdated.hint":         {"올리려면 hana add <경로>@<버전>을 실행하세요", "上げるにはhana add <パス>@<バージョン>を実行してください"},
+	"version.use":           {"version", "version"},
+	"version.short":         {"hana의 버전을 보여줘요", "hanaのバージョンを表示します"},
 	"list.use":              {"list", "list"},
 	"list.short":            {"이 프로젝트가 쓰는 패키지와 버전을 보여줘요 (*는 직접 추가한 것)", "このプロジェクトが使うパッケージとバージョンを表示します（*は直接追加したもの）"},
 	"list.replaced":         {"→ %s (로컬 폴더)", "→ %s（ローカルフォルダ）"},
@@ -235,6 +237,7 @@ func applyLocale() {
 	listCmd.Use, listCmd.Short = T("list.use"), T("list.short")
 	whyCmd.Use, whyCmd.Short = T("why.use"), T("why.short")
 	outdatedCmd.Use, outdatedCmd.Short = T("outdated.use"), T("outdated.short")
+	versionCmd.Use, versionCmd.Short = T("version.use"), T("version.short")
 
 	for cmd, flags := range map[*cobra.Command]map[string]string{
 		rootCmd:  {"locale": "flag.locale"},
@@ -252,7 +255,7 @@ func applyLocale() {
 			set.Lookup(name).Usage = T(key)
 		}
 	}
-	for _, cmd := range []*cobra.Command{rootCmd, runCmd, buildCmd, disasmCmd, lspCmd, initCmd, packCmd, addCmd, installCmd, removeCmd, listCmd, whyCmd, outdatedCmd} {
+	for _, cmd := range []*cobra.Command{rootCmd, runCmd, buildCmd, disasmCmd, lspCmd, initCmd, packCmd, addCmd, installCmd, removeCmd, listCmd, whyCmd, outdatedCmd, versionCmd} {
 		cmd.InitDefaultHelpFlag()
 		cmd.Flags().Lookup("help").Usage = T("flag.help", cmd.Name())
 	}

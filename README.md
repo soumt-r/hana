@@ -70,7 +70,9 @@ go build -o hana .                       # 윈도우에서는 hana.exe가 만들
 ./hana run hello/main.hj
 ```
 
-실행 파일 하나로 묶는 `hana pack`을 쓰려면 작은 런타임([`cmd/hana-runtime`](cmd/hana-runtime))도 `hana` 옆에 함께 두어야 해요.
+빌드하지 않고 받으려면 [Releases](https://github.com/soumt-r/hana/releases)에서 플랫폼에 맞는 `hana-<버전>-<os>-<arch>` 파일을 받아 풀어요. `hana`, `hana-runtime`, 기본 패키지(`packages/`)가 들어 있고, `hana version`으로 버전을 볼 수 있어요. 다른 운영체제용 실행 파일을 `hana pack --target`으로 만들려면 그 플랫폼의 `hana-runtime-<os>-<arch>` 파일도 받아 `hana` 옆에 두세요.
+
+소스에서 실행 파일 하나로 묶는 `hana pack`을 쓰려면 작은 런타임([`cmd/hana-runtime`](cmd/hana-runtime))도 `hana` 옆에 함께 두어야 해요.
 
 ```bash
 go build -ldflags="-s -w" -trimpath -o hana-runtime ./cmd/hana-runtime

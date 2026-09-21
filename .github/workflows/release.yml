@@ -1,0 +1,145 @@
+name: Release
+
+# Pushing a tag like v0.1.0 builds hana for every platform and publishes a GitHub
+# Release. Running the workflow by hand (workflow_dispatch) does the same builds
+# and tests but publishes nothing: download the artifacts to look at them.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# What a release contains, per platform:
+#   hana-<version>-<os>-<arch>.tar.gz (.zip on Windows)
+#     hana, hana-runtime          the tool, and the runtime `hana pack` copies
+#     packages/                   the packages shipped with hana, with this
+#                                 platform's native libraries built
+#     LICENSE, README.md
+#   hana-runtime-<os>-<arch>      the runtime alone, named the way `hana pack
+#                                 --target <os>-<arch>` looks for it next to hana
+#   checksums.txt
+jobs:
+  build:
+    name: Build ${{ matrix.goos }}/${{ matrix.goarch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, goos: linux, goarch: amd64 }
+          - { os: ubuntu-24.04-arm, goos: linux, goarch: arm64 }
+          - { os: macos-latest, goos: darwin, goarch: arm64 }
+          - { os: macos-latest, goos: darwin, goarch: amd64 } # cross-compiled: clang builds for x86_64
+          - { os: windows-latest, goos: windows, goarch: amd64 }
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      GOOS: ${{ matrix.goos }}
+      GOARCH: ${{ matrix.goarch }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Version
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            echo "VERSION=${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
+          else
+            echo "VERSION=dev-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build hana and hana-runtime (no cgo)
+        run: |
+          ext=""; [ "$GOOS" = windows ] && ext=".exe"
+          mkdir -p dist/hana
+          CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X github.com/soumt-r/hana/cmd.Version=${VERSION}" -o "dist/hana/hana${ext}" .
+          CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o "dist/hana/hana-runtime${ext}" ./cmd/hana-runtime
+
+      # The native libraries need cgo and a C compiler for the platform they are for,
+      # which is why every platform builds on its own kind of runner.
+      - name: Build the native libraries of the packages
+        run: |
+          case "$GOOS" in darwin) libext=dylib ;; windows) libext=dll ;; *) libext=so ;; esac
+          for native in packages/*/native; do
+            name=$(basename "$(dirname "$native")")
+            (cd "$native" && CGO_ENABLED=1 go build -buildmode=c-shared -trimpath -ldflags="-s -w" -o "${name}-${GOOS}-${GOARCH}.${libext}" . && rm -f "${name}-${GOOS}-${GOARCH}.h")
+            echo "built $native/${name}-${GOOS}-${GOARCH}.${libext}"
+          done
+
+      # Cannot run a darwin/amd64 binary on the arm64 runner reliably, so that one is not run.
+      - name: Try the build
+        if: ${{ !(matrix.goos == 'darwin' && matrix.goarch == 'amd64') }}
+        run: |
+          ext=""; [ "$GOOS" = windows ] && ext=".exe"
+          cp -r packages dist/hana/packages
+          cd dist/hana
+          ./hana${ext} version | grep -F "hana ${VERSION}"
+          printf '[timezone]에서 <시간대서식>을 가져오자\n<시간대서식>(0, "YYYY-MM-DD HH:mm", "Asia/Seoul")를 출력하자\n' > tz.hj
+          ./hana${ext} run tz.hj | grep -F "1970-01-01 09:00"
+          printf '<더하기>를 만들자 ([숫자]인 %s, [숫자]인 %s):\n    %s + %s를 돌려주자\n<더하기>(1, 2)를 출력하자\n' "'가'" "'나'" "'가'" "'나'" > add.hj
+          ./hana${ext} run --bc add.hj | grep -Fx "3"
+          ./hana${ext} pack add.hj -o packed${ext}
+          ./packed${ext} | grep -Fx "3"
+          rm -rf packages tz.hj add.hj packed${ext} packed*
+
+      - name: Assemble the release files
+        run: |
+          ext=""; [ "$GOOS" = windows ] && ext=".exe"
+          name="hana-${VERSION}-${GOOS}-${GOARCH}"
+          rm -rf dist/hana/packages
+          mkdir -p dist/hana/packages
+          for pkgdir in packages/*/; do
+            pkgname=$(basename "$pkgdir")
+            mkdir -p "dist/hana/packages/${pkgname}/native"
+            cp "${pkgdir}hana.pkg.json" "dist/hana/packages/${pkgname}/"
+            for entry in "${pkgdir}"*/; do
+              [ "$(basename "$entry")" = native ] || cp -r "$entry" "dist/hana/packages/${pkgname}/"
+            done
+            cp "${pkgdir}native/"*"-${GOOS}-${GOARCH}."* "dist/hana/packages/${pkgname}/native/"
+          done
+          cp LICENSE README.md README.ja.md dist/hana/
+          mkdir -p dist/out
+          cp "dist/hana/hana-runtime${ext}" "dist/out/hana-runtime-${GOOS}-${GOARCH}${ext}"
+          if [ "$GOOS" = windows ]; then
+            (cd dist/hana && powershell -NoProfile -Command "Compress-Archive -Path * -DestinationPath ../out/${name}.zip")
+          else
+            tar -C dist/hana -czf "dist/out/${name}.tar.gz" .
+          fi
+          ls -l dist/out
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/out/*
+          if-no-files-found: error
+
+  publish:
+    name: Publish the release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: release-*
+          merge-multiple: true
+          path: dist
+      - name: Checksums
+        working-directory: dist
+        run: sha256sum * > checksums.txt && cat checksums.txt
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" dist/* \
+            --repo "${GITHUB_REPOSITORY}" \
+            --title "${GITHUB_REF_NAME}" \
+            --generate-notes \
+            --verify-tag

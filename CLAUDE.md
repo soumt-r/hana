@@ -280,6 +280,10 @@ DelimLen, TypeOpen/TypeClose.
 - **클래스 이름은 프로그램 하나에 하나**입니다(오류 문구·타입 검사가 이름으로 클래스를 가리키기 때문에). 모듈이 선언한(또는 스스로 가져온) 클래스와 인터페이스는 가져오는 쪽에 그 이름이 없을 때 자기 이름으로 등록되어 모듈의 함수가 만들 수 있고, **이미 다른 모듈(이나 프로그램 자신)의 같은 이름이 있으면 `ImportClassConflict`(`…Own`)**입니다. `<이름>을 <별칭>으로 가져오자`로 그 클래스에 다른 이름을 붙이면 충돌하지 않습니다(`bringModuleTypes`, 바이트코드는 `exportModule`의 `classOwner`). 같은 모듈을 두 번 임포트하는 것은 충돌이 아닙니다.
 - 새 문법으로 함수를 부르는 자리를 만들면 트리워커는 `scopedFunction`을, 바이트코드는 `rewriteChunk`를 지나가게 하세요. `tests/module_scope_test.go`, `module_state_test.go`, `class_conflict_test.go`, `local_module_import_test.go`가 두 엔진(하자·카나데)을 같이 지킵니다.
 
+## 릴리스(CD): 태그를 푸시하면 `.github/workflows/release.yml`이 내보냅니다
+
+`v0.1.0` 같은 태그(`v*`)를 푸시하면 5개 플랫폼(linux amd64·arm64, darwin amd64·arm64, windows amd64)에서 빌드해 GitHub Release를 만듭니다. 손으로 돌리면(`workflow_dispatch`) 같은 빌드와 시험만 하고 올리지는 않습니다. 플랫폼마다 자기 러너에서 만드는 이유는 기본 패키지의 네이티브 라이브러리(`packages/*/native`)가 cgo와 그 OS의 C 컴파일러를 필요로 해서입니다(darwin/amd64만 arm64 러너에서 clang으로 크로스 빌드하고 실행 시험은 건너뜀). 릴리스 파일: `hana-<버전>-<os>-<arch>.tar.gz`(윈도우는 `.zip`)에 `hana`, `hana-runtime`, `packages/`(소스와 그 플랫폼의 네이티브 라이브러리만), `LICENSE`, README가 들어 있고, `hana pack --target`이 `hana` 옆에서 찾는 `hana-runtime-<os>-<arch>` 파일은 따로도 올리며, `checksums.txt`가 붙습니다. 버전은 `-ldflags "-X github.com/soumt-r/hana/cmd.Version=<태그>"`로 넣고 `hana version`이 보여 줍니다(`go install`로 만든 것은 모듈 버전). 빌드마다 압축 전에 `version`, 기본 패키지(`[timezone]`) 실행, `--bc` 실행, `pack`을 시험합니다. 새 기본 패키지를 `packages/`에 추가하면 `native/`가 있는 한 워크플로를 고칠 필요 없이 함께 실립니다.
+
 ## `hana pack`: 프로그램을 실행 파일 하나로
 
 `hana pack 앱.hj -o 앱`은 `hana-runtime`(`cmd/hana-runtime`: 바이트코드 VM + 표준 라이브러리만, 파서·트리워커·LSP·cobra 없음, `-ldflags="-s -w" -trimpath`로 약 6MB — 표준 라이브러리에 네트워크(`[HTTP]`의 https)가 들어오기 전에는 3.5MB였습니다)을 복사한 뒤 뒤에 페이로드를 붙입니다.

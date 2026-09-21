@@ -70,7 +70,9 @@ go build -o hana .                       # Windowsでは hana.exe ができま�
 ./hana run hello/main.knd
 ```
 
-プログラムを1つの実行ファイルにまとめる`hana pack`を使うには、小さなランタイム（[`cmd/hana-runtime`](cmd/hana-runtime)）も`hana`の隣に置く必要があります。
+ビルドせずに使うには、[Releases](https://github.com/soumt-r/hana/releases)からプラットフォームに合った`hana-<バージョン>-<os>-<arch>`ファイルをダウンロードして展開します。`hana`、`hana-runtime`、標準パッケージ（`packages/`）が入っていて、`hana version`でバージョンを確認できます。ほかのOS用の実行ファイルを`hana pack --target`で作るには、そのプラットフォームの`hana-runtime-<os>-<arch>`ファイルもダウンロードして`hana`の隣に置きます。
+
+ソースからビルドして、プログラムを1つの実行ファイルにまとめる`hana pack`を使うには、小さなランタイム（[`cmd/hana-runtime`](cmd/hana-runtime)）も`hana`の隣に置く必要があります。
 
 ```bash
 go build -ldflags="-s -w" -trimpath -o hana-runtime ./cmd/hana-runtime
