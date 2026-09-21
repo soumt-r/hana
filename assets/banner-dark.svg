@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 320" width="1280" height="320" role="img" aria-label="hana - Haja and Kanade">
+  <title>hana</title>
+  <defs>
+    <radialGradient id="glow" cx="190" cy="160" r="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3b1730"/>
+      <stop offset="1" stop-color="#14111a" stop-opacity="0"/>
+    </radialGradient>
+    <mask id="hole" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="200">
+      <rect width="200" height="200" fill="#fff"/>
+      <circle cx="100" cy="100" r="11" fill="#000"/>
+    </mask>
+  </defs>
+  <rect width="1280" height="320" fill="#14111a"/>
+  <rect width="1280" height="320" fill="url(#glow)"/>
+
+  <g fill="none" stroke="#ff5c8a" stroke-opacity="0.10" stroke-width="2">
+    <circle cx="1230" cy="160" r="150"/>
+    <circle cx="1230" cy="160" r="110"/>
+    <circle cx="1230" cy="160" r="70"/>
+    <circle cx="1230" cy="160" r="30"/>
+  </g>
+
+  <g transform="translate(76 72)"><g fill="#ff5c8a" fill-opacity="0.84" mask="url(#hole)"><circle cx="100" cy="62" r="36" transform="rotate(0 100 100)"/><circle cx="100" cy="62" r="36" transform="rotate(72 100 100)"/><circle cx="100" cy="62" r="36" transform="rotate(144 100 100)"/><circle cx="100" cy="62" r="36" transform="rotate(216 100 100)"/><circle cx="100" cy="62" r="36" transform="rotate(288 100 100)"/></g></g>
+
+  <g fill="none" stroke="#ffffff" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" transform="translate(340 196)">
+      <path d="M0 -110 V0 M0 -34 C0 -56 14 -64 32 -64 C50 -64 64 -54 64 -32 V0"/>
+      <g transform="translate(100 0)"><circle cx="32" cy="-32" r="32"/><path d="M64 -64 V0"/></g>
+      <g transform="translate(200 0)"><path d="M0 -64 V0 M0 -34 C0 -56 14 -64 32 -64 C50 -64 64 -54 64 -32 V0"/></g>
+      <g transform="translate(300 0)"><circle cx="32" cy="-32" r="32"/><path d="M64 -64 V0"/></g>
+  </g>
+  <circle cx="754" cy="192" r="7" fill="#ff5c8a"/>
+
+  <text x="342" y="258" font-family="'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo','Noto Sans JP','Yu Gothic','Hiragino Sans',sans-serif" font-size="22" letter-spacing="0.5" fill="#a99bb4">하자 · カナデ — 한국어와 일본어로 쓰는 프로그래밍 언어</text>
+</svg>

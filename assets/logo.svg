@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="hana">
+  <title>hana</title>
+  <defs>
+    <mask id="hole" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="200">
+      <rect width="200" height="200" fill="#fff"/>
+      <circle cx="100" cy="100" r="11" fill="#000"/>
+    </mask>
+  </defs>
+  <g fill="#ff5c8a" fill-opacity="0.84" mask="url(#hole)"><circle cx="100" cy="62" r="36" transform="rotate(0 100 100)"/><circle cx="100" cy="62" r="36" transform="rotate(72 100 100)"/><circle cx="100" cy="62" r="36" transform="rotate(144 100 100)"/><circle cx="100" cy="62" r="36" transform="rotate(216 100 100)"/><circle cx="100" cy="62" r="36" transform="rotate(288 100 100)"/></g>
+</svg>

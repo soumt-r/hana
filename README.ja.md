@@ -1,6 +1,13 @@
-# hana
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/banner-dark.svg">
+    <img alt="hana" src="assets/banner-light.svg">
+  </picture>
+</h1>
 
-[한국어](README.md) | [日本語](README.ja.md)
+<p align="center"><a href="README.md">한국어</a> | <a href="README.ja.md">日本語</a></p>
+
+<p align="center"><sub>名前の<b>ハナ</b>は、韓国語の「1つ(하나)」と、日本語の「花(はな)」の両方の意味を持ちます。</sub></p>
 
 **Hana**は、2つのプログラミング言語 **Haja**（ハジャ、韓国語で書きます）と **Kanade**（カナデ、日本語で書きます）のGo実装です。インタープリタ、バイトコードコンパイラとVM、コマンドラインツール、言語サーバーが1つのバイナリに入っています。
 
