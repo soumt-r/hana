@@ -11,7 +11,7 @@ permissions:
 
 # The tests look for the two documentation repositories next to this one (the
 # generated TypeScript files, the doctest of every code block), so all three are
-# checked out side by side: hana/, haja-docs/ and kanade-docs/.
+# checked out side by side: hana/, hari-docs/ and kanade-docs/.
 jobs:
   test:
     name: Go tests (${{ matrix.os }})
@@ -29,8 +29,8 @@ jobs:
           path: hana
       - uses: actions/checkout@v7
         with:
-          repository: soumt-r/haja-document
-          path: haja-docs
+          repository: soumt-r/hari-document
+          path: hari-docs
       - uses: actions/checkout@v7
         with:
           repository: soumt-r/kanade-document
@@ -76,8 +76,8 @@ jobs:
           path: hana
       - uses: actions/checkout@v7
         with:
-          repository: soumt-r/haja-document
-          path: haja-docs
+          repository: soumt-r/hari-document
+          path: hari-docs
       - uses: actions/checkout@v7
         with:
           repository: soumt-r/kanade-document
@@ -91,7 +91,7 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: |
-            haja-docs/package-lock.json
+            hari-docs/package-lock.json
             kanade-docs/package-lock.json
       - name: Build hana
         working-directory: hana
@@ -99,16 +99,16 @@ jobs:
       - name: Generated files are current
         working-directory: hana
         run: |
-          go run ./cmd/errsgen -check ../haja-docs/src/utils/haja/errCatalog.ts ../kanade-docs/src/utils/kanade/errCatalog.ts
-          go run ./cmd/stdgen -check -haja ../haja-docs/src/utils/haja/stdNames.ts -kanade ../kanade-docs/src/utils/kanade/stdNames.ts
-          go run ./cmd/lspgen -check -haja ../haja-docs/src/utils/haja/lspKeywords.ts -kanade ../kanade-docs/src/utils/kanade/lspKeywords.ts
+          go run ./cmd/errsgen -check ../hari-docs/src/utils/hari/errCatalog.ts ../kanade-docs/src/utils/kanade/errCatalog.ts
+          go run ./cmd/stdgen -check -hari ../hari-docs/src/utils/hari/stdNames.ts -kanade ../kanade-docs/src/utils/kanade/stdNames.ts
+          go run ./cmd/lspgen -check -hari ../hari-docs/src/utils/hari/lspKeywords.ts -kanade ../kanade-docs/src/utils/kanade/lspKeywords.ts
       - name: Every code block in the docs runs
         working-directory: hana
         run: |
-          go run ./cmd/doctest ../haja-docs/src/pages/docs
+          go run ./cmd/doctest ../hari-docs/src/pages/docs
           go run ./cmd/doctest ../kanade-docs/src/pages/docs
-      - name: The browser engines print what hana prints (Haja)
-        working-directory: haja-docs
+      - name: The browser engines print what hana prints (Hari)
+        working-directory: hari-docs
         run: |
           npm ci
           npx tsx compare_tests.ts
