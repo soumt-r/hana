@@ -289,7 +289,7 @@ DelimLen, TypeOpen/TypeClose.
 `hana pack 앱.hr -o 앱`은 `hana-runtime`(`cmd/hana-runtime`: 바이트코드 VM + 표준 라이브러리만, 파서·트리워커·LSP·cobra 없음, `-ldflags="-s -w" -trimpath`로 약 6MB — 표준 라이브러리에 네트워크(`[HTTP]`의 https)가 들어오기 전에는 3.5MB였습니다)을 복사한 뒤 뒤에 페이로드를 붙입니다.
 형식은 `[런타임][zip 페이로드][트레일러 24바이트: 매직 | 크기 | 페이로드 SHA-256 앞 8바이트]`이고 `pack` 패키지가 읽고 씁니다. 페이로드에는 `program.hn`과 `libraries.json`(프로그램이 **실행 때** 네이티브 라이브러리를 여는 패키지 이름들, `Compiler.LibraryModules()`)이 들어갑니다
 (하리 소스로 된 패키지 코드는 컴파일 때 이미 프로그램 안에 있음). 라이브러리 파일은 매니페스트 없이 이름만 `<패키지><확장자>`로 바꿔 기본적으로 실행 파일 **옆 `libraries/`**에 내보냅니다(`pack.Install`) — 실행 파일은 작게 남고 파일 구성이 단순합니다.
-`--embed`면 페이로드 안에 `libraries/<패키지><확장자>`로 넣어 파일 하나로 만들고(압축되어 더 작아짐), 실행할 때 사용자 캐시 폴더 `hj-packed/<id>/libraries`에 한 번 풉니다(같은 크기 파일이 있으면 그대로 둠 — 윈도우는 로드된 DLL을 못 덮어씀).
+`--embed`면 페이로드 안에 `libraries/<패키지><확장자>`로 넣어 파일 하나로 만들고(압축되어 더 작아짐), 실행할 때 사용자 캐시 폴더 `hr-packed/<id>/libraries`에 한 번 풉니다(같은 크기 파일이 있으면 그대로 둠 — 윈도우는 로드된 DLL을 못 덮어씀).
 어느 쪽이든 `Activate`가 `native.Bundled`(패키지 이름 → 라이브러리 경로)를 채우고, `native.OpenModule`(`bcvm`이 부름)이 패키지 폴더보다 먼저 그걸 봅니다. `--target 플랫폼`(예 `linux-amd64`)과 `--runtime`으로 다른 OS용도 만들 수 있고(그 OS용 런타임을 `hana-runtime-<플랫폼>`으로 hana 옆에 두거나 `--runtime`),
 `hana run x.hn`과 패키지 실행은 `runner.NewVM`을 함께 씁니다. 서명은 붙인 다음에 하세요(뒤에 덧붙이면 서명이 깨짐). 테스트는 `tests/pack_test.go`(실제 `hana`와 `hana-runtime`을 빌드해서 돌림).
 

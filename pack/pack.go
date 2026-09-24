@@ -292,7 +292,7 @@ func (a *App) Activate() error {
 				if err != nil {
 					base = os.TempDir()
 				}
-				root = filepath.Join(base, "hj-packed", a.id)
+				root = filepath.Join(base, "hr-packed", a.id)
 			}
 			if err := extract(root, f); err != nil {
 				return fmt.Errorf("could not unpack %s: %v", f.Name, err)
