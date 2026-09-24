@@ -42,7 +42,7 @@ const (
 	PRINT        // pop top, print with a trailing newline
 	PRINT_INLINE // pop top, print without a trailing newline
 
-	TO_DISPLAY_STRING // pop a value, push its Haja display string (참/거짓,
+	TO_DISPLAY_STRING // pop a value, push its Hari display string (참/거짓,
 	// 비어있음, "[a, b, c]" for lists, ...) — same formatting PRINT uses.
 	// Used to compile TemplateLiteral's {expr} segments so a chain of ADDs
 	// over already-string operands does real concatenation.
@@ -57,7 +57,7 @@ const (
 	LIST_POP // Operand: string ("front"/"back") — pop a list, take its front/back
 	// element off it and push that element (IndexOutOfBoundsError if it is empty).
 	LIST_CLEAR // no operand — pop a list and empty it (TypeError if it is not a
-	// list); pushes nothing. Compiles 하자/카나데's one mutating list pseudo-method
+	// list); pushes nothing. Compiles 하리/카나데's one mutating list pseudo-method
 	// (비우기/空にする — see bcLang.listClearMethod). Handled as its own opcode (not
 	// through GET_MEMBER/CALL_METHOD's generic bound-method dispatch) so a list method
 	// stays a plain native operation.
@@ -144,7 +144,7 @@ const (
 	// [모듈]에서 <이름>을 가져오자 needs this — a local file import
 	// ("파일"에서 ...) is resolved entirely at compile time by merging the
 	// imported file's declaration into this Program, since unlike a native
-	// module it's just more compiled Haja code (see compileLocalImport).
+	// module it's just more compiled Hari code (see compileLocalImport).
 
 	HALT
 

@@ -5,26 +5,26 @@ import (
 
 	"github.com/soumt-r/hana/ast"
 	"github.com/soumt-r/hana/errs"
-	hajalexer "github.com/soumt-r/hana/lexer/haja"
+	harilexer "github.com/soumt-r/hana/lexer/hari"
 	kanadelexer "github.com/soumt-r/hana/lexer/kanade"
-	hajaparser "github.com/soumt-r/hana/parser/haja"
+	hariparser "github.com/soumt-r/hana/parser/hari"
 	kanadeparser "github.com/soumt-r/hana/parser/kanade"
 	"github.com/soumt-r/hana/token"
 )
 
-// language bundles what differs between Haja and Kanade documents. Everything
+// language bundles what differs between Hari and Kanade documents. Everything
 // language-specific the server needs (parsing now; keywords and hover text in
 // later steps) hangs off this so features never branch on file extensions.
 type language struct {
 	id    string // LSP languageId
-	parse func(text string) (*ast.Program, *hajaparser.Parser)
+	parse func(text string) (*ast.Program, *hariparser.Parser)
 
 	keywords     []string // suggested as-is; lexes to a keyword token (see TestKeywordsLexAsKeywords)
 	comparisons  []string // comparison words; each lexes to a COMPARE token
 	words        []string // grammar words that have no token of their own (return marker, plural self, ...)
 	builtinTypes []string // names between the type delimiters, e.g. 숫자 -> [숫자]
 
-	// The delimiters that wrap a name of each kind: 'x' <f> [T] in Haja,
+	// The delimiters that wrap a name of each kind: 'x' <f> [T] in Hari,
 	// 『x』 〈f〉 【T】 in Kanade.
 	varDelims, funcDelims, typeDelims [2]string
 
@@ -41,7 +41,7 @@ type language struct {
 
 // parseWith runs the parser, turning a parser panic on half-typed code into an
 // empty program: an editor sends broken text constantly and must not crash.
-func parseWith(p *hajaparser.Parser) (prog *ast.Program) {
+func parseWith(p *hariparser.Parser) (prog *ast.Program) {
 	defer func() {
 		if recover() != nil {
 			prog = &ast.Program{}
@@ -50,11 +50,11 @@ func parseWith(p *hajaparser.Parser) (prog *ast.Program) {
 	return p.ParseProgram()
 }
 
-var hajaLang = &language{
-	id:     "haja",
+var hariLang = &language{
+	id:     "hari",
 	locale: errs.Korean,
-	parse: func(text string) (*ast.Program, *hajaparser.Parser) {
-		p := hajaparser.New(hajalexer.New(text))
+	parse: func(text string) (*ast.Program, *hariparser.Parser) {
+		p := hariparser.New(harilexer.New(text))
 		return parseWith(p), p
 	},
 	keywords: []string{
@@ -73,14 +73,14 @@ var hajaLang = &language{
 	detailBuiltinType: "기본 타입", detailClass: "클래스", detailVariable: "변수",
 	detailFunction: "함수", detailMethod: "메서드", detailField: "필드",
 	noteType: "타입", noteReturn: "반환 타입",
-	keywordDocs: hajaKeywordDocs, builtinTypeDocs: hajaBuiltinTypeDocs,
-	lex: func(text string) []token.Token { return hajalexer.New(text).Tokens },
+	keywordDocs: hariKeywordDocs, builtinTypeDocs: hariBuiltinTypeDocs,
+	lex: func(text string) []token.Token { return harilexer.New(text).Tokens },
 }
 
 var kanadeLang = &language{
 	id:     "kanade",
 	locale: errs.Japanese,
-	parse: func(text string) (*ast.Program, *hajaparser.Parser) {
+	parse: func(text string) (*ast.Program, *hariparser.Parser) {
 		p := kanadeparser.New(kanadelexer.New(text))
 		return parseWith(p), p
 	},
@@ -109,8 +109,8 @@ var kanadeLang = &language{
 // return nil and get no language features.
 func languageFor(uri string) *language {
 	switch {
-	case strings.HasSuffix(uri, ".hj"):
-		return hajaLang
+	case strings.HasSuffix(uri, ".hr"):
+		return hariLang
 	case strings.HasSuffix(uri, ".knd"):
 		return kanadeLang
 	}

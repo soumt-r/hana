@@ -1,6 +1,6 @@
 // Package kanade is a lexer for 카나데(Kanade), the planned Japanese-syntax
-// locale of Haja. It produces the exact same token.TokenType stream as
-// lexer/haja for the same grammar (see parser/haja's LangProfile), just
+// locale of Hari. It produces the exact same token.TokenType stream as
+// lexer/hari for the same grammar (see parser/hari's LangProfile), just
 // matched against Japanese vocabulary and Japanese full-width punctuation
 // instead of Korean/ASCII. The punctuation and vocabulary here are meant to
 // match kanade-docs' actual published examples byte-for-byte — see
@@ -103,7 +103,7 @@ var tokenSpecs = []struct {
 	{token.KW_FROM, regexp.MustCompile(`^から`)},
 	{token.KW_IMPLEMENTS, regexp.MustCompile(`^従う`)},
 	// もしくは(なら(ば)?) doubles as "else if" (KW_ELIF) — see
-	// parser/haja's KW_ELIF handling; それ以外なら(ば)? is plain
+	// parser/hari's KW_ELIF handling; それ以外なら(ば)? is plain
 	// else. Must be checked before bare KW_IF ("もし"), which is
 	// a prefix of "もしくは" and would otherwise steal the first
 	// two characters and leave "くは" as a dangling identifier.
@@ -115,7 +115,7 @@ var tokenSpecs = []struct {
 	// "前/後から取り出した") needs its own early match: unspaced
 	// Japanese means "値にしよう" would otherwise fall through to
 	// the generic IDENT catch-all below and get swallowed whole
-	// (value+verb as one token) before parser/haja ever gets a
+	// (value+verb as one token) before parser/hari ever gets a
 	// chance to recognize "値" as its own word and stop there.
 	// Same root cause as the もしくは/もし ordering fix above.
 	{token.IDENT, regexp.MustCompile(`^値`)},
@@ -155,7 +155,7 @@ var tokenSpecs = []struct {
 	{"OP", regexp.MustCompile(`^[+\-*/%]`)},
 	// TYPE_IN has no dedicated regex/token here: kanade-docs
 	// reuses "の" for it (【数字】の0), the same word as member
-	// access. parser/haja's TYPE_IN checks already fall back to
+	// access. parser/hari's TYPE_IN checks already fall back to
 	// comparing a PARTICLE token's Literal against
 	// LangProfile.TypeInWord, so a bare PARTICLE "の" is enough
 	// — no ambiguity in practice since the TYPE-branch check

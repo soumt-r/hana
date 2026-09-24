@@ -15,10 +15,10 @@ import (
 )
 
 func TestStringPseudoMethods(t *testing.T) {
-	interp, err := runHaja(t, `
+	interp, err := runHari(t, `
 '문장'을 [문자열]인 "안녕하세요 세계"로 정하자
 틀"{'문장'의 <자르기>(1, 2)}"를 출력하자
-틀"{'문장'의 <바꾸기>("세계", "하자")}"를 출력하자
+틀"{'문장'의 <바꾸기>("세계", "하리")}"를 출력하자
 틀"{'문장'의 <분리하기>(" ")}"를 출력하자
 틀"{'문장'의 <포함확인>("세계")}"를 출력하자
 틀"{'문장'의 <포함확인>("없음")}"를 출력하자
@@ -26,16 +26,16 @@ func TestStringPseudoMethods(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	want := []string{"안녕", "안녕하세요 하자", "[안녕하세요, 세계]", "참", "거짓"}
+	want := []string{"안녕", "안녕하세요 하리", "[안녕하세요, 세계]", "참", "거짓"}
 	if strings.Join(interp.Output, ",") != strings.Join(want, ",") {
 		t.Errorf("Output = %v, want %v", interp.Output, want)
 	}
 }
 
 // This used to be a Go runtime panic (args[0].(string) on a missing arg),
-// crashing the process instead of raising a catchable Haja error.
+// crashing the process instead of raising a catchable Hari error.
 func TestStringPseudoMethodMissingArgDoesNotPanic(t *testing.T) {
-	interp, err := runHaja(t, `
+	interp, err := runHari(t, `
 '문장'을 [문자열]인 "test"로 정하자
 일단 해보자:
     '문장'의 <포함확인>()을 실행하자
@@ -55,7 +55,7 @@ func TestStringPseudoMethodMissingArgDoesNotPanic(t *testing.T) {
 // This used to be a Go runtime panic (Go slicing requires low <= high),
 // since the original code never clamped start past end.
 func TestStringSliceStartAfterEndDoesNotPanic(t *testing.T) {
-	interp, err := runHaja(t, `
+	interp, err := runHari(t, `
 '문장'을 [문자열]인 "안녕하세요"로 정하자
 '결과'를 [문자열]인 '문장'의 <자르기>(5, 2)로 정하자
 "안 죽음"을 출력하자

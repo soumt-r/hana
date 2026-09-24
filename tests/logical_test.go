@@ -7,7 +7,7 @@ package tests
 import "testing"
 
 func TestLogicalAndOr(t *testing.T) {
-	interp, err := runHaja(t, `
+	interp, err := runHari(t, `
 '나이'를 [숫자]인 25로 정하자
 '돈'을 [숫자]인 2000으로 정하자
 'and결과'를 [논리]인 거짓으로 정하자
@@ -34,7 +34,7 @@ func TestLogicalAndOr(t *testing.T) {
 // is false, and 또는 must not evaluate its right operand once the left is
 // true — a right-hand function call with a side effect must not run.
 func TestLogicalShortCircuit(t *testing.T) {
-	interp, err := runHaja(t, `
+	interp, err := runHari(t, `
 '호출횟수'를 [숫자]인 0으로 정하자
 <부작용>을 만들자 ():
     '호출횟수'를 ('호출횟수' + 1)로 정하자

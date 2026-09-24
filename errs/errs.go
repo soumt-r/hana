@@ -229,7 +229,7 @@ const (
 	// RecursionError
 	CallTooDeep Code = "RecursionError.CallTooDeep" // limit
 
-	// SyntaxError (reported by the parser; see parser/haja Diagnostic)
+	// SyntaxError (reported by the parser; see parser/hari Diagnostic)
 	SyntaxUnexpectedToken Code = "SyntaxError.UnexpectedToken" // line, column, token
 	SyntaxUnexpectedEnd   Code = "SyntaxError.UnexpectedEnd"   // line
 

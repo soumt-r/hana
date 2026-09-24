@@ -17,7 +17,7 @@ import (
 //     property that didn't exist and printed 空っぽ.
 type caughtErrorCase struct {
 	name   string
-	ko     string // Haja source: the body of the `일단 해보자:` block
+	ko     string // Hari source: the body of the `일단 해보자:` block
 	ja     string // Kanade source: the body of the `とりあえずやってみよう:` block
 	wantKo string
 	wantJa string
@@ -60,17 +60,17 @@ func TestCaughtEngineErrorsAreLocalizedIdenticallyOnBothVMs(t *testing.T) {
 			ko := "일단 해보자:\n    " + c.ko + "\n오류가 발생했다면 ('에러'):\n    '에러'의 '메시지'를 출력하자\n"
 			ja := "とりあえずやってみよう:\n    " + c.ja + "\n発生したら(『エラー』):\n    『エラー』の『メッセージ』を出力しよう\n"
 
-			interp, err := runHaja(t, ko)
+			interp, err := runHari(t, ko)
 			if err != nil {
-				t.Fatalf("haja tree-walker: %v", err)
+				t.Fatalf("hari tree-walker: %v", err)
 			}
-			assertLastLine(t, "haja tree-walker", interp.Output, c.wantKo)
+			assertLastLine(t, "hari tree-walker", interp.Output, c.wantKo)
 
 			bc, err := runBytecode(t, ko)
 			if err != nil {
-				t.Fatalf("haja bytecode: %v", err)
+				t.Fatalf("hari bytecode: %v", err)
 			}
-			assertLastLine(t, "haja bytecode", bc.Output, c.wantKo)
+			assertLastLine(t, "hari bytecode", bc.Output, c.wantKo)
 
 			kinterp, err := runKanade(t, ja)
 			if err != nil {
@@ -102,7 +102,7 @@ func assertLastLine(t *testing.T, engine string, output []string, want string) {
 // neutral there (English wording, same Kind prefix) — localizing is the
 // caller's job via errs.Localize, which is what cmd/run.go does.
 func TestUncaughtErrorIsLocalizableByTheCaller(t *testing.T) {
-	_, err := runHaja(t, "'목록'을 [(숫자)목록]인 []로 정하자\n'목록' 뒤에서 꺼내자\n")
+	_, err := runHari(t, "'목록'을 [(숫자)목록]인 []로 정하자\n'목록' 뒤에서 꺼내자\n")
 	requireErrorContains(t, err, "IndexOutOfBoundsError")
 	if got := errs.Localize(errs.Korean, err); got != "IndexOutOfBoundsError: 목록이 비어 있어요." {
 		t.Errorf("ko: %q", got)

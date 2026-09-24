@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/soumt-r/hana/ast"
-	haja_lexer "github.com/soumt-r/hana/lexer/haja"
+	hari_lexer "github.com/soumt-r/hana/lexer/hari"
 	kanade_lexer "github.com/soumt-r/hana/lexer/kanade"
-	haja_parser "github.com/soumt-r/hana/parser/haja"
+	hari_parser "github.com/soumt-r/hana/parser/hari"
 	kanade_parser "github.com/soumt-r/hana/parser/kanade"
 	"github.com/soumt-r/hana/pkg"
 )
@@ -91,7 +91,7 @@ func (c *Compiler) compilePackageImport(s *ast.ImportStatement, items []ast.Impo
 		p := kanade_parser.New(kanade_lexer.New(string(content)))
 		prog, parseErrors = p.ParseProgram(), p.Errors()
 	} else {
-		p := haja_parser.New(haja_lexer.New(string(content)))
+		p := hari_parser.New(hari_lexer.New(string(content)))
 		prog, parseErrors = p.ParseProgram(), p.Errors()
 	}
 	if len(parseErrors) > 0 {

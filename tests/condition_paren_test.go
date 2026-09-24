@@ -11,7 +11,7 @@ import (
 	"github.com/soumt-r/hana/errs"
 )
 
-const hajaParenConditions = `
+const hariParenConditions = `
 'x'를 [숫자]인 4로 정하자
 만약 (('x' % 2) == 0) 라면:
     "가"를 출력하자
@@ -46,7 +46,7 @@ const kanadeParenConditions = `
 `
 
 func TestParenthesizedComparisonsAreNotDropped(t *testing.T) {
-	for engine, r := range engines(t, hajaParenConditions) {
+	for engine, r := range engines(t, hariParenConditions) {
 		if r.err != nil {
 			t.Fatalf("%s: %v", engine, r.err)
 		}

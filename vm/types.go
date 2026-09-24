@@ -11,7 +11,7 @@ import (
 type typeHost struct{ i *Interpreter }
 
 func (h typeHost) ClassOf(v interface{}) (string, bool) {
-	if obj, ok := v.(*HajaObject); ok {
+	if obj, ok := v.(*HariObject); ok {
 		return obj.ClassName, true
 	}
 	return "", false
@@ -110,7 +110,7 @@ func (i *Interpreter) checkListWrite(env *Environment, id *ast.Identifier, list 
 }
 
 // checkFieldListWrite is checkField for a list that got a value at one end.
-func (i *Interpreter) checkFieldListWrite(obj *HajaObject, prop string, list *value.List, front bool) error {
+func (i *Interpreter) checkFieldListWrite(obj *HariObject, prop string, list *value.List, front bool) error {
 	if annotation, ok := i.fieldAnnotation(obj.ClassName, prop); ok {
 		return typecheck.CheckAppended(&i.Config.Types, annotation, prop, list, front, i.host())
 	}
@@ -118,7 +118,7 @@ func (i *Interpreter) checkFieldListWrite(obj *HajaObject, prop string, list *va
 }
 
 // checkField enforces a class field's declared type on a write.
-func (i *Interpreter) checkField(obj *HajaObject, prop string, val interface{}) error {
+func (i *Interpreter) checkField(obj *HariObject, prop string, val interface{}) error {
 	if annotation, ok := i.fieldAnnotation(obj.ClassName, prop); ok {
 		return typecheck.Check(&i.Config.Types, annotation, prop, val, i.host())
 	}

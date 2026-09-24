@@ -33,9 +33,9 @@ func (i *Interpreter) checkListPush(target ast.Expression, list *value.List, env
 		if err != nil {
 			return err
 		}
-		if hajaObj, ok := obj.(*HajaObject); ok {
+		if hariObj, ok := obj.(*HariObject); ok {
 			if propId, ok := mem.Property.(*ast.Identifier); ok {
-				return i.checkFieldListWrite(hajaObj, propId.Value, list, front)
+				return i.checkFieldListWrite(hariObj, propId.Value, list, front)
 			}
 		}
 	}

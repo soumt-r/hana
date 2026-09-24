@@ -83,7 +83,7 @@ func serveScript(t *testing.T, engine, code string, port int, talk func(net.Conn
 				r.out = vm.Output
 			}
 		} else {
-			interp, err := runHaja(t, code)
+			interp, err := runHari(t, code)
 			r.err = err
 			if interp != nil {
 				r.out = interp.Output
@@ -297,7 +297,7 @@ func TestHTTPRequests(t *testing.T) {
 		if r.err != nil {
 			t.Fatalf("%s: %v", engine, r.err)
 		}
-		want := "200|안녕, 하나|text/plain; charset=utf-8|haja/값|201|POST text/plain 본문|PUT  바꿈|안녕, 이사|404"
+		want := "200|안녕, 하나|text/plain; charset=utf-8|hari/값|201|POST text/plain 본문|PUT  바꿈|안녕, 이사|404"
 		if got := strings.Join(r.out, "|"); got != want {
 			t.Errorf("%s:\n got %q\nwant %q", engine, got, want)
 		}
@@ -425,7 +425,7 @@ func TestHTTPClientFollowsRedirectsLikeABrowser(t *testing.T) {
 		"HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nok",
 	)
 	code := fmt.Sprintf("[HTTP]에서 <보내기>를 가져오자\n<보내기>(\"%s/start\", \"내용\")의 \"body\"를 출력하자\n", base)
-	tw, err := runHaja(t, code)
+	tw, err := runHari(t, code)
 	if err != nil || strings.Join(tw.Output, "") != "ok" {
 		t.Fatalf("got %v %v", tw.Output, err)
 	}
@@ -439,7 +439,7 @@ func TestHTTPClientFollowsRedirectsLikeABrowser(t *testing.T) {
 		"HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nok",
 	)
 	code = fmt.Sprintf("[HTTP]에서 <보내기>를 가져오자\n<보내기>(\"%s/start\", \"내용\")의 \"body\"를 출력하자\n", base)
-	if _, err := runHaja(t, code); err != nil {
+	if _, err := runHari(t, code); err != nil {
 		t.Fatal(err)
 	}
 	got = requests()
@@ -450,7 +450,7 @@ func TestHTTPClientFollowsRedirectsLikeABrowser(t *testing.T) {
 	// A redirect loop ends after ten hops with the last answer, not forever.
 	base, requests = rawHTTPServer(t, "HTTP/1.1 302 Found\r\nLocation: /loop\r\nContent-Length: 0\r\n\r\n")
 	code = fmt.Sprintf("[HTTP]에서 <가져오기>를 가져오자\n<가져오기>(\"%s/loop\")의 \"status\"를 출력하자\n", base)
-	if tw, err := runHaja(t, code); err != nil || strings.Join(tw.Output, "") != "302" || len(requests()) != 11 {
+	if tw, err := runHari(t, code); err != nil || strings.Join(tw.Output, "") != "302" || len(requests()) != 11 {
 		t.Errorf("a redirect loop: got %v %v after %d requests", tw.Output, err, len(requests()))
 	}
 }
@@ -458,7 +458,7 @@ func TestHTTPClientFollowsRedirectsLikeABrowser(t *testing.T) {
 func TestHTTPClientRequestText(t *testing.T) {
 	base, requests := rawHTTPServer(t, "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n")
 	code := fmt.Sprintf("[HTTP]에서 <요청>을 가져오자\n<요청>(\"head\", \"%s/a b?x=1\", \"\", {\"user-agent\": \"내 프로그램\", \"X-Mine\": \"값\"})의 \"status\"를 출력하자\n", base)
-	if _, err := runHaja(t, code); err != nil {
+	if _, err := runHari(t, code); err != nil {
 		t.Fatal(err)
 	}
 	head := requests()[0]
@@ -467,7 +467,7 @@ func TestHTTPClientRequestText(t *testing.T) {
 			t.Errorf("the request lacks %q:\n%s", want, head)
 		}
 	}
-	if strings.Contains(head, "User-Agent: haja") {
+	if strings.Contains(head, "User-Agent: hari") {
 		t.Errorf("a header the script gives should replace the default:\n%s", head)
 	}
 }

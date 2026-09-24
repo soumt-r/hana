@@ -159,7 +159,7 @@ func dial(u *url.URL, deadline time.Time) (net.Conn, error) {
 func buildRequest(method string, u *url.URL, body string, headers map[string]string) string {
 	fields := map[string][2]string{ // lower-case name -> name, value
 		"host":            {"Host", u.Host},
-		"user-agent":      {"User-Agent", "haja"},
+		"user-agent":      {"User-Agent", "hari"},
 		"accept-encoding": {"Accept-Encoding", "identity"},
 		"connection":      {"Connection", "close"},
 	}

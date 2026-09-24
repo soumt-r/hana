@@ -87,7 +87,7 @@ func runPacked(t *testing.T, exe, stdin string) (stdout string, err error) {
 
 func TestPackedProgramRunsOnItsOwn(t *testing.T) {
 	inTempDir(t, nil)
-	exe, err := packProgram(t, "hello.hj", "'이름'을 [문자열]로 입력받자\n틀\"안녕, {'이름'}!\"를 출력하자\n")
+	exe, err := packProgram(t, "hello.hr", "'이름'을 [문자열]로 입력받자\n틀\"안녕, {'이름'}!\"를 출력하자\n")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -112,7 +112,7 @@ func TestPackedKanadeProgram(t *testing.T) {
 
 func TestPackedProgramReportsRuntimeErrors(t *testing.T) {
 	inTempDir(t, nil)
-	exe, err := packProgram(t, "boom.hj", "새로운 [오류](\"터졌어요\")를 발생시키자\n")
+	exe, err := packProgram(t, "boom.hr", "새로운 [오류](\"터졌어요\")를 발생시키자\n")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -128,7 +128,7 @@ const echoMain = "[echo]에서 <네이티브_Echo>를 가져오자\n<네이티�
 // libraries/<package><extension>.
 func TestPackWritesNativeLibrariesBesideTheExecutable(t *testing.T) {
 	echoPackage(t, "")
-	exe, err := packProgram(t, "main.hj", echoMain)
+	exe, err := packProgram(t, "main.hr", echoMain)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -153,7 +153,7 @@ func TestPackWritesNativeLibrariesBesideTheExecutable(t *testing.T) {
 
 func TestPackEmbedsNativeLibrariesOnRequest(t *testing.T) {
 	echoPackage(t, "")
-	exe, err := packProgram(t, "main.hj", echoMain, "--embed")
+	exe, err := packProgram(t, "main.hr", echoMain, "--embed")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -168,7 +168,7 @@ func TestPackEmbedsNativeLibrariesOnRequest(t *testing.T) {
 
 func TestPackNeedsTheLibraryOfTheTargetPlatform(t *testing.T) {
 	echoPackage(t, `{"name": "echo", "native": {"plan9-mips": {"file": "native/echo.bin"}}}`)
-	_, err := packProgram(t, "main.hj", "[echo]에서 <네이티브_Echo>를 가져오자\n<네이티브_Echo>(1)을 출력하자\n")
+	_, err := packProgram(t, "main.hr", "[echo]에서 <네이티브_Echo>를 가져오자\n<네이티브_Echo>(1)을 출력하자\n")
 	if err == nil || !strings.Contains(err.Error(), "네이티브 라이브러리가 없어요") {
 		t.Errorf("want a message about the missing library, got %v", err)
 	}

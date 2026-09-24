@@ -14,8 +14,8 @@ import (
 
 func TestImportAliasResolvesNameCollision(t *testing.T) {
 	dir := t.TempDir()
-	pkgAPath := filepath.Join(dir, "pkgA.hj")
-	pkgBPath := filepath.Join(dir, "pkgB.hj")
+	pkgAPath := filepath.Join(dir, "pkgA.hr")
+	pkgBPath := filepath.Join(dir, "pkgB.hr")
 	if err := os.WriteFile(pkgAPath, []byte(`
 [숫자]를 돌려주는 <계산하기>를 만들자 ([숫자]인 '값'):
     ('값' + 1)를 돌려주자
@@ -31,7 +31,7 @@ func TestImportAliasResolvesNameCollision(t *testing.T) {
 
 	pkgAEscaped := strings.ReplaceAll(pkgAPath, `\`, `\\`)
 	pkgBEscaped := strings.ReplaceAll(pkgBPath, `\`, `\\`)
-	interp, err := runHaja(t, `
+	interp, err := runHari(t, `
 "`+pkgAEscaped+`"에서 <계산하기>를 <A계산하기>로 가져오자
 "`+pkgBEscaped+`"에서 <계산하기>를 <B계산하기>로 가져오자
 틀"A: {<A계산하기>(10)}"를 출력하자
@@ -47,7 +47,7 @@ func TestImportAliasResolvesNameCollision(t *testing.T) {
 }
 
 func TestImportAliasForBuiltinModule(t *testing.T) {
-	interp, err := runHaja(t, `
+	interp, err := runHari(t, `
 [수학]에서 <올림>을 <반올림>으로 가져오자
 틀"{<반올림>(3.2)}"를 출력하자
 `)
@@ -62,7 +62,7 @@ func TestImportAliasForBuiltinModule(t *testing.T) {
 
 func TestImportAliasForClass(t *testing.T) {
 	dir := t.TempDir()
-	utilsPath := filepath.Join(dir, "shape_utils.hj")
+	utilsPath := filepath.Join(dir, "shape_utils.hr")
 	if err := os.WriteFile(utilsPath, []byte(`
 [도형]을 설계하자:
     '이름'을 [문자열]인 "도형"으로 정하자
@@ -71,7 +71,7 @@ func TestImportAliasForClass(t *testing.T) {
 	}
 
 	utilsEscaped := strings.ReplaceAll(utilsPath, `\`, `\\`)
-	interp, err := runHaja(t, `
+	interp, err := runHari(t, `
 "`+utilsEscaped+`"에서 '도형'을 '도형유틸'로 가져오자
 'x'를 [도형유틸]인 새로운 [도형유틸]()로 정하자
 틀"{'x'의 '이름'}"를 출력하자

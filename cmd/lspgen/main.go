@@ -3,7 +3,7 @@
 // server. The Go tables stay the single source of truth; the generated files are
 // never edited by hand.
 //
-//	go run ./cmd/lspgen -haja ../haja-docs/src/utils/haja/lspKeywords.ts -kanade ../kanade-docs/src/utils/kanade/lspKeywords.ts
+//	go run ./cmd/lspgen -hari ../hari-docs/src/utils/hari/lspKeywords.ts -kanade ../kanade-docs/src/utils/kanade/lspKeywords.ts
 //	go run ./cmd/lspgen -check <same flags>   # exit 1 if any file is stale
 package main
 
@@ -18,11 +18,11 @@ import (
 
 func main() {
 	check := flag.Bool("check", false, "verify the files are up to date instead of writing them")
-	haja := flag.String("haja", "", "output path for the Haja keywords")
+	hari := flag.String("hari", "", "output path for the Hari keywords")
 	kanade := flag.String("kanade", "", "output path for the Kanade keywords")
 	flag.Parse()
 
-	targets := map[string]string{"haja": *haja, "kanade": *kanade}
+	targets := map[string]string{"hari": *hari, "kanade": *kanade}
 	any, stale := false, false
 	for _, lang := range lsp.LanguageKeys {
 		path := targets[lang]
@@ -46,7 +46,7 @@ func main() {
 		fmt.Println("wrote", path)
 	}
 	if !any {
-		fmt.Fprintln(os.Stderr, "usage: lspgen [-check] [-haja <out.ts>] [-kanade <out.ts>]")
+		fmt.Fprintln(os.Stderr, "usage: lspgen [-check] [-hari <out.ts>] [-kanade <out.ts>]")
 		os.Exit(2)
 	}
 	if stale {

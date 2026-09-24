@@ -5,12 +5,12 @@ import (
 	"strings"
 	"testing"
 
-	lexer "github.com/soumt-r/hana/lexer/haja"
-	parser "github.com/soumt-r/hana/parser/haja"
+	lexer "github.com/soumt-r/hana/lexer/hari"
+	parser "github.com/soumt-r/hana/parser/hari"
 	"github.com/soumt-r/hana/vm"
 )
 
-func TestHajaCollections(t *testing.T) {
+func TestHariCollections(t *testing.T) {
 	input := `
 (참고) 컬렉션 테스트
 '인벤토리'를 ["검", "방패", "포션"]으로 정하자
@@ -37,7 +37,7 @@ func TestHajaCollections(t *testing.T) {
 	}
 
 	interpreter := vm.NewInterpreter(prog)
-	fmt.Println("=== Haja 컬렉션 테스트 ===")
+	fmt.Println("=== Hari 컬렉션 테스트 ===")
 	err := interpreter.Run()
 	if err != nil {
 		t.Fatalf("런타임 에러: %v", err)
@@ -52,7 +52,7 @@ func TestHajaCollections(t *testing.T) {
 // CallExpression switch had no case for it at all, so every call fell
 // through to "TypeError: Not callable." regardless of method name.
 func TestListClearMethod(t *testing.T) {
-	interp, err := runHaja(t, `'목록'을 ["사과", "포도"]로 정하자
+	interp, err := runHari(t, `'목록'을 ["사과", "포도"]로 정하자
 '목록'의 '길이'를 출력하자
 '목록'의 <비우기>()를 실행하자
 '목록'의 '길이'를 출력하자
@@ -69,7 +69,7 @@ func TestListClearMethod(t *testing.T) {
 // TestListClearMethodOnObjectField covers emptying a list held in an object field: the
 // list is changed through the object, not just a plain variable.
 func TestListClearMethodOnObjectField(t *testing.T) {
-	interp, err := runHaja(t, `[상자]를 설계하자:
+	interp, err := runHari(t, `[상자]를 설계하자:
     '내용물'을 ["사과", "포도"]로 정하자
 
 '상자'를 새로운 [상자]()로 정하자
@@ -87,14 +87,14 @@ func TestListClearMethodOnObjectField(t *testing.T) {
 }
 
 func TestListClearMethodArgumentCountError(t *testing.T) {
-	_, err := runHaja(t, `'목록'을 ["사과"]로 정하자
+	_, err := runHari(t, `'목록'을 ["사과"]로 정하자
 '목록'의 <비우기>(1)를 실행하자
 `)
 	requireErrorContains(t, err, "ArgumentError")
 }
 
 func TestListClearMethodUnknownNameError(t *testing.T) {
-	_, err := runHaja(t, `'목록'을 ["사과"]로 정하자
+	_, err := runHari(t, `'목록'을 ["사과"]로 정하자
 '목록'의 <정렬하기>()를 실행하자
 `)
 	requireErrorContains(t, err, "MethodNotFoundError")

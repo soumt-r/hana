@@ -176,7 +176,7 @@ func TestLabelsCoverEveryLocale(t *testing.T) {
 func TestGeneratedTypeScriptCatalogsAreCurrent(t *testing.T) {
 	want := TypeScriptCatalog()
 	for _, rel := range []string{
-		"../../haja-docs/src/utils/haja/errCatalog.ts",
+		"../../hari-docs/src/utils/hari/errCatalog.ts",
 		"../../kanade-docs/src/utils/kanade/errCatalog.ts",
 	} {
 		got, err := os.ReadFile(rel)

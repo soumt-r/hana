@@ -9,9 +9,9 @@ import (
 	"github.com/soumt-r/hana/ast"
 	"github.com/soumt-r/hana/bytecode"
 	"github.com/soumt-r/hana/errs"
-	lexer "github.com/soumt-r/hana/lexer/haja"
+	lexer "github.com/soumt-r/hana/lexer/hari"
 	kanadeLexer "github.com/soumt-r/hana/lexer/kanade"
-	parser "github.com/soumt-r/hana/parser/haja"
+	parser "github.com/soumt-r/hana/parser/hari"
 	kanadeParser "github.com/soumt-r/hana/parser/kanade"
 
 	"github.com/spf13/cobra"

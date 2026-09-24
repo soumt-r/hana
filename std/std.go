@@ -10,12 +10,12 @@ package std
 
 // Language keys match vm.LangConfig.Name.
 const (
-	Haja   = "haja"
+	Hari   = "hari"
 	Kanade = "kanade"
 )
 
 // Languages lists every language that has a name table.
-var Languages = []string{Haja, Kanade}
+var Languages = []string{Hari, Kanade}
 
 // Native function IDs.
 const (
@@ -172,7 +172,7 @@ var Modules = []Module{
 
 // names maps a language to the localized name of every module and function ID.
 var names = map[string]map[string]string{
-	Haja: {
+	Hari: {
 		"math":    "수학",
 		MathCeil:  "올림",
 		MathFloor: "버림",

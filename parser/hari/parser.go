@@ -1,4 +1,4 @@
-package haja
+package hari
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 
 	"github.com/soumt-r/hana/ast"
 	"github.com/soumt-r/hana/errs"
-	"github.com/soumt-r/hana/lexer/haja"
+	"github.com/soumt-r/hana/lexer/hari"
 	"github.com/soumt-r/hana/token"
 )
 
@@ -24,8 +24,8 @@ type Parser struct {
 	declaredType *ast.TypeReference
 }
 
-func New(l *haja.Lexer) *Parser {
-	return NewFromTokens(l.Tokens, hajaProfile)
+func New(l *hari.Lexer) *Parser {
+	return NewFromTokens(l.Tokens, hariProfile)
 }
 
 // NewFromTokens builds a Parser for a token stream produced by a
@@ -365,7 +365,7 @@ func (p *Parser) parseTry() *ast.TryStatement {
 			p.consume()
 		} else if p.peek(0).Type != token.KW_CATCH {
 			// 카나데는 마커 단어 없이 바로 "発生したら(...)"라고 쓸 수 있음
-			// (하자의 "오류가 발생했다면"과 달리 앞에 아무 토큰도 없어도 됨).
+			// (하리의 "오류가 발생했다면"과 달리 앞에 아무 토큰도 없어도 됨).
 			break
 		}
 
@@ -1041,7 +1041,7 @@ func (p *Parser) parseMemberAndCall() ast.Expression {
 			p.peek(1) != nil && p.peek(1).Type == token.IDENT && p.peek(1).Literal == p.lang.PoppedValueWord {
 			// 카나데는 인덱싱 뒤에 조사로 연결된 장식용 "の値"를 쓴다
 			// ("『果物』の1番目の値" = "그 목록의 1번째의 값" = 그냥
-			// "그 목록의 1번째"). 하자는 이 단어를 조사 없이 바로 붙여
+			// "그 목록의 1번째"). 하리는 이 단어를 조사 없이 바로 붙여
 			//써서(예: "1번째 값") 애초에 MemberExpression 체인에 들어오지
 			// 않고 바깥 조사 수집 루프에서 그냥 버려지는데, 카나데는 "의"로
 			// 연결하는 바람에 별도 멤버 접근처럼 보여 그냥 두면 인덱싱
@@ -1195,7 +1195,7 @@ func (p *Parser) parsePrimary() ast.Expression {
 				return p.parsePrimary()
 			}
 			// 이 읽기는 TYPE_IN 낱말이 곧 멤버 접근 조사일 때(카나데의 "の")만 맞다.
-			// 하자의 정적 호출은 조사 "의"로 쓰고("[상자]의 <만들기>()"), "인"은 언제나
+			// 하리의 정적 호출은 조사 "의"로 쓰고("[상자]의 <만들기>()"), "인"은 언제나
 			// 타입 표시라서 "[상자]인 <만들기>()"는 타입이 붙은 함수 호출 값이다.
 			if p.peek(1) != nil && p.peek(1).Type == "FUNCTION" && p.peek(0).Literal == p.lang.MemberParticle {
 				p.consume() // の

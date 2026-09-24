@@ -17,7 +17,7 @@
 
 <p align="center">
   <b>Hana</b> runs two programming languages written in Korean and Japanese:<br>
-  <b>Haja</b> (ハジャ) and <b>Kanade</b> (カナデ). One Go binary.<br>
+  <b>Hari</b> (ハジャ) and <b>Kanade</b> (カナデ). One Go binary.<br>
   <sub>名前の<b>ハナ</b>は、韓国語の「1つ(하나)」と、日本語の「花(はな)」の両方の意味を持ちます。</sub>
 </p>
 
@@ -25,17 +25,17 @@
 
 <table>
 <tr>
-<th align="center">ハジャ (Haja) · 韓国語</th>
+<th align="center">ハジャ (Hari) · 韓国語</th>
 <th align="center">カナデ (Kanade) · 日本語</th>
 </tr>
 <tr>
 <td valign="top">
 
-```haja
+```hari
 <인사>를 만들자 ([문자열]인 '이름'):
     틀"안녕, {'이름'}!"을 출력하자
 
-'이름들'을 [(문자열)목록]인 ["하자", "카나데"]로 정하자
+'이름들'을 [(문자열)목록]인 ["하리", "카나데"]로 정하자
 '이름들'의 '이름'마다 반복하자:
     <인사>('이름')을 실행하자
 ```
@@ -78,17 +78,17 @@ go build -o hana .                       # Windowsでは hana.exe ができま�
 go build -ldflags="-s -w" -trimpath -o hana-runtime ./cmd/hana-runtime
 ```
 
-ドキュメント: [カナデ ドキュメント](https://kanade.soumt.moe) · [ハジャ ドキュメント](https://haja.soumt.moe)
+ドキュメント: [カナデ ドキュメント](https://kanade.soumt.moe) · [ハジャ ドキュメント](https://hari.soumt.moe)
 
 ## コマンド
 
 | コマンド | できること |
 | --- | --- |
-| `hana run <ファイル>` | `.hj`（Haja）、`.knd`（Kanade）、`.hn`（コンパイル済みバイトコード）を実行します |
+| `hana run <ファイル>` | `.hr`（Hari）、`.knd`（Kanade）、`.hn`（コンパイル済みバイトコード）を実行します |
 | `hana build <ファイル>` | バイトコード（`.hn`）にコンパイルして保存します |
 | `hana disasm <ファイル>` | バイトコードを逆アセンブルした結果を表示します |
 | `hana pack <ファイル>` | プログラムを1つの実行ファイルにまとめます。ほかのOS用も作れます（`--target linux-amd64`） |
-| `hana init [フォルダ]` | スタートファイルと`.gitignore`のある新しいプロジェクトを作ります（`--lang haja`または`kanade`） |
+| `hana init [フォルダ]` | スタートファイルと`.gitignore`のある新しいプロジェクトを作ります（`--lang hari`または`kanade`） |
 | `hana lsp` | エディター用の言語サーバー（LSP）を標準入出力で実行します |
 | `hana add <gitパス>[@バージョン]` | パッケージをプロジェクトに追加し、`hana.json`と`hana-lock.json`に書きます |
 | `hana install` | `hana-lock.json`に書かれたパッケージをすべてダウンロードします |
@@ -101,7 +101,7 @@ go build -ldflags="-s -w" -trimpath -o hana-runtime ./cmd/hana-runtime
 
 ## 言語と標準モジュール
 
-Hajaは`'나이'를 [숫자]인 20으로 정하자`のように型を角括弧で書き、助詞（`을`、`를`、`로`、`의`など）が文法の一部になっている言語です。Kanadeは同じ構造を日本語の語順で書きます。
+Hariは`'나이'를 [숫자]인 20으로 정하자`のように型を角括弧で書き、助詞（`을`、`를`、`로`、`의`など）が文法の一部になっている言語です。Kanadeは同じ構造を日本語の語順で書きます。
 
 インポートなしで使えるのは構文といくつかの型変換だけで、残りは`【モジュール】から〈道具〉を持ってこよう`で持ってきます。
 
@@ -117,7 +117,7 @@ Hajaは`'나이'를 [숫자]인 20으로 정하자`のように型を角括弧�
 
 ## パッケージ
 
-[`packages/`](packages)は、hanaと一緒に配布するパッケージです。Haja/Kanadeのソースで作るか、ネイティブライブラリ（`.dll`/`.so`/`.dylib`、簡単なC ABI）を添えられます。
+[`packages/`](packages)は、hanaと一緒に配布するパッケージです。Hari/Kanadeのソースで作るか、ネイティブライブラリ（`.dll`/`.so`/`.dylib`、簡単なC ABI）を添えられます。
 
 | パッケージ | できること |
 | --- | --- |
@@ -137,7 +137,7 @@ Hajaは`'나이'를 [숫자]인 20으로 정하자`のように型を角括弧�
 
 | フォルダ | 内容 |
 | --- | --- |
-| [`lexer/`](lexer)、[`parser/`](parser)、[`ast/`](ast) | HajaとKanadeのレキサー・パーサー（同じASTを作ります） |
+| [`lexer/`](lexer)、[`parser/`](parser)、[`ast/`](ast) | HariとKanadeのレキサー・パーサー（同じASTを作ります） |
 | [`vm/`](vm)、[`stdlib/`](stdlib) | ツリーウォーク方式のインタープリタとその標準ライブラリ |
 | [`bytecode/`](bytecode)、[`bcvm/`](bcvm)、[`bcstdlib/`](bcstdlib) | バイトコードコンパイラ、スタックVM、その標準ライブラリ |
 | [`std/`](std) | 標準モジュールの名前表（[`std.go`](std/std.go)）と共有実装（[`stdimpl/`](std/stdimpl)） |
@@ -158,10 +158,10 @@ Hajaは`'나이'를 [숫자]인 20으로 정하자`のように型を角括弧�
 
 ```bash
 go test ./...
-go test ./tests -run XXX -bench Programs -benchtime 4x     # bench/*.hj を2つのエンジンで測ります
+go test ./tests -run XXX -bench Programs -benchtime 4x     # bench/*.hr を2つのエンジンで測ります
 ```
 
-ネイティブライブラリを実際に読み込むテストは、Cコンパイラがないとスキップされます。ツリーウォーク方式のインタープリタとバイトコードVMが同じ結果になるかを確認するテストが多くあります。2つのエンジンは常に同じように動く必要があります。[`bench.hj`](bench.hj)は、`hana run -t bench.hj`と`hana run --bc -t bench.hj`で2つのエンジンの速度を比べるための負荷プログラムです。
+ネイティブライブラリを実際に読み込むテストは、Cコンパイラがないとスキップされます。ツリーウォーク方式のインタープリタとバイトコードVMが同じ結果になるかを確認するテストが多くあります。2つのエンジンは常に同じように動く必要があります。[`bench.hr`](bench.hr)は、`hana run -t bench.hr`と`hana run --bc -t bench.hr`で2つのエンジンの速度を比べるための負荷プログラムです。
 
 </details>
 
@@ -172,17 +172,17 @@ go test ./tests -run XXX -bench Programs -benchtime 4x     # bench/*.hj を2つ�
 
 ドキュメントサイトは別のリポジトリです。サイトの実行ボタンは、このリポジトリのエンジンをTypeScriptに移したブラウザエンジンを使っています。
 
-- Haja: [soumt-r/haja-document](https://github.com/soumt-r/haja-document)
+- Hari: [soumt-r/hari-document](https://github.com/soumt-r/hari-document)
 - Kanade: [soumt-r/kanade-document](https://github.com/soumt-r/kanade-document)
 
-2つのリポジトリを`haja-docs`、`kanade-docs`というフォルダ名で`hana`の隣に並べて置くと、次のことができます。
+2つのリポジトリを`hari-docs`、`kanade-docs`というフォルダ名で`hana`の隣に並べて置くと、次のことができます。
 
 ```bash
-git clone https://github.com/soumt-r/haja-document haja-docs
+git clone https://github.com/soumt-r/hari-document hari-docs
 git clone https://github.com/soumt-r/kanade-document kanade-docs
 
 # ドキュメント内のすべてのコードブロックを実際に実行して確認
-go run ./cmd/doctest ../haja-docs/src/pages/docs
+go run ./cmd/doctest ../hari-docs/src/pages/docs
 go run ./cmd/doctest ../kanade-docs/src/pages/docs
 ```
 

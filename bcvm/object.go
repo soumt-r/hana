@@ -5,7 +5,7 @@ import (
 	"github.com/soumt-r/hana/symbol"
 )
 
-// Object is a class instance. Mirrors vm.HajaObject.
+// Object is a class instance. Mirrors vm.HariObject.
 type Object struct {
 	ClassName string
 	Props     map[string]interface{}

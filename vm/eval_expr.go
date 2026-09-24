@@ -12,8 +12,8 @@ import (
 
 	"github.com/soumt-r/hana/ast"
 	"github.com/soumt-r/hana/conv"
-	haja_lexer "github.com/soumt-r/hana/lexer/haja"
-	haja_parser "github.com/soumt-r/hana/parser/haja"
+	hari_lexer "github.com/soumt-r/hana/lexer/hari"
+	hari_parser "github.com/soumt-r/hana/parser/hari"
 	"github.com/soumt-r/hana/symbol"
 )
 
@@ -148,7 +148,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 			parts := strings.SplitN(e.Name, ".", 2)
 			objName, methodName := parts[0], parts[1]
 			if val, ok := env.Get(objName); ok {
-				if obj, isObj := val.(*HajaObject); isObj {
+				if obj, isObj := val.(*HariObject); isObj {
 					return &BoundMethod{Object: obj, FuncName: methodName, Sym: symbol.Intern(methodName)}, nil
 				}
 			}
@@ -183,7 +183,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 		if cls.IsAbstract {
 			return nil, errs.New(errs.InstantiateAbstract, clsName)
 		}
-		obj := NewHajaObject(clsName)
+		obj := NewHariObject(clsName)
 
 		if err := i.initFields(cls, obj, env); err != nil {
 			return nil, err
@@ -220,7 +220,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 		return obj, nil
 	case *ast.CallExpression:
 		callCallee := e.Callee
-		// "TYPE의 〈함수〉()": parser/haja's TYPE-then-TYPE_IN branch can't
+		// "TYPE의 〈함수〉()": parser/hari's TYPE-then-TYPE_IN branch can't
 		// tell at parse time whether TYPE names a real class (a static
 		// method call, e.g. "【データベース】の〈取得する〉()") or a
 		// built-in type name used as decorative packaging around a plain
@@ -328,7 +328,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 		} else if bsm, ok := callee.(*BoundStringMethod); ok {
 			// 인자 개수/타입을 먼저 확인한다 — 예전엔 자르기만 개수를 체크하고
 			// 나머지 셋은 곧장 args[0].(string) 같은 타입 단언을 했는데,
-			// 인자가 없거나 타입이 틀리면 Haja 에러가 아니라 Go 런타임 패닉으로
+			// 인자가 없거나 타입이 틀리면 Hari 에러가 아니라 Go 런타임 패닉으로
 			// 프로세스 전체가 죽었다(bcvm.callStringMethod 구현하며 발견,
 			// 거기 먼저 안전하게 고치고 여기도 같은 체크로 맞춤).
 			if bsm.FuncName == i.Config.StringSliceMethod {
@@ -391,7 +391,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 		} else if blm, ok := callee.(*BoundListMethod); ok {
 			// 목록은 문자열과 달리 "언어 네이티브 구문"(추가하자/꺼내자 등)으로
 			// 조작하는 게 기본 설계라(스펙 2.6), 메서드 형태로 남은 건 비우기
-			// 하나뿐 — TS 참조 구현(haja-docs)도 딱 이것만 지원한다.
+			// 하나뿐 — TS 참조 구현(hari-docs)도 딱 이것만 지원한다.
 			if blm.FuncName == i.Config.ListClearMethod {
 				if len(args) != 0 {
 					return nil, errs.New(errs.ArgCountExact, 0)
@@ -526,7 +526,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 			}
 			return &BoundMethod{Object: super.Object, FuncName: propId.Name, Sym: propId.Symbol(), IsSuper: true}, nil
 		}
-		if hajaObj, ok := obj.(*HajaObject); ok {
+		if hariObj, ok := obj.(*HariObject); ok {
 			propName := ""
 			var propSym symbol.Symbol
 			isFunc := false
@@ -538,7 +538,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 			}
 
 			// 접근 제한자 검사
-			member := i.classMember(i.classOf(hajaObj), propSym)
+			member := i.classMember(i.classOf(hariObj), propSym)
 			access := member.fieldAccess
 			if isFunc {
 				access = member.methodAccess
@@ -549,23 +549,23 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 				if !hasThis {
 					return nil, errs.AccessViolation(access, isFunc, propName)
 				}
-				if access == "private" && thisObj != hajaObj {
+				if access == "private" && thisObj != hariObj {
 					return nil, errs.AccessViolation(access, isFunc, propName)
 				}
 			}
 
 			if isFunc {
-				return &BoundMethod{Object: hajaObj, FuncName: propName, Sym: propSym}, nil
+				return &BoundMethod{Object: hariObj, FuncName: propName, Sym: propSym}, nil
 			}
 
 			// Check for getter
 			getterBody := member.getter
 			if getterBody != nil {
-				getterEnv := NewEnvironment(i.globalOf(i.classOf(hajaObj).Module))
-				getterEnv.this = hajaObj
-				getterEnv.DeclareSym(thisSym, hajaObj)
-				getterEnv.DeclareSym(selfClassSym, hajaObj.ClassName)
-				prev := i.enterModule(i.classOf(hajaObj).Module)
+				getterEnv := NewEnvironment(i.globalOf(i.classOf(hariObj).Module))
+				getterEnv.this = hariObj
+				getterEnv.DeclareSym(thisSym, hariObj)
+				getterEnv.DeclareSym(selfClassSym, hariObj.ClassName)
+				prev := i.enterModule(i.classOf(hariObj).Module)
 				for _, bs := range getterBody {
 					_, err := i.Execute(bs, getterEnv)
 					if err != nil {
@@ -579,7 +579,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 				i.scope = prev
 				return nil, nil // Or throw error if no return?
 			}
-			return hajaObj.Props[propName], nil
+			return hariObj.Props[propName], nil
 		} else if list, ok := obj.(*value.List); ok {
 			propName := ""
 			isFunc := false
@@ -714,7 +714,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 		}
 
 		if e.Operator == "instanceof" {
-			if leftObj, ok := left.(*HajaObject); ok {
+			if leftObj, ok := left.(*HariObject); ok {
 				if clsRef, ok := right.(*ClassReference); ok {
 					return i.classIsOrExtends(leftObj.ClassName, clsRef.ClassName), nil
 				}
@@ -723,7 +723,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 		}
 
 		if e.Operator == "==" || e.Operator == "!=" {
-			if leftObj, ok := left.(*HajaObject); ok {
+			if leftObj, ok := left.(*HariObject); ok {
 				cls := i.Classes[leftObj.ClassName]
 				var funcDecl *ast.FunctionDeclaration
 				for _, stmt := range cls.Body {
@@ -868,7 +868,7 @@ func (i *Interpreter) parseTemplate(raw string) []templatePart {
 		if cfg.ParseEmbeddedExpr != nil {
 			innerExpr = cfg.ParseEmbeddedExpr(innerCode)
 		} else {
-			innerExpr = haja_parser.New(haja_lexer.New(innerCode)).ParseExpression()
+			innerExpr = hari_parser.New(hari_lexer.New(innerCode)).ParseExpression()
 		}
 		parts = append(parts, templatePart{text: text, expr: innerExpr})
 	}

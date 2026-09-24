@@ -10,7 +10,7 @@ type Environment struct {
 	index     []int32                // Symbol → 위치+1 (0: 없음); 변수가 많아진 스코프(최상위 등)에서만 만든다
 	constants map[symbol.Symbol]bool // 상수로 선언된 변수 추적 (처음 쓸 때 만듦)
 	parent    *Environment
-	this      *HajaObject
+	this      *HariObject
 }
 
 type varEntry struct {

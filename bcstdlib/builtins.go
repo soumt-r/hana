@@ -39,7 +39,7 @@ var Korean = LangConfig{
 	ToNumber: "숫자로",
 	ToCode:   "코드로",
 	ToText:   "글자로",
-	Name:     std.Haja,
+	Name:     std.Hari,
 }
 
 var Japanese = LangConfig{

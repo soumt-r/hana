@@ -1,6 +1,6 @@
 package tests
 
-// The http_server package end to end: the real package folder (manifest, Haja and
+// The http_server package end to end: the real package folder (manifest, Hari and
 // Kanade entries) plus its native library built from packages/http_server/native
 // (Go's net/http), driven by real HTTP requests. Needs a C toolchain, like
 // native_plugin_test.go, and is skipped without one.
@@ -71,7 +71,7 @@ func httpServerPackage(t *testing.T) {
 	httpRuns++
 	dir := filepath.Join(filepath.Dir(httpLibPath), fmt.Sprintf("run-%d-%d", os.Getpid(), httpRuns))
 	pkgDir := filepath.Join(dir, "packages", "http_server")
-	for _, rel := range []string{"hana.pkg.json", filepath.Join("haja", "index.hj"), filepath.Join("kanade", "index.knd")} {
+	for _, rel := range []string{"hana.pkg.json", filepath.Join("hari", "index.hr"), filepath.Join("kanade", "index.knd")} {
 		data, err := os.ReadFile(filepath.Join(src, rel))
 		if err != nil {
 			t.Fatal(err)
@@ -155,7 +155,7 @@ func fetch(t *testing.T, method, url, body string) (int, string, http.Header) {
 	return resp.StatusCode, string(data), resp.Header
 }
 
-const hajaServer = `
+const hariServer = `
 [http_server]에서 <GET>과 <POST>와 <서버열기>와 <서버닫기>와 <응답>을 가져오자
 
 <핑>를 만들자 ('요청'):
@@ -262,9 +262,9 @@ type serverRunner struct {
 	run  func(t *testing.T, code string) ([]string, error)
 }
 
-var hajaRunners = []serverRunner{
+var hariRunners = []serverRunner{
 	{"tree-walker", func(t *testing.T, code string) ([]string, error) {
-		i, err := runHaja(t, code)
+		i, err := runHari(t, code)
 		if i == nil {
 			return nil, err
 		}
@@ -319,8 +319,8 @@ func runServerTest(t *testing.T, runners []serverRunner, program, query, helloWa
 	}
 }
 
-func TestHajaHTTPServerPackage(t *testing.T) {
-	runServerTest(t, hajaRunners, hajaServer, url.Values{"이름": {"하나"}}.Encode(), "안녕 하나", "안녕히", "서버 끝")
+func TestHariHTTPServerPackage(t *testing.T) {
+	runServerTest(t, hariRunners, hariServer, url.Values{"이름": {"하나"}}.Encode(), "안녕 하나", "안녕히", "서버 끝")
 }
 
 func TestKanadeHTTPServerPackage(t *testing.T) {

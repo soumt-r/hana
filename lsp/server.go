@@ -1,4 +1,4 @@
-// Package lsp is hana's language server: one server for both Haja (.hj) and
+// Package lsp is hana's language server: one server for both Hari (.hr) and
 // Kanade (.knd) documents, sharing the lexers/parsers the interpreter uses.
 package lsp
 

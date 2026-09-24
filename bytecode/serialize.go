@@ -37,7 +37,7 @@ const (
 type Lang byte
 
 const (
-	LangHaja Lang = iota
+	LangHari Lang = iota
 	LangKanade
 )
 

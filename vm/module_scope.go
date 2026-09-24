@@ -172,7 +172,7 @@ func (i *Interpreter) rememberOwner(name, owner string) {
 
 // initFields evaluates the field initializers of a new object, in the scope of
 // the module its class came from.
-func (i *Interpreter) initFields(cls *ast.ClassDeclaration, obj *HajaObject, env *Environment) error {
+func (i *Interpreter) initFields(cls *ast.ClassDeclaration, obj *HariObject, env *Environment) error {
 	prev := i.enterModule(cls.Module)
 	defer func() { i.scope = prev }()
 	for _, stmt := range cls.Body {
@@ -202,7 +202,7 @@ func (i *Interpreter) initFields(cls *ast.ClassDeclaration, obj *HajaObject, env
 
 // runConstructor binds the arguments and runs a constructor's body, in the scope
 // of the module the constructor came from.
-func (i *Interpreter) runConstructor(ctor *ast.ConstructorDeclaration, obj *HajaObject, clsName string, args []interface{}) error {
+func (i *Interpreter) runConstructor(ctor *ast.ConstructorDeclaration, obj *HariObject, clsName string, args []interface{}) error {
 	ctorEnv := NewEnvironment(i.globalOf(ctor.Module))
 	ctorEnv.this = obj
 	ctorEnv.DeclareSym(selfClassSym, clsName)

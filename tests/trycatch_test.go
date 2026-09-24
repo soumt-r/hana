@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	lexer "github.com/soumt-r/hana/lexer/haja"
-	parser "github.com/soumt-r/hana/parser/haja"
+	lexer "github.com/soumt-r/hana/lexer/hari"
+	parser "github.com/soumt-r/hana/parser/hari"
 	"github.com/soumt-r/hana/vm"
 )
 
-func TestHajaTryCatch(t *testing.T) {
+func TestHariTryCatch(t *testing.T) {
 	input := `
 (참고) 예외처리 테스트
 일단 해보자:
@@ -30,7 +30,7 @@ func TestHajaTryCatch(t *testing.T) {
 	}
 
 	interpreter := vm.NewInterpreter(prog)
-	fmt.Println("=== Haja 예외처리 테스트 ===")
+	fmt.Println("=== Hari 예외처리 테스트 ===")
 	err := interpreter.Run()
 	if err != nil {
 		t.Fatalf("런타임 에러: %v", err)

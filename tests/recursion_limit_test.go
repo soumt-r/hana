@@ -14,13 +14,13 @@ import (
 )
 
 const (
-	hajaSum = "[숫자]를 돌려주는 <합>을 만들자 ([숫자]인 'n'):\n    만약 ('n'이 1 이하이다) 라면:\n        1를 돌려주자\n    ('n' + <합>('n' - 1))를 돌려주자\n"
+	hariSum = "[숫자]를 돌려주는 <합>을 만들자 ([숫자]인 'n'):\n    만약 ('n'이 1 이하이다) 라면:\n        1를 돌려주자\n    ('n' + <합>('n' - 1))를 돌려주자\n"
 )
 
 func TestDeepButFiniteRecursionStillWorks(t *testing.T) {
-	code := hajaSum + fmt.Sprintf("<합>(%d)를 출력하자\n", vm.MaxCallDepth/2)
+	code := hariSum + fmt.Sprintf("<합>(%d)를 출력하자\n", vm.MaxCallDepth/2)
 	want := fmt.Sprint((vm.MaxCallDepth / 2) * (vm.MaxCallDepth/2 + 1) / 2)
-	tree, err := runHaja(t, code)
+	tree, err := runHari(t, code)
 	if err != nil {
 		t.Fatalf("tree-walker: %v", err)
 	}
@@ -34,10 +34,10 @@ func TestDeepButFiniteRecursionStillWorks(t *testing.T) {
 }
 
 func TestRunawayRecursionIsARecursionErrorOnEveryEngine(t *testing.T) {
-	haja := "<f>를 만들자 ():\n    <f>()를 실행하자\n<f>()를 실행하자\n"
+	hari := "<f>를 만들자 ():\n    <f>()를 실행하자\n<f>()를 실행하자\n"
 	kanade := "〈f〉を作ろう ():\n    〈f〉()を実行しよう\n〈f〉()を実行しよう\n"
-	_, e0 := runHaja(t, haja)
-	_, e1 := runBytecode(t, haja)
+	_, e0 := runHari(t, hari)
+	_, e1 := runBytecode(t, hari)
 	_, e2 := runKanade(t, kanade)
 	_, e3 := runKanadeBytecode(t, kanade)
 	for i, err := range []error{e0, e1, e2, e3} {
@@ -50,7 +50,7 @@ func TestRunawayRecursionIsARecursionErrorOnEveryEngine(t *testing.T) {
 func TestRunawayRecursionCanBeCaught(t *testing.T) {
 	code := "<f>를 만들자 ():\n    <f>()를 실행하자\n일단 해보자:\n    <f>()를 실행하자\n오류가 발생했다면 ('에러'):\n    '에러'의 '메시지'를 출력하자\n"
 	for name, run := range map[string]func(*testing.T, string) ([]string, error){
-		"tree-walker": func(t *testing.T, c string) ([]string, error) { i, err := runHaja(t, c); return i.Output, err },
+		"tree-walker": func(t *testing.T, c string) ([]string, error) { i, err := runHari(t, c); return i.Output, err },
 		"bytecode":    func(t *testing.T, c string) ([]string, error) { v, err := runBytecode(t, c); return v.Output, err },
 	} {
 		out, err := run(t, code)
@@ -73,7 +73,7 @@ func TestErrorsInsideOperandsAreNotSwallowed(t *testing.T) {
 		"call as right operand":       "<f>를 만들자 ():\n    (1 + <없는함수>())를 돌려주자\n<f>()를 실행하자\n",
 		"missing variable as operand": "'a'를 (1 + '없는변수')로 정하자\n",
 	} {
-		i, err := runHaja(t, code)
+		i, err := runHari(t, code)
 		b, berr := runBytecode(t, code)
 		if err == nil || berr == nil {
 			t.Errorf("%s: tree-walker err=%v (out %v), bytecode err=%v (out %v) — both must fail", name, err, i.Output, berr, b.Output)

@@ -25,7 +25,7 @@ func (i *Interpreter) Identify(v interface{}) (interface{}, bool) {
 		return fn, true
 	case *BoundMethod:
 		return struct {
-			obj  *HajaObject
+			obj  *HariObject
 			name string
 		}{fn.Object, fn.FuncName}, true
 	}

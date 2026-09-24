@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	lexer "github.com/soumt-r/hana/lexer/haja"
-	parser "github.com/soumt-r/hana/parser/haja"
+	lexer "github.com/soumt-r/hana/lexer/hari"
+	parser "github.com/soumt-r/hana/parser/hari"
 	"github.com/soumt-r/hana/vm"
 )
 
-func TestHajaInterpreter(t *testing.T) {
+func TestHariInterpreter(t *testing.T) {
 	input := `
 (참고) 모든 무기가 공통으로 가질 인터페이스를 만들어요
 [무기]를 규정하자:
@@ -59,7 +59,7 @@ func TestHajaInterpreter(t *testing.T) {
 	}
 
 	interpreter := vm.NewInterpreter(prog)
-	fmt.Println("=== Haja 가상머신 실행 결과 ===")
+	fmt.Println("=== Hari 가상머신 실행 결과 ===")
 	err := interpreter.Run()
 	if err != nil {
 		t.Fatalf("런타임 에러: %v", err)

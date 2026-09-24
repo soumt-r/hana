@@ -10,9 +10,9 @@ import (
 	"github.com/soumt-r/hana/ast"
 	"github.com/soumt-r/hana/bytecode"
 	"github.com/soumt-r/hana/errs"
-	lexer "github.com/soumt-r/hana/lexer/haja"
+	lexer "github.com/soumt-r/hana/lexer/hari"
 	kanadeLexer "github.com/soumt-r/hana/lexer/kanade"
-	parser "github.com/soumt-r/hana/parser/haja"
+	parser "github.com/soumt-r/hana/parser/hari"
 	kanadeParser "github.com/soumt-r/hana/parser/kanade"
 
 	"github.com/spf13/cobra"
@@ -46,7 +46,7 @@ var buildCmd = &cobra.Command{
 	},
 }
 
-// compileFile compiles a .hj/.knd file to bytecode. It also returns the
+// compileFile compiles a .hr/.knd file to bytecode. It also returns the
 // packages whose native library the program loads at run time. Problems are
 // printed and end the command, like everywhere else on the command line.
 func compileFile(filename string) (*bytecode.Program, bytecode.Lang, []string) {
@@ -62,7 +62,7 @@ func compileFile(filename string) (*bytecode.Program, bytecode.Lang, []string) {
 	var prog *ast.Program
 	var parseErrors []string
 	var compiler *bytecode.Compiler
-	lang := bytecode.LangHaja
+	lang := bytecode.LangHari
 	if isKanade {
 		l := kanadeLexer.New(string(content))
 		p := kanadeParser.New(l)

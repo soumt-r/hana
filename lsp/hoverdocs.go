@@ -5,7 +5,7 @@ package lsp
 // type, so every spelling of a keyword (그렇지 않다면 / 그렇지 않고, ごとに繰り返そう /
 // 間繰り返そう ...) shares one entry.
 
-var hajaKeywordDocs = map[string]string{
+var hariKeywordDocs = map[string]string{
 	"KW_IF":         "조건이 참일 때만 아래 블록을 실행해요.",
 	"KW_ELSE":       "앞선 조건이 거짓일 때 실행해요.",
 	"KW_LOOP":       "범위나 목록, 조건에 따라 아래 블록을 반복해요.",
@@ -41,7 +41,7 @@ var hajaKeywordDocs = map[string]string{
 	"KW_MUST_HAVE":  "인터페이스에서 클래스가 꼭 구현해야 하는 메서드를 정해요.",
 }
 
-var hajaBuiltinTypeDocs = map[string]string{
+var hariBuiltinTypeDocs = map[string]string{
 	"숫자":   "정수와 실수를 담는 기본 타입이에요.",
 	"문자열":  "글자를 담는 기본 타입이에요.",
 	"논리":   "참 또는 거짓을 담는 기본 타입이에요.",

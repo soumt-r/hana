@@ -40,9 +40,9 @@ func TestDetectUILocale(t *testing.T) {
 		args []string
 		want errs.Locale
 	}{
-		{"the flag wins over everything", map[string]string{"HANA_LANG": "ko"}, []string{"--locale", "ja", "run", "a.hj"}, errs.Japanese},
-		{"the flag with =", nil, []string{"run", "a.hj", "--locale=ja"}, errs.Japanese},
-		{"the environment variable", map[string]string{"HANA_LANG": "ja"}, []string{"run", "a.hj"}, errs.Japanese},
+		{"the flag wins over everything", map[string]string{"HANA_LANG": "ko"}, []string{"--locale", "ja", "run", "a.hr"}, errs.Japanese},
+		{"the flag with =", nil, []string{"run", "a.hr", "--locale=ja"}, errs.Japanese},
+		{"the environment variable", map[string]string{"HANA_LANG": "ja"}, []string{"run", "a.hr"}, errs.Japanese},
 		{"the environment variable beats the script", map[string]string{"HANA_LANG": "ko"}, []string{"run", "a.knd"}, errs.Korean},
 		{"a Kanade script means Japanese", nil, []string{"run", "a.knd"}, errs.Japanese},
 		{"init for Kanade means Japanese", nil, []string{"init", "dir", "--lang", "kanade"}, errs.Japanese},

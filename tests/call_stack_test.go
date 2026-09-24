@@ -20,7 +20,7 @@ func TestNestedCallArgumentsKeepTheirSlots(t *testing.T) {
 <기본>(<기본>(1, 2, 3), 10)를 출력하자
 <기본>(7)를 출력하자
 `
-	tree, err := runHaja(t, code)
+	tree, err := runHari(t, code)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -40,7 +40,7 @@ func TestLoopScopesDoNotLeakBetweenPasses(t *testing.T) {
     '임시'를 '가' * 10으로 정하자
     '임시'를 출력하자
 `
-	tree, err := runHaja(t, code)
+	tree, err := runHari(t, code)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -64,7 +64,7 @@ func TestRangeLoopIgnoresWhatTheBodyDoesToItsVariables(t *testing.T) {
 	}
 	for want, code := range cases {
 		want = strings.TrimSuffix(want, "#")
-		tree, err := runHaja(t, code)
+		tree, err := runHari(t, code)
 		if err != nil {
 			t.Fatal(err)
 		}

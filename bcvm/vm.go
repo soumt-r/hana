@@ -25,7 +25,7 @@ import (
 )
 
 // NativeFunction is a Go-implemented callable an embedding program (e.g.
-// bcstdlib) exposes to compiled Haja code under a fixed name. Mirrors
+// bcstdlib) exposes to compiled Hari code under a fixed name. Mirrors
 // vm.BuiltinFunction.
 type NativeFunction struct {
 	Name string
@@ -159,7 +159,7 @@ func New(program *bytecode.Program) *VM {
 	}
 }
 
-// RegisterNative makes fn callable by name from any compiled Haja code, no
+// RegisterNative makes fn callable by name from any compiled Hari code, no
 // import required — for core language tools like 숫자로/문자로 that Runtime
 // spec 1章 (묵시적 형변환 금지) requires to always be available.
 func (vm *VM) RegisterNative(name string, fn *NativeFunction) {
@@ -167,7 +167,7 @@ func (vm *VM) RegisterNative(name string, fn *NativeFunction) {
 }
 
 // RegisterNativeModule registers a builtin module (e.g. [수학]) whose
-// functions only become callable by name once a Haja program actually runs
+// functions only become callable by name once a Hari program actually runs
 // [모듈]에서 <이름>을 가져오자 (IMPORT_NATIVE) — mirrors
 // vm.Interpreter.RegisterNativeModule/NativeModules exactly.
 func (vm *VM) RegisterNativeModule(name string, module map[string]*NativeFunction) {
@@ -1274,7 +1274,7 @@ func (vm *VM) callMethod(calleeVal interface{}, args []interface{}) (interface{}
 // for the success path. One deliberate improvement: the tree-walker
 // indexes/type-asserts args without checking length or type first, which
 // panics (crashing the whole process, uncatchable) on a wrong call instead
-// of raising a Haja-level error — this version checks first and returns a
+// of raising a Hari-level error — this version checks first and returns a
 // normal ArgumentError/TypeError instead.
 func (vm *VM) callStringMethod(bm *boundStringMethod, args []interface{}) (interface{}, error) {
 	switch bm.Method {

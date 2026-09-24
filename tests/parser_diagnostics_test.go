@@ -6,9 +6,9 @@ import (
 
 	"github.com/soumt-r/hana/errs"
 
-	lexer "github.com/soumt-r/hana/lexer/haja"
+	lexer "github.com/soumt-r/hana/lexer/hari"
 	kanadelexer "github.com/soumt-r/hana/lexer/kanade"
-	parser "github.com/soumt-r/hana/parser/haja"
+	parser "github.com/soumt-r/hana/parser/hari"
 	kanadeparser "github.com/soumt-r/hana/parser/kanade"
 )
 
@@ -25,7 +25,7 @@ func TestDiagnosticsCarryPosition(t *testing.T) {
 	p.ParseProgram()
 	d := firstDiag(t, p.Diagnostics())
 	if d.Kind != parser.DiagUnknownToken || d.Line != 2 || d.Col != 2 || d.Length != 1 || d.Literal != ")" {
-		t.Errorf("haja diagnostic = %+v", d)
+		t.Errorf("hari diagnostic = %+v", d)
 	}
 }
 
@@ -57,7 +57,7 @@ func TestCleanProgramHasNoDiagnostics(t *testing.T) {
 	}
 }
 
-// The Haja lexer once counted a backslash or the letter 't' as indentation
+// The Hari lexer once counted a backslash or the letter 't' as indentation
 // (the regex was written as [ \t]), so a line starting with 't' got a bogus
 // INDENT and shifted every column on it.
 func TestLineStartingWithLatinTIsNotIndented(t *testing.T) {

@@ -15,9 +15,9 @@ import (
 
 func TestPipedOutputKeepsItsOrderWithErrors(t *testing.T) {
 	hana, _ := packTools(t)
-	inTempDir(t, map[string]string{"boom.hj": "\"먼저\"를 출력하자\n새로운 [오류](\"터졌어요\")를 발생시키자\n"})
+	inTempDir(t, map[string]string{"boom.hr": "\"먼저\"를 출력하자\n새로운 [오류](\"터졌어요\")를 발생시키자\n"})
 	for _, flags := range [][]string{{}, {"--bc"}} {
-		out, err := exec.Command(hana, append([]string{"run"}, append(flags, "boom.hj")...)...).CombinedOutput()
+		out, err := exec.Command(hana, append([]string{"run"}, append(flags, "boom.hr")...)...).CombinedOutput()
 		text := string(out)
 		if err == nil || strings.Index(text, "먼저") < 0 || strings.Index(text, "먼저") > strings.Index(text, "터졌어요") {
 			t.Errorf("%v: the output should come before the error, got %q (%v)", flags, text, err)
@@ -27,8 +27,8 @@ func TestPipedOutputKeepsItsOrderWithErrors(t *testing.T) {
 
 func TestPipedOutputAppearsWhileTheProgramWaits(t *testing.T) {
 	hana, _ := packTools(t)
-	inTempDir(t, map[string]string{"wait.hj": "[날짜]에서 <기다리기>를 가져오자\n\"안녕\"을 출력하자\n<기다리기>(3)을 실행하자\n\"끝\"을 출력하자\n"})
-	cmd := exec.Command(hana, "run", "wait.hj")
+	inTempDir(t, map[string]string{"wait.hr": "[날짜]에서 <기다리기>를 가져오자\n\"안녕\"을 출력하자\n<기다리기>(3)을 실행하자\n\"끝\"을 출력하자\n"})
+	cmd := exec.Command(hana, "run", "wait.hr")
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		t.Fatal(err)
@@ -54,8 +54,8 @@ func TestPipedOutputAppearsWhileTheProgramWaits(t *testing.T) {
 
 func TestPromptIsVisibleBeforeTheProgramReadsInput(t *testing.T) {
 	hana, _ := packTools(t)
-	inTempDir(t, map[string]string{"ask.hj": "\"이름: \"을 이어출력하자\n'이름'을 [문자열]로 입력받자\n틀\"안녕, {'이름'}\"을 출력하자\n"})
-	cmd := exec.Command(hana, "run", "ask.hj")
+	inTempDir(t, map[string]string{"ask.hr": "\"이름: \"을 이어출력하자\n'이름'을 [문자열]로 입력받자\n틀\"안녕, {'이름'}\"을 출력하자\n"})
+	cmd := exec.Command(hana, "run", "ask.hr")
 	stdin, _ := cmd.StdinPipe()
 	stdout, _ := cmd.StdoutPipe()
 	cmd.Stderr = os.Stderr

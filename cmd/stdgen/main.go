@@ -3,7 +3,7 @@
 // as hana. The Go tables stay the single source of truth; the generated files
 // are never edited by hand.
 //
-//	go run ./cmd/stdgen -haja ../haja-docs/src/utils/haja/stdNames.ts -kanade ../kanade-docs/src/utils/kanade/stdNames.ts
+//	go run ./cmd/stdgen -hari ../hari-docs/src/utils/hari/stdNames.ts -kanade ../kanade-docs/src/utils/kanade/stdNames.ts
 //	go run ./cmd/stdgen -check <same flags>   # exit 1 if any file is stale
 package main
 
@@ -18,11 +18,11 @@ import (
 
 func main() {
 	check := flag.Bool("check", false, "verify the files are up to date instead of writing them")
-	haja := flag.String("haja", "", "output path for the Haja name table")
+	hari := flag.String("hari", "", "output path for the Hari name table")
 	kanade := flag.String("kanade", "", "output path for the Kanade name table")
 	flag.Parse()
 
-	targets := map[string]string{std.Haja: *haja, std.Kanade: *kanade}
+	targets := map[string]string{std.Hari: *hari, std.Kanade: *kanade}
 	any := false
 	stale := false
 	for _, lang := range std.Languages {
@@ -47,7 +47,7 @@ func main() {
 		fmt.Println("wrote", path)
 	}
 	if !any {
-		fmt.Fprintln(os.Stderr, "usage: stdgen [-check] [-haja <out.ts>] [-kanade <out.ts>]")
+		fmt.Fprintln(os.Stderr, "usage: stdgen [-check] [-hari <out.ts>] [-kanade <out.ts>]")
 		os.Exit(2)
 	}
 	if stale {

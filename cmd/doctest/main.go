@@ -9,16 +9,16 @@ import (
 	"strings"
 
 	"github.com/soumt-r/hana/console"
-	"github.com/soumt-r/hana/lexer/haja"
+	"github.com/soumt-r/hana/lexer/hari"
 	kanadelexer "github.com/soumt-r/hana/lexer/kanade"
-	parser "github.com/soumt-r/hana/parser/haja"
+	parser "github.com/soumt-r/hana/parser/hari"
 	kanadeparser "github.com/soumt-r/hana/parser/kanade"
 	"github.com/soumt-r/hana/stdlib"
 	"github.com/soumt-r/hana/vm"
 )
 
 var (
-	hajaBlockRegex   = regexp.MustCompile("(?s)```haja([^\\n]*)\\n(.*?)```")
+	hariBlockRegex   = regexp.MustCompile("(?s)```hari([^\\n]*)\\n(.*?)```")
 	kanadeBlockRegex = regexp.MustCompile("(?s)```kanade([^\\n]*)\\n(.*?)```")
 )
 
@@ -33,7 +33,7 @@ func main() {
 	blockCount := 0
 	errorCount := 0
 
-	fmt.Println("🔍 마크다운(Markdown) 문서 내 Haja 코드 블록 런타임 검증을 시작합니다...")
+	fmt.Println("🔍 마크다운(Markdown) 문서 내 Hari 코드 블록 런타임 검증을 시작합니다...")
 
 	err := filepath.Walk(docsDir, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
@@ -106,12 +106,12 @@ type docBlock struct {
 	isKanade bool
 }
 
-// extractBlocks finds every ```haja and ```kanade fenced block in content,
+// extractBlocks finds every ```hari and ```kanade fenced block in content,
 // in source order (a file could in principle mix both, though today it
-// won't — haja-docs only has ```haja, kanade-docs only ```kanade).
+// won't — hari-docs only has ```hari, kanade-docs only ```kanade).
 func extractBlocks(content string) []docBlock {
 	var blocks []docBlock
-	for _, m := range hajaBlockRegex.FindAllStringSubmatch(content, -1) {
+	for _, m := range hariBlockRegex.FindAllStringSubmatch(content, -1) {
 		blocks = append(blocks, docBlock{meta: strings.TrimSpace(m[1]), code: strings.TrimSpace(m[2])})
 	}
 	for _, m := range kanadeBlockRegex.FindAllStringSubmatch(content, -1) {
@@ -146,7 +146,7 @@ func runKanadeCode(code string) error {
 }
 
 func runCode(code string) error {
-	l := haja.New(code)
+	l := hari.New(code)
 	p := parser.New(l)
 	prog := p.ParseProgram()
 

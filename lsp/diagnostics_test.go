@@ -33,8 +33,8 @@ func diagnosticsAfterOpen(t *testing.T, uri, text string) []diagnostic {
 	return nil
 }
 
-func TestHajaDiagnosticPointsAtTheBadToken(t *testing.T) {
-	ds := diagnosticsAfterOpen(t, "file:///a.hj", "\"a\"를 출력하자\n  ) 만약")
+func TestHariDiagnosticPointsAtTheBadToken(t *testing.T) {
+	ds := diagnosticsAfterOpen(t, "file:///a.hr", "\"a\"를 출력하자\n  ) 만약")
 	if len(ds) == 0 {
 		t.Fatal("expected a diagnostic")
 	}
@@ -46,7 +46,7 @@ func TestHajaDiagnosticPointsAtTheBadToken(t *testing.T) {
 		t.Errorf("message should quote the token: %q", d.Message)
 	}
 	if !strings.HasSuffix(d.Message, "요.") {
-		t.Errorf("haja message should be 해요체: %q", d.Message)
+		t.Errorf("hari message should be 해요체: %q", d.Message)
 	}
 }
 
@@ -66,7 +66,7 @@ func TestKanadeDiagnosticsAreJapanese(t *testing.T) {
 func TestCleanDocumentPublishesEmptyListNotNull(t *testing.T) {
 	open, _ := json.Marshal(map[string]any{
 		"jsonrpc": "2.0", "method": "textDocument/didOpen",
-		"params": map[string]any{"textDocument": map[string]any{"uri": "file:///ok.hj", "text": "\"안녕\"을 출력하자\n"}},
+		"params": map[string]any{"textDocument": map[string]any{"uri": "file:///ok.hr", "text": "\"안녕\"을 출력하자\n"}},
 	})
 	got, _ := session(t, initMsg, string(open), exitMsg)
 	for _, m := range got {
@@ -93,7 +93,7 @@ func TestUnknownExtensionGetsNoDiagnostics(t *testing.T) {
 func TestColumnsAreUTF16UnitsAfterWideCharacters(t *testing.T) {
 	// The emoji is one character but two UTF-16 units, so the bad token's
 	// editor column is one more than its character column.
-	ds := diagnosticsAfterOpen(t, "file:///w.hj", "\"😀\"를 출력하자 ,\n")
+	ds := diagnosticsAfterOpen(t, "file:///w.hr", "\"😀\"를 출력하자 ,\n")
 	if len(ds) == 0 {
 		t.Fatal("expected a diagnostic")
 	}
@@ -104,7 +104,7 @@ func TestColumnsAreUTF16UnitsAfterWideCharacters(t *testing.T) {
 }
 
 func TestDiagnosticPastTheEndIsPinnedToLastLine(t *testing.T) {
-	ds := diagnosticsAfterOpen(t, "file:///e.hj", "1 + )")
+	ds := diagnosticsAfterOpen(t, "file:///e.hr", "1 + )")
 	for _, d := range ds {
 		if d.Range.Start.Line != 0 {
 			t.Errorf("single-line doc, diagnostic on line %d: %+v", d.Range.Start.Line, d)
@@ -113,8 +113,8 @@ func TestDiagnosticPastTheEndIsPinnedToLastLine(t *testing.T) {
 }
 
 func TestDidCloseClearsDiagnostics(t *testing.T) {
-	open := `{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///c.hj","text":")"}}}`
-	closeMsg := `{"jsonrpc":"2.0","method":"textDocument/didClose","params":{"textDocument":{"uri":"file:///c.hj"}}}`
+	open := `{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///c.hr","text":")"}}}`
+	closeMsg := `{"jsonrpc":"2.0","method":"textDocument/didClose","params":{"textDocument":{"uri":"file:///c.hr"}}}`
 	got, _ := session(t, initMsg, open, closeMsg, exitMsg)
 	var last message
 	for _, m := range got {

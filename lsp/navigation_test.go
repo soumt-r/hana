@@ -33,7 +33,7 @@ func at(t *testing.T, text, needle string, nth int) (int, int) {
 
 func definitionAt(t *testing.T, lang *language, text string, line, col int) *location {
 	t.Helper()
-	uri := "file:///x." + map[string]string{"haja": "hj", "kanade": "knd"}[lang.id]
+	uri := "file:///x." + map[string]string{"hari": "hr", "kanade": "knd"}[lang.id]
 	req := func(method string, id int, extra string) string {
 		return `{"jsonrpc":"2.0","id":` + string(rune('0'+id)) + `,"method":"` + method + `","params":{"textDocument":{"uri":"` + uri + `"}` + extra + `}}`
 	}
@@ -63,12 +63,12 @@ func definitionAt(t *testing.T, lang *language, text string, line, col int) *loc
 
 func TestDefinitionOfAVariableUseIsItsDeclarationLine(t *testing.T) {
 	line, col := at(t, navSample, "'결과값'", 1) // the use on line 2
-	loc := definitionAt(t, hajaLang, navSample, line, col+2)
+	loc := definitionAt(t, hariLang, navSample, line, col+2)
 	if loc == nil || loc.Range.Start.Line != 1 || loc.Range.Start.Character != 4 {
 		t.Errorf("definition = %+v, want line 1 col 4", loc)
 	}
 	line, col = at(t, navSample, "'값'", 1)
-	loc = definitionAt(t, hajaLang, navSample, line, col+1)
+	loc = definitionAt(t, hariLang, navSample, line, col+1)
 	if loc == nil || loc.Range.Start.Line != 3 || loc.Range.Start.Character != 0 {
 		t.Errorf("'값' definition = %+v, want line 3 col 0", loc)
 	}
@@ -76,7 +76,7 @@ func TestDefinitionOfAVariableUseIsItsDeclarationLine(t *testing.T) {
 
 func TestDefinitionOfAFunctionCallIsItsMakeLine(t *testing.T) {
 	line, col := at(t, navSample, "<더하기>", 1)
-	loc := definitionAt(t, hajaLang, navSample, line, col+2)
+	loc := definitionAt(t, hariLang, navSample, line, col+2)
 	if loc == nil || loc.Range.Start.Line != 0 {
 		t.Errorf("definition = %+v, want line 0", loc)
 	}
@@ -84,7 +84,7 @@ func TestDefinitionOfAFunctionCallIsItsMakeLine(t *testing.T) {
 
 func TestDefinitionOfAParameterIsTheSignature(t *testing.T) {
 	line, col := at(t, navSample, "'가'", 1) // used in the body
-	loc := definitionAt(t, hajaLang, navSample, line, col+1)
+	loc := definitionAt(t, hariLang, navSample, line, col+1)
 	if loc == nil || loc.Range.Start.Line != 0 {
 		t.Errorf("definition = %+v, want the parameter on line 0", loc)
 	}
@@ -93,7 +93,7 @@ func TestDefinitionOfAParameterIsTheSignature(t *testing.T) {
 func TestDefinitionOfATypeIsItsClassLine(t *testing.T) {
 	src := "[개]를 설계하자:\n    '이름'을 \"멍\"으로 정하자\n'나'를 새로운 [개]()로 정하자\n"
 	line, col := at(t, src, "[개]", 1)
-	loc := definitionAt(t, hajaLang, src, line, col+1)
+	loc := definitionAt(t, hariLang, src, line, col+1)
 	if loc == nil || loc.Range.Start.Line != 0 {
 		t.Errorf("definition = %+v, want line 0", loc)
 	}
@@ -110,10 +110,10 @@ func TestDefinitionWorksForKanade(t *testing.T) {
 
 func TestNoDefinitionForKeywordsOrNothing(t *testing.T) {
 	line, col := at(t, navSample, "출력하자", 0)
-	if loc := definitionAt(t, hajaLang, navSample, line, col+1); loc != nil {
+	if loc := definitionAt(t, hariLang, navSample, line, col+1); loc != nil {
 		t.Errorf("a keyword has no definition, got %+v", loc)
 	}
-	if loc := definitionAt(t, hajaLang, navSample, 40, 0); loc != nil {
+	if loc := definitionAt(t, hariLang, navSample, 40, 0); loc != nil {
 		t.Errorf("past the end has no definition, got %+v", loc)
 	}
 }
@@ -121,9 +121,9 @@ func TestNoDefinitionForKeywordsOrNothing(t *testing.T) {
 func TestDocumentSymbolsListDeclarationsWithPositions(t *testing.T) {
 	open, _ := json.Marshal(map[string]any{
 		"jsonrpc": "2.0", "method": "textDocument/didOpen",
-		"params": map[string]any{"textDocument": map[string]any{"uri": "file:///s.hj", "text": navSample}},
+		"params": map[string]any{"textDocument": map[string]any{"uri": "file:///s.hr", "text": navSample}},
 	})
-	req := `{"jsonrpc":"2.0","id":8,"method":"textDocument/documentSymbol","params":{"textDocument":{"uri":"file:///s.hj"}}}`
+	req := `{"jsonrpc":"2.0","id":8,"method":"textDocument/documentSymbol","params":{"textDocument":{"uri":"file:///s.hr"}}}`
 	got, _ := session(t, initMsg, string(open), req, exitMsg)
 	for _, m := range got {
 		if string(m.ID) != "8" {

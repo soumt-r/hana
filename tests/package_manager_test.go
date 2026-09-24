@@ -40,26 +40,26 @@ func installed(t *testing.T, cache, project map[string]string) string {
 func TestInstalledPackageImportsInBothLanguagesAndEngines(t *testing.T) {
 	installed(t, map[string]string{
 		greetPath + "@1.0.0/hana.pkg.json":    `{"name": "` + greetPath + `"}`,
-		greetPath + "@1.0.0/haja/index.hj":    "<인사하기>를 만들자 ('이름'):\n    '글'을 틀\"안녕, {'이름'}!\"으로 정하자\n    '글'을 돌려주자\n",
+		greetPath + "@1.0.0/hari/index.hr":    "<인사하기>를 만들자 ('이름'):\n    '글'을 틀\"안녕, {'이름'}!\"으로 정하자\n    '글'을 돌려주자\n",
 		greetPath + "@1.0.0/kanade/index.knd": "〈挨拶〉を作ろう(『名前』):\n    『文』を枠「こんにちは、{『名前』}！」にしよう\n    『文』を返そう\n",
 	}, map[string]string{
 		"hana.json":      `{"dependencies": {"` + greetPath + `": "1.0.0"}}`,
 		"hana-lock.json": `{"` + greetPath + `": {"version": "1.0.0", "commit": "abc"}}`,
 	})
 
-	haja := "[" + greetPath + "]에서 <인사하기>를 가져오자\n<인사하기>(\"하나\")를 출력하자\n"
+	hari := "[" + greetPath + "]에서 <인사하기>를 가져오자\n<인사하기>(\"하나\")를 출력하자\n"
 	kanade := "【" + greetPath + "】から〈挨拶〉を持ってこよう\n〈挨拶〉(「カナデ」)を出力しよう\n"
 
-	tree, err := runHaja(t, haja)
+	tree, err := runHari(t, hari)
 	if err != nil {
-		t.Fatalf("haja tree-walker: %v", err)
+		t.Fatalf("hari tree-walker: %v", err)
 	}
-	bc, err := runBytecode(t, haja)
+	bc, err := runBytecode(t, hari)
 	if err != nil {
-		t.Fatalf("haja bytecode: %v", err)
+		t.Fatalf("hari bytecode: %v", err)
 	}
 	if got := strings.Join(tree.Output, "|") + "#" + strings.Join(bc.Output, "|"); got != "안녕, 하나!#안녕, 하나!" {
-		t.Errorf("haja printed %q", got)
+		t.Errorf("hari printed %q", got)
 	}
 
 	tree2, err := runKanade(t, kanade)
@@ -77,7 +77,7 @@ func TestInstalledPackageImportsInBothLanguagesAndEngines(t *testing.T) {
 
 func TestOnlyOneLanguageEntryIsRequired(t *testing.T) {
 	installed(t, map[string]string{
-		greetPath + "@1.0.0/haja/index.hj": "<인사하기>를 만들자 ('이름'):\n    '이름'을 돌려주자\n",
+		greetPath + "@1.0.0/hari/index.hr": "<인사하기>를 만들자 ('이름'):\n    '이름'을 돌려주자\n",
 	}, map[string]string{
 		"hana.json":      `{"dependencies": {"` + greetPath + `": "1.0.0"}}`,
 		"hana-lock.json": `{"` + greetPath + `": {"version": "1.0.0", "commit": "a"}}`,
@@ -89,10 +89,10 @@ func TestOnlyOneLanguageEntryIsRequired(t *testing.T) {
 func TestReplaceUsesALocalFolderAndTheLockIsNotNeeded(t *testing.T) {
 	dir := installed(t, nil, map[string]string{
 		"hana.json":                    `{"dependencies": {"` + greetPath + `": "1.0.0"}, "replace": {"` + greetPath + `": "../local-greet"}}`,
-		"../local-greet/haja/index.hj": "<인사하기>를 만들자 ():\n    \"로컬\"을 돌려주자\n",
+		"../local-greet/hari/index.hr": "<인사하기>를 만들자 ():\n    \"로컬\"을 돌려주자\n",
 	})
 	_ = dir
-	interp, err := runHaja(t, "["+greetPath+"]에서 <인사하기>를 가져오자\n<인사하기>()를 출력하자\n")
+	interp, err := runHari(t, "["+greetPath+"]에서 <인사하기>를 가져오자\n<인사하기>()를 출력하자\n")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -106,7 +106,7 @@ func TestAPackageThatIsNotInstalledSaysSo(t *testing.T) {
 		"hana.json": `{"dependencies": {"` + greetPath + `": "1.0.0"}}`,
 	})
 	code := "[" + greetPath + "]에서 <인사하기>를 가져오자\n"
-	_, err := runHaja(t, code)
+	_, err := runHari(t, code)
 	requireErrorContains(t, err, "is not installed")
 	_, err = runBytecode(t, code)
 	requireErrorContains(t, err, "is not installed")

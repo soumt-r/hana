@@ -3,7 +3,7 @@ package tests
 // `[상자]인 <만들기>()` is a call whose result is checked against [상자]. It used to be
 // read as a static call on the class (the reading Kanade needs, where "の" is both the
 // type word and the member particle) and failed with "static member not found".
-// A Haja static call is spelled with the particle: `[상자]의 <이름짓기>()`.
+// A Hari static call is spelled with the particle: `[상자]의 <이름짓기>()`.
 
 import (
 	"strings"

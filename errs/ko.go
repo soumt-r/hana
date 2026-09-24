@@ -1,6 +1,6 @@
 package errs
 
-// koCatalog is 하자(Haja)'s wording. Tone rule: 해요체 — every sentence ends
+// koCatalog is 하리(Hari)'s wording. Tone rule: 해요체 — every sentence ends
 // in ~요 (~해요/~예요/~어요), never ~합니다/~습니다 (errs_test.go lints this).
 // Where the docs already quote a message (접근 위반, 목록 범위 초과, 사전 키 없음,
 // 상수 재대입), the wording here is the docs' own, verbatim.

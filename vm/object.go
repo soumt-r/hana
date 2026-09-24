@@ -6,21 +6,21 @@ import (
 	"github.com/soumt-r/hana/value"
 )
 
-type HajaObject struct {
+type HariObject struct {
 	ClassName string
 	Props     map[string]interface{}
 	class     *ast.ClassDeclaration // ClassName's declaration, found on first use (see classOf)
 }
 
-func NewHajaObject(className string) *HajaObject {
-	return &HajaObject{
+func NewHariObject(className string) *HariObject {
+	return &HariObject{
 		ClassName: className,
 		Props:     make(map[string]interface{}),
 	}
 }
 
 type BoundMethod struct {
-	Object   *HajaObject
+	Object   *HariObject
 	FuncName string
 	Sym      symbol.Symbol // FuncName as a Symbol
 	IsSuper  bool
@@ -50,7 +50,7 @@ type BoundStaticMethod struct {
 }
 
 type SuperReference struct {
-	Object *HajaObject
+	Object *HariObject
 }
 
 // ClassReference는 클래스 자체를 값으로 취급할 때 씁니다 (정적 멤버 접근, instanceof 등).

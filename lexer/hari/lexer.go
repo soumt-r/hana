@@ -1,4 +1,4 @@
-package haja
+package hari
 
 import (
 	"regexp"

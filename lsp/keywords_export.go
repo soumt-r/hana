@@ -7,13 +7,13 @@ import (
 )
 
 // LanguageKeys lists the languages the browser engines are generated for
-// ("haja", "kanade"), matching the ids used by the language tables.
-var LanguageKeys = []string{"haja", "kanade"}
+// ("hari", "kanade"), matching the ids used by the language tables.
+var LanguageKeys = []string{"hari", "kanade"}
 
 func languageByID(id string) *language {
 	switch id {
-	case "haja":
-		return hajaLang
+	case "hari":
+		return hariLang
 	case "kanade":
 		return kanadeLang
 	}

@@ -10,8 +10,8 @@ import (
 
 	"github.com/soumt-r/hana/bcvm"
 	"github.com/soumt-r/hana/bytecode"
-	lexer "github.com/soumt-r/hana/lexer/haja"
-	parser "github.com/soumt-r/hana/parser/haja"
+	lexer "github.com/soumt-r/hana/lexer/hari"
+	parser "github.com/soumt-r/hana/parser/hari"
 )
 
 func compileSource(t *testing.T, code string) *bytecode.Program {
@@ -82,7 +82,7 @@ func TestProgramRoundTrip(t *testing.T) {
 `)
 
 	var buf bytes.Buffer
-	if err := prog.Encode(&buf, bytecode.LangHaja); err != nil {
+	if err := prog.Encode(&buf, bytecode.LangHari); err != nil {
 		t.Fatalf("Encode: %v", err)
 	}
 
@@ -170,7 +170,7 @@ func TestProgramRoundTripExecutesIdentically(t *testing.T) {
 	before := runProgram(t, prog)
 
 	var buf bytes.Buffer
-	if err := prog.Encode(&buf, bytecode.LangHaja); err != nil {
+	if err := prog.Encode(&buf, bytecode.LangHari); err != nil {
 		t.Fatalf("Encode: %v", err)
 	}
 	decoded, _, err := bytecode.ReadProgram(&buf)
@@ -207,13 +207,13 @@ func TestModuleStateSurvivesSerialization(t *testing.T) {
 	}
 	defer os.Chdir(old)
 	lib := "'횟수'를 [숫자]인 0으로 정하자\n<세기>를 만들자 ():\n    '횟수'에 1을 더하자\n    '횟수'를 돌려주자\n"
-	if err := os.WriteFile("lib.hj", []byte(lib), 0o644); err != nil {
+	if err := os.WriteFile("lib.hr", []byte(lib), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	prog := compileSource(t, "\"lib.hj\"에서 <세기>를 가져오자\n<세기>()를 출력하자\n<세기>()를 출력하자\n")
+	prog := compileSource(t, "\"lib.hr\"에서 <세기>를 가져오자\n<세기>()를 출력하자\n<세기>()를 출력하자\n")
 
 	var buf bytes.Buffer
-	if err := prog.Encode(&buf, bytecode.LangHaja); err != nil {
+	if err := prog.Encode(&buf, bytecode.LangHari); err != nil {
 		t.Fatal(err)
 	}
 	decoded, _, err := bytecode.ReadProgram(&buf)

@@ -100,23 +100,23 @@ func TestDocumentSyncTracksOpenChangeClose(t *testing.T) {
 	var in bytes.Buffer
 	for _, m := range []string{
 		initMsg,
-		`{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///a.hj","text":"one"}}}`,
-		`{"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///a.hj"},"contentChanges":[{"text":"two"},{"text":"three"}]}}`,
+		`{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///a.hr","text":"one"}}}`,
+		`{"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///a.hr"},"contentChanges":[{"text":"two"},{"text":"three"}]}}`,
 	} {
 		fmt.Fprintf(&in, "Content-Length: %d\r\n\r\n%s", len(m), m)
 	}
 	srv := NewServer(&in, &bytes.Buffer{})
 	srv.Serve()
-	if srv.docs["file:///a.hj"] != "three" {
-		t.Fatalf("after open+change want %q, got %q", "three", srv.docs["file:///a.hj"])
+	if srv.docs["file:///a.hr"] != "three" {
+		t.Fatalf("after open+change want %q, got %q", "three", srv.docs["file:///a.hr"])
 	}
 
 	in.Reset()
-	closeMsg := `{"jsonrpc":"2.0","method":"textDocument/didClose","params":{"textDocument":{"uri":"file:///a.hj"}}}`
+	closeMsg := `{"jsonrpc":"2.0","method":"textDocument/didClose","params":{"textDocument":{"uri":"file:///a.hr"}}}`
 	fmt.Fprintf(&in, "Content-Length: %d\r\n\r\n%s", len(closeMsg), closeMsg)
 	srv.in = bufio.NewReader(&in)
 	srv.Serve()
-	if _, ok := srv.docs["file:///a.hj"]; ok {
+	if _, ok := srv.docs["file:///a.hr"]; ok {
 		t.Error("didClose should forget the document")
 	}
 }

@@ -11,7 +11,7 @@ import (
 // TypeScript engines format it identically.
 func TestDictionaryDisplay(t *testing.T) {
 	c := dualRun{
-		haja: `'점수'를 [(문자열, 숫자)사전]인 {"수학": 80, "국어": 90}으로 정하자
+		hari: `'점수'를 [(문자열, 숫자)사전]인 {"수학": 80, "국어": 90}으로 정하자
 '점수'를 출력하자
 '목록'을 [(아무거나)목록]인 [{"a": 참}, 1]로 정하자
 '목록'을 출력하자

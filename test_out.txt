@@ -1,0 +1,8667 @@
+=== RUN   TestAbstractTypesCannotBeInstantiated
+=== RUN   TestAbstractTypesCannotBeInstantiated/interface
+=== RUN   TestAbstractTypesCannotBeInstantiated/abstract_class
+=== RUN   TestAbstractTypesCannotBeInstantiated/abstract_class_assigned_to_a_variable
+=== RUN   TestAbstractTypesCannotBeInstantiated/a_concrete_child_of_an_abstract_class_is_fine
+=== RUN   TestAbstractTypesCannotBeInstantiated/an_ordinary_class_is_still_fine
+--- PASS: TestAbstractTypesCannotBeInstantiated (0.00s)
+    --- PASS: TestAbstractTypesCannotBeInstantiated/interface (0.00s)
+    --- PASS: TestAbstractTypesCannotBeInstantiated/abstract_class (0.00s)
+    --- PASS: TestAbstractTypesCannotBeInstantiated/abstract_class_assigned_to_a_variable (0.00s)
+    --- PASS: TestAbstractTypesCannotBeInstantiated/a_concrete_child_of_an_abstract_class_is_fine (0.00s)
+    --- PASS: TestAbstractTypesCannotBeInstantiated/an_ordinary_class_is_still_fine (0.00s)
+=== RUN   TestStringCharactersAreImmutable
+=== RUN   TestStringCharactersAreImmutable/reassigning_a_character
+=== RUN   TestStringCharactersAreImmutable/reading_a_character_is_fine
+=== RUN   TestStringCharactersAreImmutable/list_elements_can_still_be_reassigned
+--- PASS: TestStringCharactersAreImmutable (0.00s)
+    --- PASS: TestStringCharactersAreImmutable/reassigning_a_character (0.00s)
+    --- PASS: TestStringCharactersAreImmutable/reading_a_character_is_fine (0.00s)
+    --- PASS: TestStringCharactersAreImmutable/list_elements_can_still_be_reassigned (0.00s)
+=== RUN   TestBuiltinToNumber
+--- PASS: TestBuiltinToNumber (0.00s)
+=== RUN   TestBuiltinToCode
+--- PASS: TestBuiltinToCode (0.00s)
+=== RUN   TestBuiltinToText
+--- PASS: TestBuiltinToText (0.00s)
+=== RUN   TestBytecodeConstantsCannotBeReassigned
+=== RUN   TestBytecodeConstantsCannotBeReassigned/plain_reassignment
+=== RUN   TestBytecodeConstantsCannotBeReassigned/list_push
+--- PASS: TestBytecodeConstantsCannotBeReassigned (0.00s)
+    --- PASS: TestBytecodeConstantsCannotBeReassigned/plain_reassignment (0.00s)
+    --- PASS: TestBytecodeConstantsCannotBeReassigned/list_push (0.00s)
+=== RUN   TestBytecodeConstantReadableAndCatchable
+--- PASS: TestBytecodeConstantReadableAndCatchable (0.00s)
+=== RUN   TestBytecodeDictionaries
+--- PASS: TestBytecodeDictionaries (0.00s)
+=== RUN   TestBytecodeDictionaryIsSharedByReference
+--- PASS: TestBytecodeDictionaryIsSharedByReference (0.00s)
+=== RUN   TestBytecodeMatchesTreeWalkerOnFormerlyDivergentFeatures
+=== RUN   TestBytecodeMatchesTreeWalkerOnFormerlyDivergentFeatures/quoted_나/私_with_no_self_bound_is_an_ordinary_variable
+=== RUN   TestBytecodeMatchesTreeWalkerOnFormerlyDivergentFeatures/class_name_as_a_value_reaches_its_static_fields
+=== RUN   TestBytecodeMatchesTreeWalkerOnFormerlyDivergentFeatures/getter_runs_on_read
+=== RUN   TestBytecodeMatchesTreeWalkerOnFormerlyDivergentFeatures/static_field_assigned_from_inside_a_static_method
+=== RUN   TestBytecodeMatchesTreeWalkerOnFormerlyDivergentFeatures/==_calls_the_class's_equality_magic_method
+=== RUN   TestBytecodeMatchesTreeWalkerOnFormerlyDivergentFeatures/dynamic_reflection_<'변수'>()_calls_the_method_the_variable_names
+--- PASS: TestBytecodeMatchesTreeWalkerOnFormerlyDivergentFeatures (0.01s)
+    --- PASS: TestBytecodeMatchesTreeWalkerOnFormerlyDivergentFeatures/quoted_나/私_with_no_self_bound_is_an_ordinary_variable (0.00s)
+    --- PASS: TestBytecodeMatchesTreeWalkerOnFormerlyDivergentFeatures/class_name_as_a_value_reaches_its_static_fields (0.00s)
+    --- PASS: TestBytecodeMatchesTreeWalkerOnFormerlyDivergentFeatures/getter_runs_on_read (0.00s)
+    --- PASS: TestBytecodeMatchesTreeWalkerOnFormerlyDivergentFeatures/static_field_assigned_from_inside_a_static_method (0.00s)
+    --- PASS: TestBytecodeMatchesTreeWalkerOnFormerlyDivergentFeatures/==_calls_the_class's_equality_magic_method (0.00s)
+    --- PASS: TestBytecodeMatchesTreeWalkerOnFormerlyDivergentFeatures/dynamic_reflection_<'변수'>()_calls_the_method_the_variable_names (0.00s)
+=== RUN   TestDefaultLoopItemNameIsTheLanguages
+--- PASS: TestDefaultLoopItemNameIsTheLanguages (0.00s)
+=== RUN   TestBytecodeArithmeticAndPrint
+--- PASS: TestBytecodeArithmeticAndPrint (0.00s)
+=== RUN   TestBytecodeIfElse
+--- PASS: TestBytecodeIfElse (0.00s)
+=== RUN   TestBytecodeWhileLoop
+--- PASS: TestBytecodeWhileLoop (0.00s)
+=== RUN   TestBytecodeForRange
+--- PASS: TestBytecodeForRange (0.00s)
+=== RUN   TestBytecodeFunctionDefaultsAndOverride
+--- PASS: TestBytecodeFunctionDefaultsAndOverride (0.00s)
+=== RUN   TestBytecodeMissingAndTooManyArguments
+--- PASS: TestBytecodeMissingAndTooManyArguments (0.00s)
+=== RUN   TestBytecodeRecursion
+--- PASS: TestBytecodeRecursion (0.00s)
+=== RUN   TestBytecodeListOps
+--- PASS: TestBytecodeListOps (0.00s)
+=== RUN   TestBytecodeListPopExpressionAndEmptyError
+--- PASS: TestBytecodeListPopExpressionAndEmptyError (0.00s)
+=== RUN   TestBytecodeTemplateLiteral
+--- PASS: TestBytecodeTemplateLiteral (0.00s)
+=== RUN   TestBytecodeLogicalShortCircuit
+--- PASS: TestBytecodeLogicalShortCircuit (0.00s)
+=== RUN   TestBytecodeDivideByZero
+--- PASS: TestBytecodeDivideByZero (0.00s)
+=== RUN   TestBytecodeSwitchFallthrough
+--- PASS: TestBytecodeSwitchFallthrough (0.00s)
+=== RUN   TestBytecodeSwitchMultiTestAndDefault
+--- PASS: TestBytecodeSwitchMultiTestAndDefault (0.00s)
+=== RUN   TestBytecodeForEachDefaultItemName
+--- PASS: TestBytecodeForEachDefaultItemName (0.00s)
+=== RUN   TestBytecodeForEachNamedItemAndBreak
+--- PASS: TestBytecodeForEachNamedItemAndBreak (0.00s)
+=== RUN   TestBytecodeClassConstructorAndInheritance
+--- PASS: TestBytecodeClassConstructorAndInheritance (0.00s)
+=== RUN   TestBytecodeClassOverrideAndSuperCall
+--- PASS: TestBytecodeClassOverrideAndSuperCall (0.00s)
+=== RUN   TestBytecodeStaticFieldAndMethod
+--- PASS: TestBytecodeStaticFieldAndMethod (0.00s)
+=== RUN   TestBytecodePrivateAccessViolation
+--- PASS: TestBytecodePrivateAccessViolation (0.00s)
+6
+6
+6
+6
+철수
+철수
+太郎
+太郎
+홍
+홍
+山
+山
+9
+9
+9
+9
+ConstantAssignmentError: 상수 '원주율'의 값은 변경할 수 없어요.
+원주율은 3.14
+ConstantAssignmentError: 상수 '원주율'의 값은 변경할 수 없어요.
+원주율은 3.14
+ConstantAssignmentError: 定数 '円周率' の値は変更できません。
+円周率は3.14
+ConstantAssignmentError: 定数 '円周率' の値は変更できません。
+円周率は3.14
+국어 점수: 90
+오른 수학 점수: 90
+영어: 95
+KeyError: 사전에서 '과학' 이름을 찾을 수 없어요.
+국어 점수: 90
+오른 수학 점수: 90
+영어: 95
+KeyError: 사전에서 '과학' 이름을 찾을 수 없어요.
+国語の点数:90
+上がった数学の点数:90
+英語:95
+KeyError: 辞書から '科学' という名前を見つけることができません。
+国語の点数:90
+上がった数学の点数:90
+英語:95
+KeyError: 辞書から '科学' という名前を見つけることができません。
+상태: 바뀜
+상태: 바뀜
+状態:変わった
+状態:変わった
+30
+30
+20
+20
+수: 7
+수: 7
+数:7
+数:7
+1000
+1000
+1000
+1000
+처음
+처음
+처음
+처음
+最初
+最初
+最初
+最初
+a==b
+a!=c
+a==b
+a!=c
+a==b
+a!=c
+a==b
+a!=c
+취소됨
+취소됨
+キャンセル
+キャンセル
+사과
+배
+사과
+배
+りんご
+なし
+りんご
+なし
+20
+42
+0
+1
+2
+1
+2
+3
+5
+4
+3
+2
+1
+3
+11
+120
+[사과, 포도, 수박]
+3
+사과
+수박
+[사과, 포도]
+철수님은 25살입니다
+끝1
+실행됨
+끝2
+환영합니다
+안녕하세요
+중간
+기타
+사과
+포도
+배
+철수
+영희
+3
+파랑
+상속됨
+멍멍 (...)
+1, 2, 2
+=== RUN   TestBytecodeInterfacePreflightRejectsIncompleteClass
+--- PASS: TestBytecodeInterfacePreflightRejectsIncompleteClass (0.00s)
+=== RUN   TestBytecodeInterfaceImplementedPasses
+--- PASS: TestBytecodeInterfaceImplementedPasses (0.00s)
+=== RUN   TestBytecodeSetter
+--- PASS: TestBytecodeSetter (0.00s)
+=== RUN   TestBytecodeCatchUntypedCatchesEngineError
+--- PASS: TestBytecodeCatchUntypedCatchesEngineError (0.00s)
+=== RUN   TestBytecodeCatchTypedHandlerDoesNotMatchEngineError
+--- PASS: TestBytecodeCatchTypedHandlerDoesNotMatchEngineError (0.00s)
+=== RUN   TestBytecodeThrowAndTypedCatchViaUpcasting
+--- PASS: TestBytecodeThrowAndTypedCatchViaUpcasting (0.00s)
+=== RUN   TestBytecodeFinallyRunsOnNormalCompletion
+--- PASS: TestBytecodeFinallyRunsOnNormalCompletion (0.00s)
+=== RUN   TestBytecodeFinallyRunsThenRethrowsOnNoMatchingHandler
+--- PASS: TestBytecodeFinallyRunsThenRethrowsOnNoMatchingHandler (0.00s)
+=== RUN   TestBytecodeFinallyRunsBeforeReturn
+--- PASS: TestBytecodeFinallyRunsBeforeReturn (0.00s)
+=== RUN   TestBytecodeFinallyRunsBeforeBreakAndLoopStillExits
+--- PASS: TestBytecodeFinallyRunsBeforeBreakAndLoopStillExits (0.00s)
+=== RUN   TestBytecodeNestedTryOuterCatchesAfterInnerFinally
+--- PASS: TestBytecodeNestedTryOuterCatchesAfterInnerFinally (0.00s)
+=== RUN   TestBytecodeListPushPopOnObjectField
+--- PASS: TestBytecodeListPushPopOnObjectField (0.00s)
+=== RUN   TestBytecodeConversionBuiltinsAlwaysAvailable
+--- PASS: TestBytecodeConversionBuiltinsAlwaysAvailable (0.00s)
+=== RUN   TestBytecodeMathModuleGatedByImport
+--- PASS: TestBytecodeMathModuleGatedByImport (0.00s)
+=== RUN   TestBytecodeLocalFileImportFunctionAndClass
+--- PASS: TestBytecodeLocalFileImportFunctionAndClass (0.01s)
+=== RUN   TestBytecodeLocalImportMissingFile
+--- PASS: TestBytecodeLocalImportMissingFile (0.00s)
+=== RUN   TestBytecodeCircularLocalImportIsRejected
+--- PASS: TestBytecodeCircularLocalImportIsRejected (0.01s)
+=== RUN   TestBytecodeImportAliasResolvesNameCollision
+--- PASS: TestBytecodeImportAliasResolvesNameCollision (0.01s)
+=== RUN   TestBytecodeImportAliasForBuiltinModule
+--- PASS: TestBytecodeImportAliasForBuiltinModule (0.00s)
+=== RUN   TestBytecodeInputStatementBindsEmptyStringWithoutBlocking
+--- PASS: TestBytecodeInputStatementBindsEmptyStringWithoutBlocking (0.00s)
+=== RUN   TestBytecodeStringPseudoMethods
+    bytecode_test.go:877: Output = [안녕 안녕하세요 하리 [안녕하세요, 세계] 참 거짓], want [안녕 안녕하세요 하자 [안녕하세요, 세계] 참 거짓]
+--- FAIL: TestBytecodeStringPseudoMethods (0.00s)
+=== RUN   TestBytecodeStringPseudoMethodWrongArgCountErrors
+--- PASS: TestBytecodeStringPseudoMethodWrongArgCountErrors (0.00s)
+=== RUN   TestBytecodeListClearMethod
+--- PASS: TestBytecodeListClearMethod (0.00s)
+=== RUN   TestBytecodeListClearMethodOnObjectField
+--- PASS: TestBytecodeListClearMethodOnObjectField (0.00s)
+=== RUN   TestBytecodeListClearMethodOnNonListErrors
+--- PASS: TestBytecodeListClearMethodOnNonListErrors (0.00s)
+=== RUN   TestNestedCallArgumentsKeepTheirSlots
+--- PASS: TestNestedCallArgumentsKeepTheirSlots (0.00s)
+=== RUN   TestLoopScopesDoNotLeakBetweenPasses
+--- PASS: TestLoopScopesDoNotLeakBetweenPasses (0.00s)
+=== RUN   TestRangeLoopIgnoresWhatTheBodyDoesToItsVariables
+야옹
+100
+잡힘: DivideByZeroError: 0으로 나눌 수 없어요.
+폴백
+잡힘: 커스텀 실패
+try
+finally
+finally
+finally
+결과: 7
+finally(i=1)
+finally(i=2)
+finally(i=3)
+끝: 3
+inner-finally
+outer-caught: DivideByZeroError: 0으로 나눌 수 없어요.
+[사과, 바나나]
+바나나
+[사과]
+42
+3.5
+65
+A
+4
+3
+제곱: 49
+소개: 도형
+A: 11
+B: 20
+4
+이름: ''
+끝
+안녕
+안녕하세요 하리
+[안녕하세요, 세계]
+참
+거짓
+2
+0
+2
+0
+16
+17
+308
+16
+17
+308
+10
+20
+30
+10
+20
+30
+1
+2
+3
+1
+2
+3
+1
+2
+3
+--- PASS: TestRangeLoopIgnoresWhatTheBodyDoesToItsVariables (0.00s)
+=== RUN   TestTwoModulesWithTheSameClassNameConflict
+--- PASS: TestTwoModulesWithTheSameClassNameConflict (0.01s)
+=== RUN   TestAnAliasResolvesAClassNameConflict
+--- PASS: TestAnAliasResolvesAClassNameConflict (0.01s)
+=== RUN   TestAModuleClassConflictsWithAClassOfTheProgram
+--- PASS: TestAModuleClassConflictsWithAClassOfTheProgram (0.00s)
+=== RUN   TestTheSameModuleImportedTwiceIsNoConflict
+1
+2
+3
+3
+2
+1
+3
+2
+1
+A상자
+B상자
+A상자
+B상자
+a
+a
+--- PASS: TestTheSameModuleImportedTwiceIsNoConflict (0.01s)
+=== RUN   TestHelpIsInBothLanguages
+--- PASS: TestHelpIsInBothLanguages (2.98s)
+=== RUN   TestTheLanguageComesFromTheFlagThenTheEnvironmentThenTheScript
+--- PASS: TestTheLanguageComesFromTheFlagThenTheEnvironmentThenTheScript (1.80s)
+=== RUN   TestInitAndItsProblemsAreInBothLanguages
+--- PASS: TestInitAndItsProblemsAreInBothLanguages (1.09s)
+=== RUN   TestHariCollections
+=== Hari 컬렉션 테스트 ===
+--- PASS: TestHariCollections (0.00s)
+=== RUN   TestListClearMethod
+--- PASS: TestListClearMethod (0.00s)
+=== RUN   TestListClearMethodOnObjectField
+--- PASS: TestListClearMethodOnObjectField (0.00s)
+=== RUN   TestListClearMethodArgumentCountError
+--- PASS: TestListClearMethodArgumentCountError (0.00s)
+=== RUN   TestListClearMethodUnknownNameError
+--- PASS: TestListClearMethodUnknownNameError (0.00s)
+=== RUN   TestParenthesizedComparisonsAreNotDropped
+--- PASS: TestParenthesizedComparisonsAreNotDropped (0.00s)
+=== RUN   TestConditionsMustBeBooleans
+--- PASS: TestConditionsMustBeBooleans (0.00s)
+=== RUN   TestPipedOutputKeepsItsOrderWithErrors
+검
+활
+검
+방패
+포션
+50
+2
+0
+2
+0
+가
+나
+다
+라
+마
+바
+사
+가
+나
+다
+라
+마
+바
+사
+あ
+い
+う
+あ
+い
+う
+나와요
+나와요
+--- PASS: TestPipedOutputKeepsItsOrderWithErrors (0.68s)
+=== RUN   TestPipedOutputAppearsWhileTheProgramWaits
+--- PASS: TestPipedOutputAppearsWhileTheProgramWaits (0.39s)
+=== RUN   TestPromptIsVisibleBeforeTheProgramReadsInput
+--- PASS: TestPromptIsVisibleBeforeTheProgramReadsInput (0.41s)
+=== RUN   TestCSVParse
+--- PASS: TestCSVParse (0.00s)
+=== RUN   TestCSVRoundTrip
+--- PASS: TestCSVRoundTrip (0.00s)
+=== RUN   TestCSVErrors
+--- PASS: TestCSVErrors (0.01s)
+=== RUN   TestDictionaryDisplay
+--- PASS: TestDictionaryDisplay (0.00s)
+=== RUN   TestCaughtEngineErrorsAreLocalizedIdenticallyOnBothVMs
+=== RUN   TestCaughtEngineErrorsAreLocalizedIdenticallyOnBothVMs/divide_by_zero
+=== RUN   TestCaughtEngineErrorsAreLocalizedIdenticallyOnBothVMs/pop_from_empty_list
+=== RUN   TestCaughtEngineErrorsAreLocalizedIdenticallyOnBothVMs/list_index_out_of_range
+=== RUN   TestCaughtEngineErrorsAreLocalizedIdenticallyOnBothVMs/unknown_variable
+--- PASS: TestCaughtEngineErrorsAreLocalizedIdenticallyOnBothVMs (0.00s)
+    --- PASS: TestCaughtEngineErrorsAreLocalizedIdenticallyOnBothVMs/divide_by_zero (0.00s)
+    --- PASS: TestCaughtEngineErrorsAreLocalizedIdenticallyOnBothVMs/pop_from_empty_list (0.00s)
+    --- PASS: TestCaughtEngineErrorsAreLocalizedIdenticallyOnBothVMs/list_index_out_of_range (0.00s)
+    --- PASS: TestCaughtEngineErrorsAreLocalizedIdenticallyOnBothVMs/unknown_variable (0.00s)
+=== RUN   TestUncaughtErrorIsLocalizableByTheCaller
+--- PASS: TestUncaughtErrorIsLocalizableByTheCaller (0.00s)
+=== RUN   TestHariHTTPServerPackage
+=== RUN   TestHariHTTPServerPackage/tree-walker
+[[a, b]]
+[[a, b], [c, d]]
+[[a, b], [c, d]]
+[[a], [b]]
+[[x,y, z]]
+[[a"b]]
+[[a
+b, c]]
+[[a, , c]]
+[[a, ]]
+[]
+[[a, b]]
+[[a, b]]
+[[a], [], [b]]
+[[a"b, c]]
+[[]]
+[[1, 2]]
+a,1,2.5
+"a,b","c""d"
+x
+y
+""
+a,
+a b;c
+"a;b";c
+"줄
+바꿈"
+
+[[a, b]]
+[[a, b], [c, d]]
+[[a, b], [c, d]]
+[[a], [b]]
+[[x,y, z]]
+[[a"b]]
+[[a
+b, c]]
+[[a, , c]]
+[[a, ]]
+[]
+[[a, b]]
+[[a, b]]
+[[a], [], [b]]
+[[a"b, c]]
+[[]]
+[[1, 2]]
+a,1,2.5
+"a,b","c""d"
+x
+y
+""
+a,
+a b;c
+"a;b";c
+"줄
+바꿈"
+
+이름,메모
+하나,"쉼표, 그리고 ""따옴표"""
+둘,"줄
+바꿈"
+,빈칸
+끝
+이름,메모
+하나,"쉼표, 그리고 ""따옴표"""
+둘,"줄
+바꿈"
+,빈칸
+끝
+이름,메모
+하나,"쉼표, 그리고 ""따옴표"""
+둘,"줄
+바꿈"
+,빈칸
+끝
+이름,메모
+하나,"쉼표, 그리고 ""따옴표"""
+둘,"줄
+바꿈"
+,빈칸
+끝
+{국어: 90, 수학: 80}
+[{a: 참}, 1]
+{}
+{국어: 90, 수학: 80}
+[{a: 참}, 1]
+{}
+{国語: 90, 数学: 80}
+[{a: 真}, 1]
+{}
+{国語: 90, 数学: 80}
+[{a: 真}, 1]
+{}
+DivideByZeroError: 0으로 나눌 수 없어요.
+DivideByZeroError: 0으로 나눌 수 없어요.
+DivideByZeroError: 0で割ることはできません。
+DivideByZeroError: 0で割ることはできません。
+IndexOutOfBoundsError: 목록이 비어 있어요.
+IndexOutOfBoundsError: 목록이 비어 있어요.
+IndexOutOfBoundsError: リストが空です。
+IndexOutOfBoundsError: リストが空です。
+IndexOutOfBoundsError: 목록의 길이를 벗어난 위치(인덱스)예요.
+IndexOutOfBoundsError: 목록의 길이를 벗어난 위치(인덱스)예요.
+IndexOutOfBoundsError: リストの長さを超えた位置（インデックス）です。
+IndexOutOfBoundsError: リストの長さを超えた位置（インデックス）です。
+ReferenceError: '없는변수' 변수를 찾을 수 없어요.
+ReferenceError: '없는변수' 변수를 찾을 수 없어요.
+ReferenceError: 変数『ない変数』が見つかりません。
+ReferenceError: 変数『ない変数』が見つかりません。
+=== RUN   TestHariHTTPServerPackage/bytecode
+서버 끝
+--- PASS: TestHariHTTPServerPackage (3.38s)
+    --- PASS: TestHariHTTPServerPackage/tree-walker (3.25s)
+    --- PASS: TestHariHTTPServerPackage/bytecode (0.14s)
+=== RUN   TestKanadeHTTPServerPackage
+=== RUN   TestKanadeHTTPServerPackage/tree-walker
+서버 끝
+=== RUN   TestKanadeHTTPServerPackage/bytecode
+サーバー終了
+--- PASS: TestKanadeHTTPServerPackage (0.28s)
+    --- PASS: TestKanadeHTTPServerPackage/tree-walker (0.14s)
+    --- PASS: TestKanadeHTTPServerPackage/bytecode (0.14s)
+=== RUN   TestKanadeFileCanImportAKanadeFile
+--- PASS: TestKanadeFileCanImportAKanadeFile (0.00s)
+=== RUN   TestHariFileCanImportAKanadeFileAndViceVersa
+--- PASS: TestHariFileCanImportAKanadeFileAndViceVersa (0.01s)
+=== RUN   TestImportedModuleGetsTheStandardLibraryInItsOwnLanguage
+--- PASS: TestImportedModuleGetsTheStandardLibraryInItsOwnLanguage (0.01s)
+=== RUN   TestPackagePicksTheEntryPointForTheImportersLanguage
+--- PASS: TestPackagePicksTheEntryPointForTheImportersLanguage (0.01s)
+=== RUN   TestPackageWithoutAnEntryForTheLanguageIsAnError
+サーバー終了
+こんにちは、カナデ！
+こんにちは、カナデ！
+こんにちは
+안녕하세요
+42
+42
+안녕하세요
+こんにちは
+--- PASS: TestPackageWithoutAnEntryForTheLanguageIsAnError (0.00s)
+=== RUN   TestImportedFileWithASyntaxErrorIsReported
+--- PASS: TestImportedFileWithASyntaxErrorIsReported (0.00s)
+=== RUN   TestPackageEntryWithASyntaxErrorIsReported
+--- PASS: TestPackageEntryWithASyntaxErrorIsReported (0.00s)
+=== RUN   TestImportSeveralNativeItems
+=== RUN   TestImportSeveralNativeItems/two_items_from_a_native_module
+=== RUN   TestImportSeveralNativeItems/three_items_from_a_native_module
+=== RUN   TestImportSeveralNativeItems/a_missing_item_in_the_list
+=== RUN   TestImportSeveralNativeItems/a_single_item_with_an_alias_still_works
+--- PASS: TestImportSeveralNativeItems (0.01s)
+    --- PASS: TestImportSeveralNativeItems/two_items_from_a_native_module (0.00s)
+    --- PASS: TestImportSeveralNativeItems/three_items_from_a_native_module (0.00s)
+    --- PASS: TestImportSeveralNativeItems/a_missing_item_in_the_list (0.00s)
+    --- PASS: TestImportSeveralNativeItems/a_single_item_with_an_alias_still_works (0.00s)
+=== RUN   TestImportWholeNativeModule
+=== RUN   TestImportWholeNativeModule/everything_in_a_native_module
+=== RUN   TestImportWholeNativeModule/a_bigger_module
+4
+3
+4
+3
+4
+3
+4
+3
+참
+1
+[a, b]
+참
+1
+[a, b]
+真
+1
+[a, b]
+真
+1
+[a, b]
+4
+4
+4
+4
+4
+3
+4
+3
+4
+3
+4
+3
+03/05
+03/05
+03/05
+03/05
+=== RUN   TestImportWholeNativeModule/a_module_that_does_not_exist
+=== RUN   TestImportWholeNativeModule/nothing_is_imported_before_it_is_asked_for
+--- PASS: TestImportWholeNativeModule (0.02s)
+    --- PASS: TestImportWholeNativeModule/everything_in_a_native_module (0.00s)
+    --- PASS: TestImportWholeNativeModule/a_bigger_module (0.02s)
+    --- PASS: TestImportWholeNativeModule/a_module_that_does_not_exist (0.00s)
+    --- PASS: TestImportWholeNativeModule/nothing_is_imported_before_it_is_asked_for (0.00s)
+=== RUN   TestImportSeveralAndAllFromALocalFile
+=== RUN   TestImportSeveralAndAllFromALocalFile/two_functions_from_a_file
+=== RUN   TestImportSeveralAndAllFromALocalFile/a_function_and_a_class_in_one_list
+=== RUN   TestImportSeveralAndAllFromALocalFile/everything_a_file_declares
+--- PASS: TestImportSeveralAndAllFromALocalFile (0.01s)
+    --- PASS: TestImportSeveralAndAllFromALocalFile/two_functions_from_a_file (0.01s)
+    --- PASS: TestImportSeveralAndAllFromALocalFile/a_function_and_a_class_in_one_list (0.00s)
+    --- PASS: TestImportSeveralAndAllFromALocalFile/everything_a_file_declares (0.00s)
+=== RUN   TestMissingItemInAFileListIsAnError
+--- PASS: TestMissingItemInAFileListIsAnError (0.00s)
+=== RUN   TestImportAliasResolvesNameCollision
+--- PASS: TestImportAliasResolvesNameCollision (0.01s)
+=== RUN   TestImportAliasForBuiltinModule
+--- PASS: TestImportAliasForBuiltinModule (0.00s)
+=== RUN   TestImportAliasForClass
+--- PASS: TestImportAliasForClass (0.00s)
+=== RUN   TestInheritedConstructorRunsAutomatically
+--- PASS: TestInheritedConstructorRunsAutomatically (0.00s)
+=== RUN   TestExplicitSuperConstructorCall
+--- PASS: TestExplicitSuperConstructorCall (0.00s)
+=== RUN   TestInitMakesARunnableProject
+8
+12
+8
+12
+8
+12
+8
+12
+5
+8
+5
+8
+5
+8
+5
+8
+8
+12
+5
+8
+12
+5
+8
+12
+5
+8
+12
+5
+A: 11
+B: 20
+4
+도형
+    init_test.go:21: hari: running the new project gave "안녕, 하리!\n" (<nil>), want "안녕, 하자!\n"
+--- FAIL: TestInitMakesARunnableProject (1.42s)
+=== RUN   TestInitDoesNotOverwrite
+--- PASS: TestInitDoesNotOverwrite (0.81s)
+=== RUN   TestInitRejectsUnknownLanguage
+--- PASS: TestInitRejectsUnknownLanguage (0.40s)
+=== RUN   TestInputReadsAndConvertsOnEveryEngine
+홍길동/21/참
+홍길동/21/참
+田中/21/真
+--- PASS: TestInputReadsAndConvertsOnEveryEngine (0.00s)
+=== RUN   TestInputConversionFailureIsACatchableError
+田中/21/真
+InputConversionError: '스물'을(를) 숫자로 바꿀 수 없어요.
+InputConversionError: '스물'을(를) 숫자로 바꿀 수 없어요.
+InputConversionError: 『스물』を数字に変換できません。
+--- PASS: TestInputConversionFailureIsACatchableError (0.00s)
+=== RUN   TestInputWithoutASourceReadsAnEmptyLine
+--- PASS: TestInputWithoutASourceReadsAnEmptyLine (0.00s)
+=== RUN   TestHariInterpreter
+=== Hari 가상머신 실행 결과 ===
+===============================
+--- PASS: TestHariInterpreter (0.00s)
+=== RUN   TestKanadeVariablesPrintAndIf
+--- PASS: TestKanadeVariablesPrintAndIf (0.00s)
+=== RUN   TestKanadeLoops
+--- PASS: TestKanadeLoops (0.00s)
+=== RUN   TestKanadeClassConstructorAndMethod
+--- PASS: TestKanadeClassConstructorAndMethod (0.00s)
+=== RUN   TestKanadeTryCatchFinally
+--- PASS: TestKanadeTryCatchFinally (0.00s)
+=== RUN   TestKanadeSwitch
+--- PASS: TestKanadeSwitch (0.00s)
+=== RUN   TestKanadeInterface
+--- PASS: TestKanadeInterface (0.00s)
+=== RUN   TestKanadeImportBuiltinModuleAndAlias
+--- PASS: TestKanadeImportBuiltinModuleAndAlias (0.00s)
+=== RUN   TestKanadeListClearMethod
+--- PASS: TestKanadeListClearMethod (0.00s)
+=== RUN   TestKanadeBytecodeClassSelfReference
+--- PASS: TestKanadeBytecodeClassSelfReference (0.00s)
+=== RUN   TestKanadeBytecodeTemplateLiteralInterpolation
+--- PASS: TestKanadeBytecodeTemplateLiteralInterpolation (0.00s)
+=== RUN   TestKanadeBytecodeTryCatchUsesJapaneseBuiltinErrorClass
+--- PASS: TestKanadeBytecodeTryCatchUsesJapaneseBuiltinErrorClass (0.00s)
+=== RUN   TestKanadeBytecodeBuiltinModuleImport
+--- PASS: TestKanadeBytecodeBuiltinModuleImport (0.00s)
+=== RUN   TestKanadeBytecodeListClearMethod
+--- PASS: TestKanadeBytecodeListClearMethod (0.00s)
+=== RUN   TestKanadeStaticMethodCallViaTypeName
+--- PASS: TestKanadeStaticMethodCallViaTypeName (0.00s)
+=== RUN   TestKanadeBuiltinConversionViaTypeName
+--- PASS: TestKanadeBuiltinConversionViaTypeName (0.00s)
+=== RUN   TestKanadeIndexingWithOrdinalAndValueSuffix
+--- PASS: TestKanadeIndexingWithOrdinalAndValueSuffix (0.00s)
+=== RUN   TestKanadeStringPseudoMethods
+--- PASS: TestKanadeStringPseudoMethods (0.00s)
+=== RUN   TestKanadeDynamicReflection
+--- PASS: TestKanadeDynamicReflection (0.00s)
+=== RUN   TestQuotedLengthWorksBeforeParticles
+=== RUN   TestQuotedLengthWorksBeforeParticles/string_and_list_length,_printed_and_stored
+=== RUN   TestQuotedLengthWorksBeforeParticles/in_a_condition_and_in_a_template
+--- PASS: TestQuotedLengthWorksBeforeParticles (0.00s)
+    --- PASS: TestQuotedLengthWorksBeforeParticles/string_and_list_length,_printed_and_stored (0.00s)
+    --- PASS: TestQuotedLengthWorksBeforeParticles/in_a_condition_and_in_a_template (0.00s)
+=== RUN   TestListCallbacksOnEmptyLists
+--- PASS: TestListCallbacksOnEmptyLists (0.00s)
+=== RUN   TestListCallbacksKeepValuesAndOrder
+--- PASS: TestListCallbacksKeepValuesAndOrder (0.00s)
+=== RUN   TestListCallbacksRefuseWhatTheyCannotUse
+InputConversionError: 『스물』を数字に変換できません。
+[]
+[]
+맨손 공격! 퍽퍽!
+무기를 교체했습니다!
+칼로 강하게 찌르기!
+무기를 교체했습니다!
+멀리서 활 쏘기!
+こんにちは、田中太郎さん！
+もう少し頑張ってみましょう！
+エネルギー残り:3
+エネルギー残り:2
+エネルギー残り:1
+6
+りんご
+ぶどう
+バナナ
+速度:50
+安全に実行を開始します。
+エラーの発生に関係なくいつも実行されます！
+安全網の中に入りました！
+捕まえた！エラーの内容:あっ！問題が発生しました！
+支給完了:[伝説の剣, 魔法のポーション, 初心者用包帯]
+パタパタと飛びます！
+4
+4
+[りんご, バナナ]
+[]
+速度:50
+こんにちは、太郎さん
+捕まえた！エラーの内容:あっ！問題が発生しました！
+後片付け完了。
+4
+[りんご, バナナ]
+[]
+同じインスタンス
+同じインスタンス
+123
+1番目の果物:りんご
+りん|ぶどうなしぶどう|[りんご, しりんご]|真
+りん|ぶどうなしぶどう|[りんご, しりんご]|真
+注文がキャンセルされました。
+3
+3
+2
+3
+3
+2
+3
+3
+2
+3
+3
+2
+길이 3
+길이 3
+長さ 3
+長さ 3
+[]
+[]
+7
+비어있음
+거짓
+참
+[]
+[]
+[]
+7
+비어있음
+거짓
+참
+[]
+가나다
+[가, 나무, 하늘하늘]
+[a, b, c]
+[1, 2, 3]
+[비어있음, 비어있음]
+4
+거짓
+거짓
+가나다
+[가, 나무, 하늘하늘]
+[a, b, c]
+[1, 2, 3]
+[비어있음, 비어있음]
+4
+거짓
+거짓
+--- PASS: TestListCallbacksRefuseWhatTheyCannotUse (0.02s)
+=== RUN   TestListPopExpression
+--- PASS: TestListPopExpression (0.00s)
+=== RUN   TestListPopEmptyListErrors
+--- PASS: TestListPopEmptyListErrors (0.00s)
+=== RUN   TestListsAreReferences
+=== RUN   TestListsAreReferences/pushed_and_set_in_a_function
+=== RUN   TestListsAreReferences/pushed_at_the_front
+=== RUN   TestListsAreReferences/popped_in_a_function
+=== RUN   TestListsAreReferences/emptied_in_a_function
+=== RUN   TestListsAreReferences/two_variables_share_one_list
+=== RUN   TestListsAreReferences/a_list_inside_a_list
+=== RUN   TestListsAreReferences/a_list_field_is_shared_through_the_object
+=== RUN   TestListsAreReferences/a_loop_walks_the_list_it_began_with
+=== RUN   TestListsAreReferences/a_value_popped_out
+=== RUN   TestListsAreReferences/a_refused_push_leaves_the_list_alone
+=== RUN   TestListsAreReferences/a_refused_push_onto_a_field_leaves_the_list_alone
+=== RUN   TestListsAreReferences/a_list_that_contains_itself_can_be_printed
+--- PASS: TestListsAreReferences (0.01s)
+    --- PASS: TestListsAreReferences/pushed_and_set_in_a_function (0.00s)
+    --- PASS: TestListsAreReferences/pushed_at_the_front (0.00s)
+    --- PASS: TestListsAreReferences/popped_in_a_function (0.00s)
+    --- PASS: TestListsAreReferences/emptied_in_a_function (0.00s)
+    --- PASS: TestListsAreReferences/two_variables_share_one_list (0.00s)
+    --- PASS: TestListsAreReferences/a_list_inside_a_list (0.00s)
+    --- PASS: TestListsAreReferences/a_list_field_is_shared_through_the_object (0.00s)
+    --- PASS: TestListsAreReferences/a_loop_walks_the_list_it_began_with (0.00s)
+    --- PASS: TestListsAreReferences/a_value_popped_out (0.00s)
+    --- PASS: TestListsAreReferences/a_refused_push_leaves_the_list_alone (0.00s)
+    --- PASS: TestListsAreReferences/a_refused_push_onto_a_field_leaves_the_list_alone (0.00s)
+    --- PASS: TestListsAreReferences/a_list_that_contains_itself_can_be_printed (0.00s)
+=== RUN   TestConstantListsCannotBeChanged
+--- PASS: TestConstantListsCannotBeChanged (0.00s)
+=== RUN   TestALocalFileCanUseAStandardModule
+--- PASS: TestALocalFileCanUseAStandardModule (0.00s)
+=== RUN   TestAPackageCanUseALocalFileThatUsesAStandardModule
+--- PASS: TestAPackageCanUseALocalFileThatUsesAStandardModule (0.01s)
+=== RUN   TestLogicalAndOr
+[7, 2, 99]
+[7, 2, 99]
+[0, 1]
+[0, 1]
+[1, 2]
+[1, 2]
+[]
+[]
+[1, 2]
+[1, 2]
+[[1, 5], [2]]
+[[1, 5], [2]]
+[1, 2]
+[1]
+[1, 2]
+[1]
+[1, 2, 3, 1, 2, 3]
+[1, 2, 3, 1, 2, 3]
+3
+[1, 2]
+3
+[1, 2]
+실패
+[1]
+실패
+[1]
+실패
+[1]
+실패
+[1]
+[1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [...]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]
+[1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [1, [...]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]
+3
+8
+3
+8
+2
+2
+--- PASS: TestLogicalAndOr (0.00s)
+=== RUN   TestLogicalShortCircuit
+--- PASS: TestLogicalShortCircuit (0.00s)
+=== RUN   TestHariLoops
+AST:
+func 반복테스트() {
+  ForRange NumberLiteral to NumberLiteral
+  Return NumberLiteral
+}
+var 결과 = <반복테스트>(...)
+Print(결과)
+
+=== Hari 루프 테스트 ===
+--- PASS: TestHariLoops (0.00s)
+=== RUN   TestImportedCodeUsesItsOwnModulesFunctions
+--- PASS: TestImportedCodeUsesItsOwnModulesFunctions (0.01s)
+=== RUN   TestAModuleUsesWhatItImportedItself
+--- PASS: TestAModuleUsesWhatItImportedItself (0.01s)
+=== RUN   TestTwoModulesMayUseTheSameHelperName
+--- PASS: TestTwoModulesMayUseTheSameHelperName (0.01s)
+=== RUN   TestAPackageUsesItsOwnHelpersAndItsDependencies
+실행은 됨
+1
+10
+15
+값의 두배는 8
+18
+8
+-1
+15
+값의 두배는 8
+18
+8
+-1
+101
+101
+A
+B
+A
+B
+--- PASS: TestAPackageUsesItsOwnHelpersAndItsDependencies (0.03s)
+=== RUN   TestModuleFunctionsSeeTheModulesOwnVariables
+--- PASS: TestModuleFunctionsSeeTheModulesOwnVariables (0.01s)
+=== RUN   TestAModuleIsSetUpOnceAndItsStateIsShared
+--- PASS: TestAModuleIsSetUpOnceAndItsStateIsShared (0.01s)
+=== RUN   TestAModuleDoesNotSeeTheImportersVariables
+== 하나! ==
+== 하나! ==
+== カナデ！ ==
+== カナデ！ ==
+6
+100
+6
+100
+카운터를 준비해요
+1
+2
+3
+카운터를 준비해요
+1
+2
+3
+--- PASS: TestAModuleDoesNotSeeTheImportersVariables (0.00s)
+=== RUN   TestAPackageKeepsItsStateToo
+--- PASS: TestAPackageKeepsItsStateToo (0.01s)
+=== RUN   TestNativeLibraryRoundTripsValues
+안녕, 하나!
+반가워, 하나!
+안녕, 하나!
+반가워, 하나!
+--- PASS: TestNativeLibraryRoundTripsValues (3.01s)
+=== RUN   TestNativeLibraryErrorsAndNull
+[1, 가나, [2, 참, 비어있음], {k: 3.5}]
+[1, 가나, [2, 참, 비어있음], {k: 3.5}]
+--- PASS: TestNativeLibraryErrorsAndNull (0.08s)
+=== RUN   TestNativeLibraryCallsBackIntoHana
+비어있음
+비어있음
+--- PASS: TestNativeLibraryCallsBackIntoHana (0.07s)
+=== RUN   TestNativeCallbackErrorsComeBackAsErrors
+42
+10
+42
+10
+--- PASS: TestNativeCallbackErrorsComeBackAsErrors (0.08s)
+=== RUN   TestTheSameFunctionKeepsItsCallbackID
+--- PASS: TestTheSameFunctionKeepsItsCallbackID (0.07s)
+=== RUN   TestCallbacksWaitForTheProgramToBlock
+[{$fn: cb_25}, {$fn: cb_25}]
+[{$fn: cb_25}]
+[{$fn: cb_26}, {$fn: cb_26}]
+[{$fn: cb_26}]
+--- PASS: TestCallbacksWaitForTheProgramToBlock (0.09s)
+=== RUN   TestNativeLibraryMissingFunction
+메인 끝
+콜백
+콜백
+콜백
+끝
+메인 끝
+콜백
+콜백
+콜백
+끝
+--- PASS: TestNativeLibraryMissingFunction (0.07s)
+=== RUN   TestPackageManifestProblems
+--- PASS: TestPackageManifestProblems (0.14s)
+=== RUN   TestPackageManifestChoosesTheEntryPoint
+--- PASS: TestPackageManifestChoosesTheEntryPoint (0.01s)
+=== RUN   TestPackageImportsSeveralItemsAndAll
+--- PASS: TestPackageImportsSeveralItemsAndAll (0.01s)
+=== RUN   TestSharedPackagesAreFoundFromAnyFolder
+--- PASS: TestSharedPackagesAreFoundFromAnyFolder (0.01s)
+=== RUN   TestSocketClientTalksToAServer
+안녕
+안녕
+こんにちは
+こんにちは
+1
+2
+1
+2
+2
+2
+공유 패키지
+공유 패키지
+프로젝트 패키지
+프로젝트 패키지
+--- PASS: TestSocketClientTalksToAServer (0.00s)
+=== RUN   TestSocketServerTalksToAClient
+받았어요: 안녕
+비어있음
+
+받았어요: 안녕
+비어있음
+
+끝
+--- PASS: TestSocketServerTalksToAClient (0.04s)
+=== RUN   TestSocketReceiveKeepsCharactersWhole
+--- PASS: TestSocketReceiveKeepsCharactersWhole (0.00s)
+=== RUN   TestSocketTimeoutAndAddress
+끝
+가나
+다라
+
+가나
+다라
+
+127.0.0.1:63453
+127.0.0.1:63455
+--- PASS: TestSocketTimeoutAndAddress (0.40s)
+=== RUN   TestSocketMisuseIsReported
+--- PASS: TestSocketMisuseIsReported (0.01s)
+=== RUN   TestNetworkAccessCanBeTurnedOff
+--- PASS: TestNetworkAccessCanBeTurnedOff (0.00s)
+=== RUN   TestHTTPRequests
+--- PASS: TestHTTPRequests (0.01s)
+=== RUN   TestHTTPProblemsAreReported
+--- PASS: TestHTTPProblemsAreReported (0.01s)
+=== RUN   TestNetworkModulesInKanade
+--- PASS: TestNetworkModulesInKanade (0.00s)
+=== RUN   TestHTTPClientReadsEveryKindOfBody
+200
+안녕, 하나
+text/plain; charset=utf-8
+hari/값
+201
+POST text/plain 본문
+PUT  바꿈
+안녕, 이사
+404
+200
+안녕, 하나
+text/plain; charset=utf-8
+hari/값
+201
+POST text/plain 본문
+PUT  바꿈
+안녕, 이사
+404
+200
+200
+127.0.0.1:63490
+200|안녕
+200|안녕
+200|안녕
+200|안녕
+200|닫힐 때까지
+--- PASS: TestHTTPClientReadsEveryKindOfBody (0.02s)
+=== RUN   TestHTTPClientFollowsRedirectsLikeABrowser
+--- PASS: TestHTTPClientFollowsRedirectsLikeABrowser (0.01s)
+=== RUN   TestHTTPClientRequestText
+--- PASS: TestHTTPClientRequestText (0.00s)
+=== RUN   TestHTTPClientRefusesWhatItCannotRead
+--- PASS: TestHTTPClientRefusesWhatItCannotRead (0.01s)
+200|닫힐 때까지
+201|ok
+201|ok
+204|
+204|
+500|실패
+500|실패
+ok
+ok
+302
+200
+=== RUN   TestNoImplicitCastingInOperators
+=== RUN   TestNoImplicitCastingInOperators/number_+_string
+=== RUN   TestNoImplicitCastingInOperators/string_+_number
+=== RUN   TestNoImplicitCastingInOperators/string_-_string
+=== RUN   TestNoImplicitCastingInOperators/string_>_number
+=== RUN   TestNoImplicitCastingInOperators/string_+_string_still_joins
+=== RUN   TestNoImplicitCastingInOperators/numbers_still_calculate
+=== RUN   TestNoImplicitCastingInOperators/compound_assignment_on_a_string
+--- PASS: TestNoImplicitCastingInOperators (0.00s)
+    --- PASS: TestNoImplicitCastingInOperators/number_+_string (0.00s)
+    --- PASS: TestNoImplicitCastingInOperators/string_+_number (0.00s)
+    --- PASS: TestNoImplicitCastingInOperators/string_-_string (0.00s)
+    --- PASS: TestNoImplicitCastingInOperators/string_>_number (0.00s)
+    --- PASS: TestNoImplicitCastingInOperators/string_+_string_still_joins (0.00s)
+    --- PASS: TestNoImplicitCastingInOperators/numbers_still_calculate (0.00s)
+    --- PASS: TestNoImplicitCastingInOperators/compound_assignment_on_a_string (0.00s)
+=== RUN   TestNullOperandsAreErrorsExceptInEquality
+=== RUN   TestNullOperandsAreErrorsExceptInEquality/number_+_null
+=== RUN   TestNullOperandsAreErrorsExceptInEquality/null_>_number
+=== RUN   TestNullOperandsAreErrorsExceptInEquality/an_unset_variable_in_arithmetic
+=== RUN   TestNullOperandsAreErrorsExceptInEquality/null_==_null_is_fine
+=== RUN   TestNullOperandsAreErrorsExceptInEquality/null_!=_number_is_fine
+--- PASS: TestNullOperandsAreErrorsExceptInEquality (0.00s)
+    --- PASS: TestNullOperandsAreErrorsExceptInEquality/number_+_null (0.00s)
+    --- PASS: TestNullOperandsAreErrorsExceptInEquality/null_>_number (0.00s)
+    --- PASS: TestNullOperandsAreErrorsExceptInEquality/an_unset_variable_in_arithmetic (0.00s)
+    --- PASS: TestNullOperandsAreErrorsExceptInEquality/null_==_null_is_fine (0.00s)
+    --- PASS: TestNullOperandsAreErrorsExceptInEquality/null_!=_number_is_fine (0.00s)
+=== RUN   TestUnknownOperatorIsAnError
+--- PASS: TestUnknownOperatorIsAnError (0.00s)
+=== RUN   TestPackedProgramRunsOnItsOwn
+가나
+가나
+あい
+あい
+7
+7
+7
+7
+참
+참
+真
+真
+참
+참
+真
+真
+--- PASS: TestPackedProgramRunsOnItsOwn (1.15s)
+=== RUN   TestPackedKanadeProgram
+--- PASS: TestPackedKanadeProgram (1.05s)
+=== RUN   TestPackedProgramReportsRuntimeErrors
+--- PASS: TestPackedProgramReportsRuntimeErrors (1.21s)
+=== RUN   TestPackWritesNativeLibrariesBesideTheExecutable
+--- PASS: TestPackWritesNativeLibrariesBesideTheExecutable (1.52s)
+=== RUN   TestPackEmbedsNativeLibrariesOnRequest
+--- PASS: TestPackEmbedsNativeLibrariesOnRequest (0.87s)
+=== RUN   TestPackNeedsTheLibraryOfTheTargetPlatform
+--- PASS: TestPackNeedsTheLibraryOfTheTargetPlatform (0.45s)
+=== RUN   TestRuntimeWithoutAProgramSaysSo
+--- PASS: TestRuntimeWithoutAProgramSaysSo (0.39s)
+=== RUN   TestInstalledPackageImportsInBothLanguagesAndEngines
+--- PASS: TestInstalledPackageImportsInBothLanguagesAndEngines (0.02s)
+=== RUN   TestOnlyOneLanguageEntryIsRequired
+--- PASS: TestOnlyOneLanguageEntryIsRequired (0.01s)
+=== RUN   TestReplaceUsesALocalFolderAndTheLockIsNotNeeded
+--- PASS: TestReplaceUsesALocalFolderAndTheLockIsNotNeeded (0.01s)
+=== RUN   TestAPackageThatIsNotInstalledSaysSo
+안녕, 하나!
+안녕, 하나!
+こんにちは、カナデ！
+こんにちは、カナデ！
+로컬
+--- PASS: TestAPackageThatIsNotInstalledSaysSo (0.00s)
+=== RUN   TestMissingArgumentErrorOnFunctionCall
+--- PASS: TestMissingArgumentErrorOnFunctionCall (0.00s)
+=== RUN   TestTooManyArgumentsErrorOnFunctionCall
+--- PASS: TestTooManyArgumentsErrorOnFunctionCall (0.00s)
+=== RUN   TestDefaultParameterValue
+--- PASS: TestDefaultParameterValue (0.00s)
+=== RUN   TestConstructorParameterBinding
+--- PASS: TestConstructorParameterBinding (0.00s)
+=== RUN   TestBuiltinFunctionCallDoesNotDoubleEvaluateArgs
+--- PASS: TestBuiltinFunctionCallDoesNotDoubleEvaluateArgs (0.00s)
+=== RUN   TestDiagnosticsCarryPosition
+--- PASS: TestDiagnosticsCarryPosition (0.00s)
+=== RUN   TestDiagnosticsColumnCountsCharactersNotBytes
+--- PASS: TestDiagnosticsColumnCountsCharactersNotBytes (0.00s)
+=== RUN   TestDiagnosticsWorkForKanade
+--- PASS: TestDiagnosticsWorkForKanade (0.00s)
+=== RUN   TestCleanProgramHasNoDiagnostics
+--- PASS: TestCleanProgramHasNoDiagnostics (0.00s)
+=== RUN   TestLineStartingWithLatinTIsNotIndented
+--- PASS: TestLineStartingWithLatinTIsNotIndented (0.00s)
+=== RUN   TestParserErrorsCarryTheDiagnosticsInEveryLanguage
+--- PASS: TestParserErrorsCarryTheDiagnosticsInEveryLanguage (0.00s)
+=== RUN   TestRunningOffTheEndIsReportedOnceOnTheLastLineWithCode
+--- PASS: TestRunningOffTheEndIsReportedOnceOnTheLastLineWithCode (0.00s)
+=== RUN   TestEndOfInputFalloutIsDroppedWhenABadTokenExplainsIt
+--- PASS: TestEndOfInputFalloutIsDroppedWhenABadTokenExplainsIt (0.00s)
+=== RUN   TestUnknownCharactersAreReportedNotDropped
+--- PASS: TestUnknownCharactersAreReportedNotDropped (0.00s)
+=== RUN   TestHariParsing
+{Type:TYPE Literal:[무기] Line:3 Col:0}
+{Type:PARTICLE Literal:를 Line:3 Col:4}
+{Type:KW_INTERFACE Literal:규정하자 Line:3 Col:6}
+{Type:: Literal:: Line:3 Col:10}
+{Type:INDENT Literal: Line:4 Col:0}
+{Type:FUNCTION Literal:<공격하기> Line:4 Col:4}
+{Type:PARTICLE Literal:가 Line:4 Col:10}
+{Type:KW_MUST_HAVE Literal:있어야 한다 Line:4 Col:12}
+{Type:( Literal:( Line:4 Col:19}
+{Type:) Literal:) Line:4 Col:20}
+{Type:DEDENT Literal: Line:6 Col:0}
+{Type:TYPE Literal:[무기] Line:6 Col:0}
+{Type:PARTICLE Literal:를 Line:6 Col:4}
+{Type:KW_IMPLEMENTS Literal:따르는 Line:6 Col:6}
+{Type:TYPE Literal:[칼] Line:6 Col:10}
+{Type:PARTICLE Literal:을 Line:6 Col:13}
+{Type:KW_CLASS Literal:설계하자 Line:6 Col:15}
+{Type:: Literal:: Line:6 Col:19}
+{Type:INDENT Literal: Line:7 Col:0}
+{Type:FUNCTION Literal:<공격하기> Line:7 Col:4}
+{Type:PARTICLE Literal:를 Line:7 Col:10}
+{Type:KW_MAKE Literal:만들자 Line:7 Col:12}
+{Type:( Literal:( Line:7 Col:16}
+{Type:) Literal:) Line:7 Col:17}
+{Type:: Literal:: Line:7 Col:18}
+{Type:INDENT Literal: Line:8 Col:0}
+{Type:STRING Literal:"칼로 강하게 찌르기!" Line:8 Col:8}
+{Type:PARTICLE Literal:를 Line:8 Col:21}
+{Type:KW_PRINT Literal:출력하자 Line:8 Col:23}
+{Type:DEDENT Literal: Line:10 Col:0}
+{Type:DEDENT Literal: Line:10 Col:0}
+{Type:TYPE Literal:[무기] Line:10 Col:0}
+{Type:PARTICLE Literal:를 Line:10 Col:4}
+{Type:KW_IMPLEMENTS Literal:따르는 Line:10 Col:6}
+{Type:TYPE Literal:[활] Line:10 Col:10}
+{Type:PARTICLE Literal:을 Line:10 Col:13}
+{Type:KW_CLASS Literal:설계하자 Line:10 Col:15}
+{Type:: Literal:: Line:10 Col:19}
+{Type:INDENT Literal: Line:11 Col:0}
+{Type:FUNCTION Literal:<공격하기> Line:11 Col:4}
+{Type:PARTICLE Literal:를 Line:11 Col:10}
+{Type:KW_MAKE Literal:만들자 Line:11 Col:12}
+{Type:( Literal:( Line:11 Col:16}
+{Type:) Literal:) Line:11 Col:17}
+{Type:: Literal:: Line:11 Col:18}
+{Type:INDENT Literal: Line:12 Col:0}
+{Type:STRING Literal:"멀리서 활 쏘기!" Line:12 Col:8}
+{Type:PARTICLE Literal:를 Line:12 Col:19}
+{Type:KW_PRINT Literal:출력하자 Line:12 Col:21}
+{Type:DEDENT Literal: Line:15 Col:0}
+{Type:DEDENT Literal: Line:15 Col:0}
+{Type:TYPE Literal:[용사] Line:15 Col:0}
+{Type:PARTICLE Literal:를 Line:15 Col:4}
+{Type:KW_CLASS Literal:설계하자 Line:15 Col:6}
+{Type:: Literal:: Line:15 Col:10}
+{Type:INDENT Literal: Line:16 Col:0}
+{Type:VAR Literal:'_장착무기' Line:16 Col:4}
+{Type:PARTICLE Literal:를 Line:16 Col:11}
+{Type:TYPE Literal:[무기] Line:16 Col:13}
+{Type:TYPE_IN Literal:인 Line:16 Col:17}
+{Type:KW_NULL Literal:비어있음 Line:16 Col:19}
+{Type:PARTICLE Literal:으로 Line:16 Col:23}
+{Type:KW_MAKE Literal:정하여 숨기자 Line:16 Col:26}
+{Type:FUNCTION Literal:<무기바꾸기> Line:18 Col:4}
+{Type:PARTICLE Literal:를 Line:18 Col:11}
+{Type:KW_MAKE Literal:만들자 Line:18 Col:13}
+{Type:( Literal:( Line:18 Col:17}
+{Type:VAR Literal:'새로운무기' Line:18 Col:18}
+{Type:) Literal:) Line:18 Col:25}
+{Type:: Literal:: Line:18 Col:26}
+{Type:INDENT Literal: Line:19 Col:0}
+{Type:VAR Literal:'_장착무기' Line:19 Col:8}
+{Type:PARTICLE Literal:를 Line:19 Col:15}
+{Type:VAR Literal:'새로운무기' Line:19 Col:17}
+{Type:PARTICLE Literal:로 Line:19 Col:24}
+{Type:KW_MAKE Literal:정하자 Line:19 Col:26}
+{Type:STRING Literal:"무기를 교체했습니다!" Line:20 Col:8}
+{Type:PARTICLE Literal:를 Line:20 Col:21}
+{Type:KW_PRINT Literal:출력하자 Line:20 Col:23}
+{Type:DEDENT Literal: Line:22 Col:0}
+{Type:FUNCTION Literal:<공격> Line:22 Col:4}
+{Type:PARTICLE Literal:을 Line:22 Col:8}
+{Type:KW_MAKE Literal:만들자 Line:22 Col:10}
+{Type:( Literal:( Line:22 Col:14}
+{Type:) Literal:) Line:22 Col:15}
+{Type:: Literal:: Line:22 Col:16}
+{Type:INDENT Literal: Line:23 Col:0}
+{Type:KW_IF Literal:만약 Line:23 Col:8}
+{Type:( Literal:( Line:23 Col:11}
+{Type:VAR Literal:'_장착무기' Line:23 Col:12}
+{Type:PARTICLE Literal:가 Line:23 Col:19}
+{Type:KW_NULL Literal:비어있음 Line:23 Col:21}
+{Type:COMPARE Literal:과 같다 Line:23 Col:25}
+{Type:) Literal:) Line:23 Col:29}
+{Type:IDENT Literal:라면 Line:23 Col:31}
+{Type:: Literal:: Line:23 Col:33}
+{Type:INDENT Literal: Line:24 Col:0}
+{Type:STRING Literal:"맨손 공격! 퍽퍽!" Line:24 Col:12}
+{Type:PARTICLE Literal:을 Line:24 Col:24}
+{Type:KW_PRINT Literal:출력하자 Line:24 Col:26}
+{Type:DEDENT Literal: Line:25 Col:0}
+{Type:KW_ELSE Literal:그렇지 않다면 Line:25 Col:8}
+{Type:: Literal:: Line:25 Col:15}
+{Type:INDENT Literal: Line:26 Col:0}
+{Type:VAR Literal:'_장착무기' Line:26 Col:12}
+{Type:PARTICLE Literal:의 Line:26 Col:19}
+{Type:FUNCTION Literal:<공격하기> Line:26 Col:21}
+{Type:( Literal:( Line:26 Col:27}
+{Type:) Literal:) Line:26 Col:28}
+{Type:PARTICLE Literal:를 Line:26 Col:29}
+{Type:KW_EXECUTE Literal:실행하자 Line:26 Col:31}
+{Type:DEDENT Literal: Line:29 Col:0}
+{Type:DEDENT Literal: Line:29 Col:0}
+{Type:DEDENT Literal: Line:29 Col:0}
+{Type:VAR Literal:'주인공' Line:29 Col:0}
+{Type:PARTICLE Literal:을 Line:29 Col:5}
+{Type:KW_NEW Literal:새로운 Line:29 Col:7}
+{Type:TYPE Literal:[용사] Line:29 Col:11}
+{Type:( Literal:( Line:29 Col:15}
+{Type:) Literal:) Line:29 Col:16}
+{Type:PARTICLE Literal:로 Line:29 Col:17}
+{Type:KW_MAKE Literal:정하자 Line:29 Col:19}
+{Type:VAR Literal:'주인공' Line:30 Col:0}
+{Type:PARTICLE Literal:의 Line:30 Col:5}
+{Type:FUNCTION Literal:<공격> Line:30 Col:7}
+{Type:( Literal:( Line:30 Col:11}
+{Type:) Literal:) Line:30 Col:12}
+{Type:PARTICLE Literal:을 Line:30 Col:13}
+{Type:KW_EXECUTE Literal:실행하자 Line:30 Col:15}
+{Type:VAR Literal:'주인공' Line:33 Col:0}
+{Type:PARTICLE Literal:의 Line:33 Col:5}
+{Type:FUNCTION Literal:<무기바꾸기> Line:33 Col:7}
+{Type:( Literal:( Line:33 Col:14}
+{Type:KW_NEW Literal:새로운 Line:33 Col:15}
+{Type:TYPE Literal:[칼] Line:33 Col:19}
+{Type:( Literal:( Line:33 Col:22}
+{Type:) Literal:) Line:33 Col:23}
+{Type:) Literal:) Line:33 Col:24}
+{Type:PARTICLE Literal:를 Line:33 Col:25}
+{Type:KW_EXECUTE Literal:실행하자 Line:33 Col:27}
+{Type:VAR Literal:'주인공' Line:34 Col:0}
+{Type:PARTICLE Literal:의 Line:34 Col:5}
+{Type:FUNCTION Literal:<공격> Line:34 Col:7}
+{Type:( Literal:( Line:34 Col:11}
+{Type:) Literal:) Line:34 Col:12}
+{Type:PARTICLE Literal:을 Line:34 Col:13}
+{Type:KW_EXECUTE Literal:실행하자 Line:34 Col:15}
+{Type:EOF Literal: Line:36 Col:0}
+파싱 성공! AST 결과물:
+interface [무기] {
+  공격하기()
+}
+class 칼 {
+  func 공격하기() {
+  Print("칼로 강하게 찌르기!")
+}
+}
+class 활 {
+  func 공격하기() {
+  Print("멀리서 활 쏘기!")
+}
+}
+class 용사 {
+  var _장착무기 = Null
+  func 무기바꾸기() {
+  var _장착무기 = 새로운무기
+  Print("무기를 교체했습니다!")
+}
+  func 공격() {
+  If _장착무기 == Null
+}
+}
+var 주인공 = New [용사]()
+주인공.<공격>(...)
+주인공.<무기바꾸기>(...)
+주인공.<공격>(...)
+--- PASS: TestHariParsing (0.00s)
+=== RUN   TestPathFunctionsEdgeCases
+--- PASS: TestPathFunctionsEdgeCases (0.00s)
+=== RUN   TestPathFunctionsCheckTheirArguments
+--- PASS: TestPathFunctionsCheckTheirArguments (0.00s)
+=== RUN   TestArithmeticPrecedence
+--- PASS: TestArithmeticPrecedence (0.00s)
+=== RUN   TestPrecedenceWithVariablesAndComparisons
+--- PASS: TestPrecedenceWithVariablesAndComparisons (0.00s)
+=== RUN   TestPrecedenceInKanade
+--- PASS: TestPrecedenceInKanade (0.00s)
+=== RUN   TestDeepButFiniteRecursionStillWorks
+14
+10
+8
+26
+2
+5
+4
+4
+9
+20
+14
+50
+3
+5
+14
+10
+8
+26
+2
+5
+4
+4
+9
+20
+14
+50
+3
+5
+14
+10
+참
+큼
+14
+10
+참
+큼
+14
+8
+2
+14
+8
+2
+--- PASS: TestDeepButFiniteRecursionStillWorks (0.04s)
+=== RUN   TestRunawayRecursionIsARecursionErrorOnEveryEngine
+12502500
+12502500
+--- PASS: TestRunawayRecursionIsARecursionErrorOnEveryEngine (0.05s)
+=== RUN   TestRunawayRecursionCanBeCaught
+--- PASS: TestRunawayRecursionCanBeCaught (0.02s)
+=== RUN   TestErrorsInsideOperandsAreNotSwallowed
+--- PASS: TestErrorsInsideOperandsAreNotSwallowed (0.00s)
+=== RUN   TestReturnTypesAreCheckedWhenDeclared
+--- PASS: TestReturnTypesAreCheckedWhenDeclared (0.00s)
+=== RUN   TestReturnTypeMismatchesAreErrors
+--- PASS: TestReturnTypeMismatchesAreErrors (0.01s)
+=== RUN   TestReturnTypesOfMethodsAndCaughtErrors
+--- PASS: TestReturnTypesOfMethodsAndCaughtErrors (0.00s)
+=== RUN   TestReturnTypesInKanade
+--- PASS: TestReturnTypesInKanade (0.00s)
+=== RUN   TestBlockScopes
+RecursionError: 호출이 너무 깊게 쌓여서 10000단계를 넘었어요.
+RecursionError: 호출이 너무 깊게 쌓여서 10000단계를 넘었어요.
+16
+비어있음
+무엇이든
+[1, 2, 3]
+통과
+16
+비어있음
+무엇이든
+[1, 2, 3]
+통과
+5
+잡힘: TypeError: '엉뚱하게' 함수는 '숫자' 타입을 돌려줘야 하는데 '문자열' 값을 돌려줬어요.
+5
+잡힘: TypeError: '엉뚱하게' 함수는 '숫자' 타입을 돌려줘야 하는데 '문자열' 값을 돌려줬어요.
+8
+8
+5
+5
+7
+7
+6
+6
+1
+2
+1
+2
+사과
+배
+사과
+배
+0
+2
+4
+0
+2
+4
+1
+둘
+1
+둘
+--- PASS: TestBlockScopes (0.01s)
+=== RUN   TestFileModule
+=== RUN   TestFileModule/write,_read_back,_and_append
+=== RUN   TestFileModule/writing_again_replaces_the_file
+끝 2
+끝 2
+129
+129
+실패
+실패
+안녕 하자
+안녕 하자
+こんにちは カナデ
+こんにちは カナデ
+=== RUN   TestFileModule/lines_drop_line_breaks_and_an_empty_last_line
+=== RUN   TestFileModule/exists_and_is-a-folder
+짧게
+짧게
+短く
+短く
+[첫째, 둘째, , 넷째]
+[]
+[첫째, 둘째, , 넷째]
+[]
+[첫째, 둘째, , 넷째]
+[]
+[첫째, 둘째, , 넷째]
+[]
+=== RUN   TestFileModule/delete_removes_the_file
+=== RUN   TestFileModule/list_is_sorted,_mkdir_makes_the_path,_move_replaces
+참
+거짓
+참
+거짓
+참
+거짓
+참
+거짓
+真
+偽
+真
+偽
+真
+偽
+真
+偽
+거짓
+거짓
+偽
+偽
+=== RUN   TestFileModule/reading_a_file_that_is_not_there
+[b.txt, c.txt]
+a
+[b.txt, c.txt]
+a
+[b.txt, c.txt]
+a
+[b.txt, c.txt]
+a
+=== RUN   TestFileModule/reading_a_folder
+=== RUN   TestFileModule/writing_into_a_folder_that_does_not_exist
+=== RUN   TestFileModule/writing_over_a_folder
+=== RUN   TestFileModule/deleting_a_folder_that_is_not_empty
+=== RUN   TestFileModule/the_path_must_be_a_string
+--- PASS: TestFileModule (0.16s)
+    --- PASS: TestFileModule/write,_read_back,_and_append (0.02s)
+    --- PASS: TestFileModule/writing_again_replaces_the_file (0.02s)
+    --- PASS: TestFileModule/lines_drop_line_breaks_and_an_empty_last_line (0.01s)
+    --- PASS: TestFileModule/exists_and_is-a-folder (0.01s)
+    --- PASS: TestFileModule/delete_removes_the_file (0.01s)
+    --- PASS: TestFileModule/list_is_sorted,_mkdir_makes_the_path,_move_replaces (0.03s)
+    --- PASS: TestFileModule/reading_a_file_that_is_not_there (0.01s)
+    --- PASS: TestFileModule/reading_a_folder (0.01s)
+    --- PASS: TestFileModule/writing_into_a_folder_that_does_not_exist (0.01s)
+    --- PASS: TestFileModule/writing_over_a_folder (0.01s)
+    --- PASS: TestFileModule/deleting_a_folder_that_is_not_empty (0.01s)
+    --- PASS: TestFileModule/the_path_must_be_a_string (0.01s)
+=== RUN   TestFileAccessPolicy
+=== RUN   TestFileAccessPolicy/<읽기>("a.txt")를_출력하자_
+=== RUN   TestFileAccessPolicy/<쓰기>("b.txt",_"b")를_실행하자_
+=== RUN   TestFileAccessPolicy/<있는지>("a.txt")를_출력하자_
+=== RUN   TestFileAccessPolicy/<목록>(".")을_출력하자_
+--- PASS: TestFileAccessPolicy (0.02s)
+    --- PASS: TestFileAccessPolicy/<읽기>("a.txt")를_출력하자_ (0.00s)
+    --- PASS: TestFileAccessPolicy/<쓰기>("b.txt",_"b")를_실행하자_ (0.00s)
+    --- PASS: TestFileAccessPolicy/<있는지>("a.txt")를_출력하자_ (0.00s)
+    --- PASS: TestFileAccessPolicy/<목록>(".")을_출력하자_ (0.00s)
+=== RUN   TestFileAccessIsAllowedByDefault
+--- PASS: TestFileAccessIsAllowedByDefault (0.00s)
+=== RUN   TestMathExtras
+=== RUN   TestMathExtras/round_half_away_from_zero,_also_for_negatives
+=== RUN   TestMathExtras/gcd,_factorial_and_abs
+=== RUN   TestMathExtras/square_root_of_a_negative
+=== RUN   TestMathExtras/logarithm_of_zero
+=== RUN   TestMathExtras/a_power_that_overflows
+3
+-3
+1234.57
+0
+3
+-3
+1234.57
+0
+3
+-3
+1234.57
+0
+3
+-3
+1234.57
+0
+5
+6
+1
+3628800
+7
+5
+6
+1
+3628800
+7
+5
+6
+1
+3628800
+7
+5
+6
+1
+3628800
+7
+=== RUN   TestMathExtras/factorial_too_big_for_a_number
+=== RUN   TestMathExtras/factorial_needs_a_whole_number
+--- PASS: TestMathExtras (0.04s)
+    --- PASS: TestMathExtras/round_half_away_from_zero,_also_for_negatives (0.01s)
+    --- PASS: TestMathExtras/gcd,_factorial_and_abs (0.01s)
+    --- PASS: TestMathExtras/square_root_of_a_negative (0.01s)
+    --- PASS: TestMathExtras/logarithm_of_zero (0.01s)
+    --- PASS: TestMathExtras/a_power_that_overflows (0.01s)
+    --- PASS: TestMathExtras/factorial_too_big_for_a_number (0.01s)
+    --- PASS: TestMathExtras/factorial_needs_a_whole_number (0.01s)
+=== RUN   TestStatsModule
+=== RUN   TestStatsModule/an_even_number_of_values_has_a_middle_pair
+=== RUN   TestStatsModule/the_mean_of_nothing
+=== RUN   TestStatsModule/a_deviation_needs_two_values
+=== RUN   TestStatsModule/only_numbers
+--- PASS: TestStatsModule (0.02s)
+    --- PASS: TestStatsModule/an_even_number_of_values_has_a_middle_pair (0.01s)
+    --- PASS: TestStatsModule/the_mean_of_nothing (0.00s)
+    --- PASS: TestStatsModule/a_deviation_needs_two_values (0.01s)
+    --- PASS: TestStatsModule/only_numbers (0.01s)
+=== RUN   TestTextModule
+=== RUN   TestTextModule/upper_case_leaves_other_scripts_alone
+2.5
+2.5
+0
+2.5
+2.5
+0
+2.5
+2.5
+0
+2.5
+2.5
+0
+HELLO 한글
+HELLO 한글
+=== RUN   TestTextModule/strip_removes_the_ideographic_space_too
+=== RUN   TestTextModule/padding_counts_characters_and_never_cuts
+=== RUN   TestTextModule/the_fill_must_be_one_character
+HELLO ひらがな
+HELLO ひらがな
+[가 나]
+[가 나]
+[あ い]
+[あ い]
+00가
+가나다라
+00가
+가나다라
+00あ
+あいうえ
+00あ
+あいうえ
+=== RUN   TestTextModule/repeat_zero_times_is_empty
+=== RUN   TestTextModule/repeat_a_negative_number_of_times
+=== RUN   TestTextModule/repeat_that_would_be_huge
+=== RUN   TestTextModule/reverse_works_on_characters
+[]
+[]
+[]
+[]
+다나가
+=== RUN   TestTextModule/an_empty_prefix_always_matches
+=== RUN   TestTextModule/join_strings
+=== RUN   TestTextModule/join_needs_strings
+=== RUN   TestTextModule/count_does_not_overlap
+다나가
+ういあ
+ういあ
+참
+참
+真
+真
+가, 나, 다
+
+가, 나, 다
+
+あ、い、う
+あ、い、う
+=== RUN   TestTextModule/counting_nothing
+=== RUN   TestTextModule/position_counts_characters,_not_bytes
+--- PASS: TestTextModule (0.11s)
+    --- PASS: TestTextModule/upper_case_leaves_other_scripts_alone (0.01s)
+    --- PASS: TestTextModule/strip_removes_the_ideographic_space_too (0.01s)
+    --- PASS: TestTextModule/padding_counts_characters_and_never_cuts (0.01s)
+    --- PASS: TestTextModule/the_fill_must_be_one_character (0.01s)
+    --- PASS: TestTextModule/repeat_zero_times_is_empty (0.01s)
+    --- PASS: TestTextModule/repeat_a_negative_number_of_times (0.01s)
+    --- PASS: TestTextModule/repeat_that_would_be_huge (0.01s)
+    --- PASS: TestTextModule/reverse_works_on_characters (0.01s)
+    --- PASS: TestTextModule/an_empty_prefix_always_matches (0.01s)
+    --- PASS: TestTextModule/join_strings (0.01s)
+    --- PASS: TestTextModule/join_needs_strings (0.01s)
+    --- PASS: TestTextModule/count_does_not_overlap (0.01s)
+    --- PASS: TestTextModule/counting_nothing (0.01s)
+    --- PASS: TestTextModule/position_counts_characters,_not_bytes (0.01s)
+=== RUN   TestListModule
+=== RUN   TestListModule/sort_strings_and_leave_the_original
+2
+2
+2
+2
+3
+비어있음
+3
+비어있음
+3
+空っぽ
+3
+空っぽ
+=== RUN   TestListModule/sorting_nothing
+=== RUN   TestListModule/sorting_mixed_types
+=== RUN   TestListModule/unique_keeps_the_first_and_tells_1_from_"1"
+=== RUN   TestListModule/unique_cannot_compare_lists
+[가, 나, 다]
+[나, 가, 다]
+[가, 나, 다]
+[나, 가, 다]
+[あ, い, う]
+[う, あ, い]
+[あ, い, う]
+[う, あ, い]
+[]
+[]
+[]
+[]
+[3, 1, 1]
+[3, 1, 1]
+[3, 1, 1]
+[3, 1, 1]
+=== RUN   TestListModule/range_counts_down_by_itself_and_takes_a_step
+=== RUN   TestListModule/a_zero_step
+=== RUN   TestListModule/a_range_that_is_too_long
+=== RUN   TestListModule/flatten_opens_one_level_only
+=== RUN   TestListModule/chunk_and_zip
+[5, 4, 3, 2, 1]
+[1, 5, 9]
+[]
+[3]
+[5, 4, 3, 2, 1]
+[1, 5, 9]
+[]
+[3]
+[5, 4, 3, 2, 1]
+[1, 5, 9]
+[]
+[3]
+[5, 4, 3, 2, 1]
+[1, 5, 9]
+[]
+[3]
+[1, 2, [3], 4]
+[1, 2, [3], 4]
+[1, 2, [3], 4]
+[1, 2, [3], 4]
+=== RUN   TestListModule/chunks_of_zero
+--- PASS: TestListModule (0.07s)
+    --- PASS: TestListModule/sort_strings_and_leave_the_original (0.01s)
+    --- PASS: TestListModule/sorting_nothing (0.01s)
+    --- PASS: TestListModule/sorting_mixed_types (0.01s)
+    --- PASS: TestListModule/unique_keeps_the_first_and_tells_1_from_"1" (0.01s)
+    --- PASS: TestListModule/unique_cannot_compare_lists (0.01s)
+    --- PASS: TestListModule/range_counts_down_by_itself_and_takes_a_step (0.01s)
+    --- PASS: TestListModule/a_zero_step (0.01s)
+    --- PASS: TestListModule/a_range_that_is_too_long (0.01s)
+    --- PASS: TestListModule/flatten_opens_one_level_only (0.01s)
+    --- PASS: TestListModule/chunk_and_zip (0.01s)
+    --- PASS: TestListModule/chunks_of_zero (0.01s)
+=== RUN   TestEncodingAndHashModules
+=== RUN   TestEncodingAndHashModules/base64_of_Korean_and_back
+=== RUN   TestEncodingAndHashModules/base64_without_padding_is_rejected
+=== RUN   TestEncodingAndHashModules/base64_of_bytes_that_are_not_text
+[[1, 2]]
+[[1, 가], [2, 나]]
+[3, 2, 1]
+[[1, 2]]
+[[1, 가], [2, 나]]
+[3, 2, 1]
+[[1, 2]]
+[[1, あ], [2, い]]
+[3, 2, 1]
+[[1, 2]]
+[[1, あ], [2, い]]
+[3, 2, 1]
+7ZWc6riA
+한글
+7ZWc6riA
+한글
+5pel5pys
+日本
+5pel5pys
+日本
+=== RUN   TestEncodingAndHashModules/url_escaping_of_Korean_and_back
+=== RUN   TestEncodingAndHashModules/a_broken_percent_escape
+=== RUN   TestEncodingAndHashModules/a_percent_escape_that_is_not_hex
+=== RUN   TestEncodingAndHashModules/sha256_of_nothing_and_of_Korean_text
+--- PASS: TestEncodingAndHashModules (0.03s)
+    --- PASS: TestEncodingAndHashModules/base64_of_Korean_and_back (0.00s)
+    --- PASS: TestEncodingAndHashModules/base64_without_padding_is_rejected (0.00s)
+    --- PASS: TestEncodingAndHashModules/base64_of_bytes_that_are_not_text (0.00s)
+    --- PASS: TestEncodingAndHashModules/url_escaping_of_Korean_and_back (0.00s)
+    --- PASS: TestEncodingAndHashModules/a_broken_percent_escape (0.00s)
+    --- PASS: TestEncodingAndHashModules/a_percent_escape_that_is_not_hex (0.00s)
+    --- PASS: TestEncodingAndHashModules/sha256_of_nothing_and_of_Korean_text (0.01s)
+=== RUN   TestJSONModule
+=== RUN   TestJSONModule/parse_an_object_with_nesting,_booleans_and_null
+=== RUN   TestJSONModule/stringify_sorts_dictionary_keys
+=== RUN   TestJSONModule/stringify_with_indentation
+=== RUN   TestJSONModule/numbers_keep_their_shortest_form
+%EA%B0%80%20a%2Bb
+가 a+b
+%EA%B0%80%20a%2Bb
+가 a+b
+%E3%81%82%20a%2Bb
+あ a+b
+%E3%81%82%20a%2Bb
+あ a+b
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+bd87f9bb68b67d2fa1cb82b6751820e946d5b1316d25d5fd96512fb4be44a2a8
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+bd87f9bb68b67d2fa1cb82b6751820e946d5b1316d25d5fd96512fb4be44a2a8
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+cf2abf0c5be326cb922a70f8163f91079c4d9aa8655c60ead89ad545c9de2e92
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+cf2abf0c5be326cb922a70f8163f91079c4d9aa8655c60ead89ad545c9de2e92
+{a: [1, {b: 참}], c: 비어있음}
+{a: [1, {b: 참}], c: 비어있음}
+{a: [1, {b: 真}], c: 空っぽ}
+{a: [1, {b: 真}], c: 空っぽ}
+{"a":[true,null,"x"],"b":1}
+{"a":[true,null,"x"],"b":1}
+{"a":[true,null,"x"],"b":1}
+{"a":[true,null,"x"],"b":1}
+{
+  "a": [
+    1,
+    2
+  ],
+  "b": {}
+}
+{
+  "a": [
+    1,
+    2
+  ],
+  "b": {}
+}
+{
+  "a": [
+    1,
+    2
+  ],
+  "b": {}
+}
+{
+  "a": [
+    1,
+    2
+  ],
+  "b": {}
+}
+=== RUN   TestJSONModule/text_survives_a_round_trip
+=== RUN   TestJSONModule/invalid_JSON
+=== RUN   TestJSONModule/dictionary_keys_must_be_strings
+=== RUN   TestJSONModule/parse_needs_a_string
+--- PASS: TestJSONModule (0.02s)
+    --- PASS: TestJSONModule/parse_an_object_with_nesting,_booleans_and_null (0.00s)
+    --- PASS: TestJSONModule/stringify_sorts_dictionary_keys (0.00s)
+    --- PASS: TestJSONModule/stringify_with_indentation (0.00s)
+    --- PASS: TestJSONModule/numbers_keep_their_shortest_form (0.00s)
+    --- PASS: TestJSONModule/text_survives_a_round_trip (0.00s)
+    --- PASS: TestJSONModule/invalid_JSON (0.00s)
+    --- PASS: TestJSONModule/dictionary_keys_must_be_strings (0.00s)
+    --- PASS: TestJSONModule/parse_needs_a_string (0.00s)
+=== RUN   TestRandomModule
+=== RUN   TestRandomModule/a_real_number_below_one
+=== RUN   TestRandomModule/an_integer_inside_the_range
+=== RUN   TestRandomModule/choice_comes_from_the_list
+=== RUN   TestRandomModule/shuffle_keeps_every_element_and_the_original
+[0.5,100,2.25]
+[0.5,100,2.25]
+[0.5,100,2.25]
+[0.5,100,2.25]
+{이름: 하나}
+{이름: 하나}
+{名前: はな}
+{名前: はな}
+참
+참
+真
+真
+참
+참
+真
+真
+가
+가
+あ
+あ
+4
+[1, 2, 3, 4]
+4
+[1, 2, 3, 4]
+=== RUN   TestRandomModule/minimum_above_maximum
+=== RUN   TestRandomModule/fractions_are_not_whole_numbers
+=== RUN   TestRandomModule/choosing_from_an_empty_list
+--- PASS: TestRandomModule (0.03s)
+    --- PASS: TestRandomModule/a_real_number_below_one (0.00s)
+    --- PASS: TestRandomModule/an_integer_inside_the_range (0.00s)
+    --- PASS: TestRandomModule/choice_comes_from_the_list (0.00s)
+    --- PASS: TestRandomModule/shuffle_keeps_every_element_and_the_original (0.01s)
+    --- PASS: TestRandomModule/minimum_above_maximum (0.00s)
+    --- PASS: TestRandomModule/fractions_are_not_whole_numbers (0.00s)
+    --- PASS: TestRandomModule/choosing_from_an_empty_list (0.00s)
+=== RUN   TestDatetimeModule
+=== RUN   TestDatetimeModule/format_reads_back_what_parse_wrote
+=== RUN   TestDatetimeModule/other_characters_in_a_format_are_kept
+=== RUN   TestDatetimeModule/weekday_is_1_for_Monday_and_7_for_Sunday
+=== RUN   TestDatetimeModule/a_date_that_does_not_exist
+=== RUN   TestDatetimeModule/text_that_does_not_fit_the_format
+=== RUN   TestDatetimeModule/signs_are_not_digits
+4
+[1, 2, 3, 4]
+4
+[1, 2, 3, 4]
+2024/03/05 07:08:09
+2024/03/05 07:08:09
+2024/03/05 07:08:09
+2024/03/05 07:08:09
+2024년 03월 05일
+2024년 03월 05일
+2024年03月05日
+2024年03月05日
+1
+7
+1
+7
+1
+7
+1
+7
+--- PASS: TestDatetimeModule (0.01s)
+    --- PASS: TestDatetimeModule/format_reads_back_what_parse_wrote (0.00s)
+    --- PASS: TestDatetimeModule/other_characters_in_a_format_are_kept (0.00s)
+    --- PASS: TestDatetimeModule/weekday_is_1_for_Monday_and_7_for_Sunday (0.00s)
+    --- PASS: TestDatetimeModule/a_date_that_does_not_exist (0.00s)
+    --- PASS: TestDatetimeModule/text_that_does_not_fit_the_format (0.00s)
+    --- PASS: TestDatetimeModule/signs_are_not_digits (0.00s)
+=== RUN   TestRegexModule
+=== RUN   TestRegexModule/hangul_is_matched_as_text
+=== RUN   TestRegexModule/no_match_is_null
+=== RUN   TestRegexModule/groups_that_did_not_take_part_are_null
+=== RUN   TestRegexModule/replace_with_groups
+=== RUN   TestRegexModule/a_dollar_sign_followed_by_a_letter_stays
+한글
+한글
+ひらがな
+ひらがな
+비어있음
+비어있음
+空っぽ
+空っぽ
+[b, 비어있음, b]
+[b, 비어있음, b]
+[b, 空っぽ, b]
+[b, 空っぽ, b]
+김철수 홍길동
+김철수 홍길동
+鈴木 山田
+鈴木 山田
+a$x$
+a$x$
+=== RUN   TestRegexModule/a_group_that_does_not_exist_stays_as_written
+=== RUN   TestRegexModule/split_drops_the_separators
+=== RUN   TestRegexModule/split_keeps_captured_text_out_of_the_result
+=== RUN   TestRegexModule/find_all_with_none_is_an_empty_list
+a$x$
+a$x$
+a<$3>
+a<$3>
+a<$3>
+a<$3>
+[a, b, c]
+[a, b, c]
+[a, b, c]
+[a, b, c]
+[a, b, c]
+[a, b, c]
+[a, b, c]
+[a, b, c]
+[]
+[]
+=== RUN   TestRegexModule/an_invalid_pattern
+=== RUN   TestRegexModule/the_text_must_be_a_string
+--- PASS: TestRegexModule (0.07s)
+    --- PASS: TestRegexModule/hangul_is_matched_as_text (0.01s)
+    --- PASS: TestRegexModule/no_match_is_null (0.01s)
+    --- PASS: TestRegexModule/groups_that_did_not_take_part_are_null (0.01s)
+    --- PASS: TestRegexModule/replace_with_groups (0.01s)
+    --- PASS: TestRegexModule/a_dollar_sign_followed_by_a_letter_stays (0.01s)
+    --- PASS: TestRegexModule/a_group_that_does_not_exist_stays_as_written (0.01s)
+    --- PASS: TestRegexModule/split_drops_the_separators (0.01s)
+    --- PASS: TestRegexModule/split_keeps_captured_text_out_of_the_result (0.01s)
+    --- PASS: TestRegexModule/find_all_with_none_is_an_empty_list (0.01s)
+    --- PASS: TestRegexModule/an_invalid_pattern (0.01s)
+    --- PASS: TestRegexModule/the_text_must_be_a_string (0.01s)
+=== RUN   TestSleepWaitsAndChecksItsRange
+=== RUN   TestSleepWaitsAndChecksItsRange/waiting_continues_afterwards
+[]
+[]
+끝
+끝
+終
+=== RUN   TestSleepWaitsAndChecksItsRange/a_negative_time
+=== RUN   TestSleepWaitsAndChecksItsRange/more_than_an_hour
+=== RUN   TestSleepWaitsAndChecksItsRange/the_time_must_be_a_number
+--- PASS: TestSleepWaitsAndChecksItsRange (0.21s)
+    --- PASS: TestSleepWaitsAndChecksItsRange/waiting_continues_afterwards (0.20s)
+    --- PASS: TestSleepWaitsAndChecksItsRange/a_negative_time (0.00s)
+    --- PASS: TestSleepWaitsAndChecksItsRange/more_than_an_hour (0.00s)
+    --- PASS: TestSleepWaitsAndChecksItsRange/the_time_must_be_a_number (0.00s)
+=== RUN   TestStdFunctionsWorkEverywhere
+終
+4
+4
+4
+4
+3
+3
+3
+3
+1.4142135623730951
+1.4142135623730951
+1.4142135623730951
+1.4142135623730951
+1024
+1024
+1024
+1024
+3.5
+3.5
+3.5
+3.5
+2.57
+2.57
+2.57
+2.57
+0
+0
+0
+0
+1
+1
+1
+1
+0
+0
+0
+0
+0
+0
+0
+0
+참
+참
+真
+真
+6
+6
+6
+6
+120
+120
+120
+120
+[1, 2, 3]
+[1, 2, 3]
+[1, 2, 3]
+[1, 2, 3]
+[1,2]
+[1,2]
+[1,2]
+[1,2]
+[[a, b]]
+[[a, b]]
+[[a, b]]
+[[a, b]]
+a,1
+a,1
+a,1
+a,1
+참
+참
+真
+真
+5
+5
+5
+5
+7
+7
+7
+7
+[1]
+[1]
+[1]
+[1]
+efde9bdf-a439-48f8-8dba-43101c7cf720
+04db9fcc-0943-41b4-bc0b-f17f86aee407
+9bd9d1f6-20fc-4502-88e4-79a3ecf24013
+ebfc281e-c623-4d86-a5be-bf7ac2b625d3
+참
+참
+真
+真
+2001
+2001
+2001
+2001
+참
+참
+真
+真
+참
+참
+真
+真
+비어있음
+비어있음
+空っぽ
+空っぽ
+6.5
+6.5
+6.5
+6.5
+1
+1
+1
+1
+3
+3
+3
+3
+2.5
+2.5
+2.5
+2.5
+3
+3
+3
+3
+2.138089935299395
+2.138089935299395
+2.138089935299395
+2.138089935299395
+ABC
+ABC
+ABC
+ABC
+abc
+abc
+abc
+abc
+a b
+a b
+a b
+a b
+007
+007
+007
+007
+700
+700
+700
+700
+ababab
+ababab
+ababab
+ababab
+cba
+cba
+cba
+cba
+참
+참
+真
+真
+참
+참
+真
+真
+a-b
+a-b
+a-b
+a-b
+2
+2
+2
+2
+3
+3
+3
+3
+[1, 2, 3]
+[1, 2, 3]
+[1, 2, 3]
+[1, 2, 3]
+[3, 2, 1]
+[3, 2, 1]
+[3, 2, 1]
+[3, 2, 1]
+[1, 2]
+[1, 2]
+[1, 2]
+[1, 2]
+[1, 2, 3, 4, 5]
+[1, 2, 3, 4, 5]
+[1, 2, 3, 4, 5]
+[1, 2, 3, 4, 5]
+[1, 2, 3]
+[1, 2, 3]
+[1, 2, 3]
+[1, 2, 3]
+[[1, 2], [3]]
+[[1, 2], [3]]
+[[1, 2], [3]]
+[[1, 2], [3]]
+[[1, a], [2, b]]
+[[1, a], [2, b]]
+[[1, a], [2, b]]
+[[1, a], [2, b]]
+[2, 4, 6]
+[2, 4, 6]
+[2, 4, 6]
+[2, 4, 6]
+[2, 4]
+[2, 4]
+[2, 4]
+[2, 4]
+10
+10
+10
+10
+4
+4
+4
+4
+참
+참
+真
+真
+참
+참
+真
+真
+[3, 2, 1]
+[3, 2, 1]
+[3, 2, 1]
+[3, 2, 1]
+aGk=
+aGk=
+aGk=
+aGk=
+hi
+hi
+hi
+hi
+a%20b
+a%20b
+a%20b
+a%20b
+a b
+a b
+a b
+a b
+ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad
+ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad
+ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad
+ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad
+안녕
+안녕
+안녕
+안녕
+[가, 나]
+[가, 나]
+[가, 나]
+[가, 나]
+비어있음
+비어있음
+空っぽ
+空っぽ
+비어있음
+비어있음
+空っぽ
+空っぽ
+참
+참
+真
+真
+참
+참
+真
+真
+비어있음
+비어있음
+空っぽ
+空っぽ
+[a.txt, b.txt]
+[a.txt, b.txt]
+[a.txt, b.txt]
+[a.txt, b.txt]
+비어있음
+비어있음
+空っぽ
+空っぽ
+비어있음
+비어있음
+空っぽ
+空っぽ
+a/b/c.txt
+a/b/c.txt
+a/b/c.txt
+a/b/c.txt
+a/b
+a/b
+a/b
+a/b
+c.txt
+c.txt
+c.txt
+c.txt
+.gz
+.gz
+.gz
+.gz
+c
+--- PASS: TestStdFunctionsWorkEverywhere (0.20s)
+=== RUN   TestStringPseudoMethods
+    string_methods_test.go:31: Output = [안녕 안녕하세요 하리 [안녕하세요, 세계] 참 거짓], want [안녕 안녕하세요 하자 [안녕하세요, 세계] 참 거짓]
+--- FAIL: TestStringPseudoMethods (0.00s)
+=== RUN   TestStringPseudoMethodMissingArgDoesNotPanic
+--- PASS: TestStringPseudoMethodMissingArgDoesNotPanic (0.00s)
+=== RUN   TestStringSliceStartAfterEndDoesNotPanic
+--- PASS: TestStringSliceStartAfterEndDoesNotPanic (0.00s)
+=== RUN   TestSwitchWithoutAMatchDoesNothing
+--- PASS: TestSwitchWithoutAMatchDoesNothing (0.00s)
+=== RUN   TestSwitchWithADefaultOrAMatchIsFine
+--- PASS: TestSwitchWithADefaultOrAMatchIsFine (0.00s)
+=== RUN   TestAStringCanBeWalkedCharacterByCharacter
+--- PASS: TestAStringCanBeWalkedCharacterByCharacter (0.00s)
+=== RUN   TestTimezoneOffsetsMatchTheDatabase
+c
+c
+c
+a/c.md
+a/c.md
+a/c.md
+a/c.md
+a/b/d
+a/b/d
+a/b/d
+a/b/d
+참
+참
+真
+真
+[/, a, b]
+[/, a, b]
+[/, a, b]
+[/, a, b]
+참
+참
+真
+真
+123
+123
+123
+123
+[a1, a, 1]
+[a1, a, 1]
+[a1, a, 1]
+[a1, a, 1]
+[1, 22]
+[1, 22]
+[1, 22]
+[1, 22]
+a#b#
+a#b#
+a#b#
+a#b#
+[a, b, c]
+[a, b, c]
+[a, b, c]
+[a, b, c]
+안녕
+안녕하세요 하리
+[안녕하세요, 세계]
+참
+거짓
+잡힘: ArgumentError: 인자가 1개 필요해요.
+안 죽음
+안 죽음
+끝
+끝
+나
+다
+나
+다
+안
+녕
+😀
+안
+녕
+😀
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+36000
+36000
+32400
+32400
+36000
+36000
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+0
+3600
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+7200
+3600
+7200
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+7200
+3600
+7200
+7200
+7200
+3600
+7200
+7200
+7200
+3600
+7200
+7200
+7200
+3600
+7200
+7200
+7200
+3600
+7200
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+7200
+3600
+7200
+7200
+7200
+3600
+7200
+7200
+7200
+3600
+7200
+7200
+7200
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+39600
+36000
+36000
+36000
+39600
+36000
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+36000
+36000
+36000
+39600
+36000
+36000
+36000
+39600
+36000
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+36000
+39600
+36000
+36000
+36000
+39600
+36000
+36000
+36000
+39600
+36000
+36000
+36000
+39600
+36000
+36000
+36000
+39600
+36000
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+39600
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+36000
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+36000
+36000
+36000
+36000
+36000
+37800
+37800
+37800
+41400
+37800
+37800
+37800
+41400
+37800
+37800
+37800
+41400
+37800
+37800
+37800
+41400
+37800
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+37800
+39600
+37800
+37800
+37800
+39600
+37800
+37800
+37800
+39600
+37800
+37800
+37800
+39600
+37800
+37800
+37800
+39600
+37800
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+39600
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+37800
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+46800
+43200
+43200
+43200
+46800
+43200
+43200
+43200
+46800
+43200
+43200
+43200
+46800
+43200
+43200
+43200
+46800
+43200
+43200
+43200
+46800
+43200
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+43200
+46800
+43200
+43200
+43200
+46800
+43200
+43200
+43200
+46800
+43200
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+46800
+43200
+46800
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-36000
+-36000
+-39600
+-39600
+-36000
+50400
+46800
+46800
+50400
+50400
+46800
+46800
+50400
+50400
+50400
+46800
+50400
+50400
+50400
+46800
+46800
+50400
+50400
+46800
+46800
+50400
+50400
+46800
+46800
+50400
+50400
+46800
+46800
+50400
+50400
+46800
+46800
+50400
+50400
+46800
+46800
+50400
+50400
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+36000
+36000
+32400
+32400
+36000
+36000
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+32400
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+19800
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+20700
+0
+3600
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+3600
+3600
+3600
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+0
+3600
+3600
+0
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+7200
+3600
+7200
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+7200
+3600
+7200
+7200
+7200
+3600
+7200
+7200
+7200
+3600
+7200
+7200
+7200
+3600
+7200
+7200
+7200
+3600
+7200
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+7200
+3600
+7200
+7200
+7200
+3600
+7200
+7200
+7200
+3600
+7200
+7200
+7200
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+3600
+7200
+7200
+3600
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-14400
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-18000
+-14400
+-14400
+-18000
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-25200
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-28800
+-25200
+-25200
+-28800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-7200
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-7200
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+-10800
+39600
+36000
+36000
+36000
+39600
+36000
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+36000
+36000
+36000
+39600
+36000
+36000
+36000
+39600
+36000
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+36000
+39600
+36000
+36000
+36000
+39600
+36000
+36000
+36000
+39600
+36000
+36000
+36000
+39600
+36000
+36000
+36000
+39600
+36000
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+39600
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+36000
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+39600
+36000
+36000
+39600
+36000
+36000
+36000
+36000
+36000
+37800
+37800
+37800
+41400
+37800
+37800
+37800
+41400
+37800
+37800
+37800
+41400
+37800
+37800
+37800
+41400
+37800
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+37800
+39600
+37800
+37800
+37800
+39600
+37800
+37800
+37800
+39600
+37800
+37800
+37800
+39600
+37800
+37800
+37800
+39600
+37800
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+39600
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+37800
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+39600
+37800
+37800
+39600
+46800
+43200
+43200
+43200
+46800
+43200
+43200
+43200
+46800
+43200
+43200
+43200
+46800
+43200
+43200
+43200
+46800
+43200
+43200
+43200
+46800
+43200
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+43200
+46800
+43200
+43200
+43200
+46800
+43200
+43200
+43200
+46800
+43200
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+46800
+43200
+46800
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+46800
+43200
+43200
+46800
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+--- PASS: TestTimezoneOffsetsMatchTheDatabase (3.79s)
+=== RUN   TestTimezoneFormatParseAndWeekday
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-39600
+-36000
+-36000
+-39600
+-39600
+-36000
+50400
+46800
+46800
+50400
+50400
+46800
+46800
+50400
+50400
+50400
+46800
+50400
+50400
+50400
+46800
+46800
+50400
+50400
+46800
+46800
+50400
+50400
+46800
+46800
+50400
+50400
+46800
+46800
+50400
+50400
+46800
+46800
+50400
+50400
+46800
+46800
+50400
+50400
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+46800
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+--- PASS: TestTimezoneFormatParseAndWeekday (0.09s)
+=== RUN   TestTimezoneReportsProblems
+1970-01-01 09:00:00
+2001-09-08 21:46:40
+2001년 09월 09일
+07:16
+20:16
+01:46
+1000000000
+1000000000
+1704067200
+1730611800
+7
+6
+32400
+32400
+20700
+1970-01-01 09:00:00
+2001-09-08 21:46:40
+2001년 09월 09일
+07:16
+20:16
+01:46
+1000000000
+1000000000
+1704067200
+1730611800
+7
+6
+32400
+32400
+20700
+--- PASS: TestTimezoneReportsProblems (0.12s)
+=== RUN   TestTimezoneInKanade
+--- PASS: TestTimezoneInKanade (0.09s)
+=== RUN   TestHariTryCatch
+=== Hari 예외처리 테스트 ===
+--- PASS: TestHariTryCatch (0.00s)
+=== RUN   TestTypedCatchDoesNotMatchUnrelatedEngineError
+--- PASS: TestTypedCatchDoesNotMatchUnrelatedEngineError (0.00s)
+=== RUN   TestTypedCatchMatchesViaUpcasting
+--- PASS: TestTypedCatchMatchesViaUpcasting (0.00s)
+=== RUN   TestDeclaredTypesAreEnforcedOnDeclaration
+=== RUN   TestDeclaredTypesAreEnforcedOnDeclaration/a_string_is_not_a_number
+=== RUN   TestDeclaredTypesAreEnforcedOnDeclaration/a_matching_value_is_fine
+=== RUN   TestDeclaredTypesAreEnforcedOnDeclaration/a_number_is_not_a_boolean
+--- PASS: TestDeclaredTypesAreEnforcedOnDeclaration (0.00s)
+    --- PASS: TestDeclaredTypesAreEnforcedOnDeclaration/a_string_is_not_a_number (0.00s)
+    --- PASS: TestDeclaredTypesAreEnforcedOnDeclaration/a_matching_value_is_fine (0.00s)
+    --- PASS: TestDeclaredTypesAreEnforcedOnDeclaration/a_number_is_not_a_boolean (0.00s)
+=== RUN   TestTheDeclaredTypeOutlivesTheDeclaration
+=== RUN   TestTheDeclaredTypeOutlivesTheDeclaration/reassigning_another_type_fails
+=== RUN   TestTheDeclaredTypeOutlivesTheDeclaration/reassigning_the_same_type_is_fine
+=== RUN   TestTheDeclaredTypeOutlivesTheDeclaration/an_untyped_variable_may_change_type
+=== RUN   TestTheDeclaredTypeOutlivesTheDeclaration/[아무거나]_accepts_anything
+=== RUN   TestTheDeclaredTypeOutlivesTheDeclaration/비어있음_fits_every_type
+--- PASS: TestTheDeclaredTypeOutlivesTheDeclaration (0.00s)
+    --- PASS: TestTheDeclaredTypeOutlivesTheDeclaration/reassigning_another_type_fails (0.00s)
+    --- PASS: TestTheDeclaredTypeOutlivesTheDeclaration/reassigning_the_same_type_is_fine (0.00s)
+    --- PASS: TestTheDeclaredTypeOutlivesTheDeclaration/an_untyped_variable_may_change_type (0.00s)
+    --- PASS: TestTheDeclaredTypeOutlivesTheDeclaration/[아무거나]_accepts_anything (0.00s)
+    --- PASS: TestTheDeclaredTypeOutlivesTheDeclaration/비어있음_fits_every_type (0.00s)
+=== RUN   TestGenericsAreCheckedWhenElementsAreAdded
+=== RUN   TestGenericsAreCheckedWhenElementsAreAdded/a_wrong_element_in_the_initial_list
+=== RUN   TestGenericsAreCheckedWhenElementsAreAdded/pushing_a_wrong_element
+=== RUN   TestGenericsAreCheckedWhenElementsAreAdded/pushing_a_matching_element
+=== RUN   TestGenericsAreCheckedWhenElementsAreAdded/dictionary_values_are_checked
+=== RUN   TestGenericsAreCheckedWhenElementsAreAdded/a_well-typed_dictionary
+--- PASS: TestGenericsAreCheckedWhenElementsAreAdded (0.00s)
+    --- PASS: TestGenericsAreCheckedWhenElementsAreAdded/a_wrong_element_in_the_initial_list (0.00s)
+    --- PASS: TestGenericsAreCheckedWhenElementsAreAdded/pushing_a_wrong_element (0.00s)
+    --- PASS: TestGenericsAreCheckedWhenElementsAreAdded/pushing_a_matching_element (0.00s)
+    --- PASS: TestGenericsAreCheckedWhenElementsAreAdded/dictionary_values_are_checked (0.00s)
+    --- PASS: TestGenericsAreCheckedWhenElementsAreAdded/a_well-typed_dictionary (0.00s)
+=== RUN   TestParameterTypesAreEnforced
+=== RUN   TestParameterTypesAreEnforced/the_wrong_argument_type
+=== RUN   TestParameterTypesAreEnforced/the_right_argument_type
+=== RUN   TestParameterTypesAreEnforced/the_parameter_keeps_its_type_inside_the_body
+=== RUN   TestParameterTypesAreEnforced/an_untyped_parameter_takes_anything
+--- PASS: TestParameterTypesAreEnforced (0.00s)
+    --- PASS: TestParameterTypesAreEnforced/the_wrong_argument_type (0.00s)
+    --- PASS: TestParameterTypesAreEnforced/the_right_argument_type (0.00s)
+    --- PASS: TestParameterTypesAreEnforced/the_parameter_keeps_its_type_inside_the_body (0.00s)
+    --- PASS: TestParameterTypesAreEnforced/an_untyped_parameter_takes_anything (0.00s)
+=== RUN   TestClassTypesAcceptChildrenAndRejectStrangers
+=== RUN   TestClassTypesAcceptChildrenAndRejectStrangers/upcasting:_a_child_fits_its_parent's_type
+=== RUN   TestClassTypesAcceptChildrenAndRejectStrangers/a_stranger_class_is_refused
+=== RUN   TestClassTypesAcceptChildrenAndRejectStrangers/a_parent_is_not_a_child
+=== RUN   TestClassTypesAcceptChildrenAndRejectStrangers/a_class-typed_parameter_refuses_a_stranger
+--- PASS: TestClassTypesAcceptChildrenAndRejectStrangers (0.00s)
+    --- PASS: TestClassTypesAcceptChildrenAndRejectStrangers/upcasting:_a_child_fits_its_parent's_type (0.00s)
+    --- PASS: TestClassTypesAcceptChildrenAndRejectStrangers/a_stranger_class_is_refused (0.00s)
+    --- PASS: TestClassTypesAcceptChildrenAndRejectStrangers/a_parent_is_not_a_child (0.00s)
+    --- PASS: TestClassTypesAcceptChildrenAndRejectStrangers/a_class-typed_parameter_refuses_a_stranger (0.00s)
+=== RUN   TestFieldTypesAreEnforced
+=== RUN   TestFieldTypesAreEnforced/writing_a_wrong_type_into_a_typed_field
+=== RUN   TestFieldTypesAreEnforced/a_default_that_does_not_match_its_own_type
+=== RUN   TestFieldTypesAreEnforced/a_matching_write
+--- PASS: TestFieldTypesAreEnforced (0.00s)
+    --- PASS: TestFieldTypesAreEnforced/writing_a_wrong_type_into_a_typed_field (0.00s)
+    --- PASS: TestFieldTypesAreEnforced/a_default_that_does_not_match_its_own_type (0.00s)
+    --- PASS: TestFieldTypesAreEnforced/a_matching_write (0.00s)
+=== RUN   TestTypeErrorsAreCatchable
+=== RUN   TestTypeErrorsAreCatchable/일단_해보자_catches_a_type_error_and_its_message_is_readable
+--- PASS: TestTypeErrorsAreCatchable (0.00s)
+    --- PASS: TestTypeErrorsAreCatchable/일단_해보자_catches_a_type_error_and_its_message_is_readable (0.00s)
+=== RUN   TestTypedCallToAClassIsACall
+--- PASS: TestTypedCallToAClassIsACall (0.00s)
+FAIL
+2001-09-08 21:46:40
+1000000000
+7
+20700
+2001-09-08 21:46:40
+1000000000
+7
+20700
+[오류 객체]
+정리작업 완료
+3
+3
+3
+3
+4
+4
+4
+4
+x
+x
+x
+x
+x
+x
+x
+x
+비어있음
+비어있음
+空っぽ
+空っぽ
+[1, 2, 3]
+[1, 2, 3]
+[1, 2, 3]
+[1, 2, 3]
+90
+90
+90
+90
+8
+8
+8
+8
+글
+글
+文
+文
+앉아
+앉아
+おすわり
+おすわり
+21
+21
+21
+21
+TypeError: 'a'에는 '숫자' 타입만 담을 수 있어요. '문자열' 값이 들어왔어요.
+TypeError: 'a'에는 '숫자' 타입만 담을 수 있어요. '문자열' 값이 들어왔어요.
+TypeError: 『a』には『数字』型の値しか入れられません。『文字列』の値が渡されました。
+TypeError: 『a』には『数字』型の値しか入れられません。『文字列』の値が渡されました。
+3
+정적
+정적
+3
+정적
+정적
+FAIL	github.com/soumt-r/hana/tests	30.446s
+FAIL

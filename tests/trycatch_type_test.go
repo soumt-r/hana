@@ -11,10 +11,10 @@ package tests
 import "testing"
 
 // A handler typed for an unrelated user-defined class must not catch an
-// engine-raised error (which has no Haja class at all) — it must fall
+// engine-raised error (which has no Hari class at all) — it must fall
 // through to the untyped handler instead.
 func TestTypedCatchDoesNotMatchUnrelatedEngineError(t *testing.T) {
-	interp, err := runHaja(t, `
+	interp, err := runHari(t, `
 [네트워크오류]를 설계하자:
     '메시지'를 [문자열]인 ""로 정하자
     처음 만들어질 때 ('메시지') 다음과 같이 하자:
@@ -41,7 +41,7 @@ func TestTypedCatchDoesNotMatchUnrelatedEngineError(t *testing.T) {
 // subclass of its declared type (upcasting), and a handler for an
 // unrelated type declared earlier must be skipped correctly.
 func TestTypedCatchMatchesViaUpcasting(t *testing.T) {
-	interp, err := runHaja(t, `
+	interp, err := runHari(t, `
 [네트워크오류]를 설계하자:
     '메시지'를 [문자열]인 ""로 정하자
     처음 만들어질 때 ('메시지') 다음과 같이 하자:

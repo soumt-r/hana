@@ -262,7 +262,7 @@ func (i *Interpreter) FormatValue(val interface{}) string {
 	switch v := val.(type) {
 	case string:
 		return v
-	case *HajaObject:
+	case *HariObject:
 		return fmt.Sprintf(i.Config.ObjectFormat, v.ClassName)
 	case bool:
 		if v {
@@ -316,7 +316,7 @@ type ThrownError struct {
 // Error is what the CLI prints for an uncaught throw: the message of a thrown
 // error object (its 메시지/メッセージ property), else the value as text.
 func (t *ThrownError) Error() string {
-	if obj, ok := t.Value.(*HajaObject); ok {
+	if obj, ok := t.Value.(*HariObject); ok {
 		for _, key := range []string{"메시지", "メッセージ"} {
 			if msg, ok := obj.Props[key].(string); ok {
 				return msg

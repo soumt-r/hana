@@ -1,9 +1,9 @@
 // errsgen writes the errs catalogs as a TypeScript module, so the docs sites'
-// browser engines (haja-docs, kanade-docs) print exactly the wording the Go
+// browser engines (hari-docs, kanade-docs) print exactly the wording the Go
 // engines do without anyone re-typing it. The Go catalogs in hana/errs stay
 // the single source of truth; the generated file is never edited by hand.
 //
-//	go run ./cmd/errsgen ../haja-docs/src/utils/haja/errCatalog.ts ../kanade-docs/src/utils/kanade/errCatalog.ts
+//	go run ./cmd/errsgen ../hari-docs/src/utils/hari/errCatalog.ts ../kanade-docs/src/utils/kanade/errCatalog.ts
 //	go run ./cmd/errsgen -check <same paths>   # exit 1 if any file is stale
 package main
 

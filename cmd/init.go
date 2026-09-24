@@ -28,9 +28,9 @@ var initCmd = &cobra.Command{
 	},
 }
 
-const hajaTemplate = `(참고: 시작 파일이에요. 터미널에서 hana run main.hj 로 실행해요.)
+const hariTemplate = `(참고: 시작 파일이에요. 터미널에서 hana run main.hr 로 실행해요.)
 
-'이름'을 [문자열]인 "하자"로 정하자
+'이름'을 [문자열]인 "하리"로 정하자
 틀"안녕, {'이름'}!"을 출력하자
 `
 
@@ -50,15 +50,15 @@ func mainFileFor(lang string) string {
 	if lang == "kanade" {
 		return "main.knd"
 	}
-	return "main.hj"
+	return "main.hr"
 }
 
 // scaffold writes the files of a new project into dir (created if missing) and
 // returns their paths. It never overwrites a file that is already there.
 func scaffold(dir, lang string) ([]string, error) {
-	template := hajaTemplate
+	template := hariTemplate
 	switch lang {
-	case "haja":
+	case "hari":
 	case "kanade":
 		template = kanadeTemplate
 	default:
@@ -91,6 +91,6 @@ func scaffold(dir, lang string) ([]string, error) {
 }
 
 func init() {
-	initCmd.Flags().String("lang", "haja", "")
+	initCmd.Flags().String("lang", "hari", "")
 	rootCmd.AddCommand(initCmd)
 }

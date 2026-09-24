@@ -2,7 +2,7 @@
   "name": "http_server",
   "version": "0.1.0",
   "entry": {
-    "haja": "haja/index.hj",
+    "hari": "hari/index.hr",
     "kanade": "kanade/index.knd"
   },
   "native": {

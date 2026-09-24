@@ -7,7 +7,7 @@ import "testing"
 // fmt.Sscanf-based implementation silently accepted) raises ConversionError
 // instead of silently returning 0.
 func TestBuiltinToNumber(t *testing.T) {
-	interp, err := runHaja(t, `
+	interp, err := runHari(t, `
 '문자열에서'를 <숫자로>("42")로 정하자
 '숫자통과'를 <숫자로>(3.5)로 정하자
 `)
@@ -21,17 +21,17 @@ func TestBuiltinToNumber(t *testing.T) {
 		t.Errorf("숫자통과 = %v, want 3.5", got)
 	}
 
-	_, err = runHaja(t, `'결과'를 <숫자로>("가나다")로 정하자`)
+	_, err = runHari(t, `'결과'를 <숫자로>("가나다")로 정하자`)
 	requireErrorContains(t, err, "ConversionError")
 
-	_, err = runHaja(t, `'결과'를 <숫자로>("123abc")로 정하자`)
+	_, err = runHari(t, `'결과'를 <숫자로>("123abc")로 정하자`)
 	requireErrorContains(t, err, "ConversionError")
 }
 
 // <코드로>: exactly one rune of input is required (Runtime spec 5.5); empty
 // or multi-character strings must error instead of silently returning 0.
 func TestBuiltinToCode(t *testing.T) {
-	interp, err := runHaja(t, `'결과'를 <코드로>("A")로 정하자`)
+	interp, err := runHari(t, `'결과'를 <코드로>("A")로 정하자`)
 	if err != nil {
 		t.Fatalf("unexpected runtime error: %v", err)
 	}
@@ -39,16 +39,16 @@ func TestBuiltinToCode(t *testing.T) {
 		t.Errorf("결과 = %v, want 65", got)
 	}
 
-	_, err = runHaja(t, `'결과'를 <코드로>("AB")로 정하자`)
+	_, err = runHari(t, `'결과'를 <코드로>("AB")로 정하자`)
 	requireErrorContains(t, err, "ConversionError")
 
-	_, err = runHaja(t, `'결과'를 <코드로>("")로 정하자`)
+	_, err = runHari(t, `'결과'를 <코드로>("")로 정하자`)
 	requireErrorContains(t, err, "ConversionError")
 }
 
 // <글자로>: a non-numeric argument must error instead of silently returning "".
 func TestBuiltinToText(t *testing.T) {
-	interp, err := runHaja(t, `'결과'를 <글자로>(65)로 정하자`)
+	interp, err := runHari(t, `'결과'를 <글자로>(65)로 정하자`)
 	if err != nil {
 		t.Fatalf("unexpected runtime error: %v", err)
 	}
@@ -56,6 +56,6 @@ func TestBuiltinToText(t *testing.T) {
 		t.Errorf("결과 = %v, want \"A\"", got)
 	}
 
-	_, err = runHaja(t, `'결과'를 <글자로>("A")로 정하자`)
+	_, err = runHari(t, `'결과'를 <글자로>("A")로 정하자`)
 	requireErrorContains(t, err, "ConversionError")
 }

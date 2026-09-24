@@ -56,7 +56,7 @@ func TestNameTablesHaveNoStrayEntries(t *testing.T) {
 // the browser Playground disagree with hana about what `[수학]` contains.
 func TestGeneratedTypeScriptNamesAreCurrent(t *testing.T) {
 	for lang, rel := range map[string]string{
-		Haja:   "../../haja-docs/src/utils/haja/stdNames.ts",
+		Hari:   "../../hari-docs/src/utils/hari/stdNames.ts",
 		Kanade: "../../kanade-docs/src/utils/kanade/stdNames.ts",
 	} {
 		got, err := os.ReadFile(rel)
@@ -65,7 +65,7 @@ func TestGeneratedTypeScriptNamesAreCurrent(t *testing.T) {
 			continue
 		}
 		if strings.ReplaceAll(string(got), "\r\n", "\n") != TypeScriptNames(lang) {
-			t.Errorf("%s is stale — run: go run ./cmd/stdgen -haja <file> -kanade <file>", rel)
+			t.Errorf("%s is stale — run: go run ./cmd/stdgen -hari <file> -kanade <file>", rel)
 		}
 	}
 }
@@ -73,13 +73,13 @@ func TestGeneratedTypeScriptNamesAreCurrent(t *testing.T) {
 // A NativeOnly module is emitted with its flag; the others carry none, so
 // adding the flag never changes the output for ordinary modules.
 func TestTypeScriptNamesMarkNativeOnlyModules(t *testing.T) {
-	names[Haja]["fake"] = "가짜"
-	names[Haja]["fake.read"] = "읽기"
+	names[Hari]["fake"] = "가짜"
+	names[Hari]["fake.read"] = "읽기"
 	defer func() {
-		delete(names[Haja], "fake")
-		delete(names[Haja], "fake.read")
+		delete(names[Hari], "fake")
+		delete(names[Hari], "fake.read")
 	}()
-	out := typeScriptNames(Haja, []Module{
+	out := typeScriptNames(Hari, []Module{
 		{ID: "math", Functions: []string{MathCeil}},
 		{ID: "fake", Functions: []string{"fake.read"}, NativeOnly: true},
 	})

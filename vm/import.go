@@ -27,7 +27,7 @@ func (i *Interpreter) executeImport(s *ast.ImportStatement, env *Environment) (i
 //  1. a native library of the package (`<네이티브_이름>` targets, or plain names
 //     when the package has no source entry point)
 //  2. a source package with an entry point for the current language
-//     (packages/<모듈>/<haja|kanade>/index.<hj|knd>, or what its hana.pkg.json says)
+//     (packages/<모듈>/<hari|kanade>/index.<hj|knd>, or what its hana.pkg.json says)
 //  3. a core engine native module (예: [수학])
 //
 // A native library's functions can't be listed, so `전부` has nothing to bind
@@ -151,7 +151,7 @@ func nativeBuiltin(name string, fn native.Func) *BuiltinFunction {
 
 // importLocalFile resolves `"파일"에서 <타겟>을 가져오자`: parses and runs the
 // local source file as its own sub-interpreter — in the file's own language,
-// chosen by its extension (.hj / .knd) — then binds the requested items.
+// chosen by its extension (.hr / .knd) — then binds the requested items.
 func (i *Interpreter) importLocalFile(s *ast.ImportStatement, env *Environment) (interface{}, error) {
 	filename := s.Module
 	cfg := ConfigForFile(filename)

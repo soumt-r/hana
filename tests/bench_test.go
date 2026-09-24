@@ -17,14 +17,14 @@ import (
 	"github.com/soumt-r/hana/bcstdlib"
 	"github.com/soumt-r/hana/bcvm"
 	"github.com/soumt-r/hana/bytecode"
-	lexer "github.com/soumt-r/hana/lexer/haja"
-	parser "github.com/soumt-r/hana/parser/haja"
+	lexer "github.com/soumt-r/hana/lexer/hari"
+	parser "github.com/soumt-r/hana/parser/hari"
 	"github.com/soumt-r/hana/stdlib"
 	"github.com/soumt-r/hana/vm"
 )
 
 func BenchmarkPrograms(b *testing.B) {
-	files, _ := filepath.Glob("../bench/*.hj")
+	files, _ := filepath.Glob("../bench/*.hr")
 	if len(files) == 0 {
 		b.Skip("no programs in ../bench")
 	}
@@ -37,7 +37,7 @@ func BenchmarkPrograms(b *testing.B) {
 	defer func() { os.Stdout = stdout }()
 
 	for _, file := range files {
-		name := strings.TrimSuffix(filepath.Base(file), ".hj")
+		name := strings.TrimSuffix(filepath.Base(file), ".hr")
 		data, err := os.ReadFile(file)
 		if err != nil {
 			b.Fatal(err)

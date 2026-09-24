@@ -108,7 +108,7 @@ func TestListsAreReferences(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			tree, err := runHaja(t, c.code)
+			tree, err := runHari(t, c.code)
 			if err != nil {
 				t.Fatalf("tree-walker: %v", err)
 			}
@@ -135,7 +135,7 @@ func TestConstantListsCannotBeChanged(t *testing.T) {
 		"clear": "'목록'의 <비우기>()를 실행하자",
 	} {
 		code := "'목록'을 [(숫자)목록]인 [1, 2]로 고정하자\n" + change + "\n"
-		if _, err := runHaja(t, code); err == nil || !strings.Contains(err.Error(), "ConstantAssignmentError") {
+		if _, err := runHari(t, code); err == nil || !strings.Contains(err.Error(), "ConstantAssignmentError") {
 			t.Errorf("%s (tree-walker): %v", name, err)
 		}
 		if _, err := runBytecode(t, code); err == nil || !strings.Contains(err.Error(), "ConstantAssignmentError") {

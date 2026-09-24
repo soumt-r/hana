@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	hajalexer "github.com/soumt-r/hana/lexer/haja"
+	harilexer "github.com/soumt-r/hana/lexer/hari"
 	kanadelexer "github.com/soumt-r/hana/lexer/kanade"
 )
 
@@ -22,14 +22,14 @@ func labels(items []completionItem) map[string]completionItem {
 // keyword must actually lex as a keyword token in its own language.
 func TestKeywordsLexAsKeywords(t *testing.T) {
 	first := func(l *language, kw string) (typ, literal string) {
-		if l == hajaLang {
-			tok := hajalexer.New(kw).Tokens[0]
+		if l == hariLang {
+			tok := harilexer.New(kw).Tokens[0]
 			return string(tok.Type), tok.Literal
 		}
 		tok := kanadelexer.New(kw).Tokens[0]
 		return string(tok.Type), tok.Literal
 	}
-	for _, l := range []*language{hajaLang, kanadeLang} {
+	for _, l := range []*language{hariLang, kanadeLang} {
 		for _, kw := range l.keywords {
 			typ, lit := first(l, kw)
 			// The keyword must be exactly one keyword token: a typo such as
@@ -41,9 +41,9 @@ func TestKeywordsLexAsKeywords(t *testing.T) {
 	}
 }
 
-func TestHajaCompletionOffersKeywordsBuiltinTypesAndDeclarations(t *testing.T) {
+func TestHariCompletionOffersKeywordsBuiltinTypesAndDeclarations(t *testing.T) {
 	src := "'나이'를 3으로 정하자\n"
-	got := labels(completionsFor(hajaLang, src))
+	got := labels(completionsFor(hariLang, src))
 	for _, want := range []string{"출력하자", "[숫자]", "'나이'"} {
 		if _, ok := got[want]; !ok {
 			t.Errorf("missing %q in %v", want, got)
@@ -73,7 +73,7 @@ func TestKanadeCompletionUsesKanadeVocabularyAndDelimiters(t *testing.T) {
 
 func TestClassMembersAndParametersAreOffered(t *testing.T) {
 	src := "[자동차]를 설계하자:\n    '색상'을 [문자열]인 \"하양\"으로 정하자\n\n    처음 만들어질 때 ([문자열]인 '초기색상') 다음과 같이 하자:\n        '나'의 '색상'을 '초기색상'으로 정하자\n"
-	got := labels(completionsFor(hajaLang, src))
+	got := labels(completionsFor(hariLang, src))
 	if got["[자동차]"].Kind != kindClass {
 		t.Errorf("class missing: %v", got)
 	}
@@ -86,7 +86,7 @@ func TestClassMembersAndParametersAreOffered(t *testing.T) {
 }
 
 func TestCompletionSurvivesBrokenCode(t *testing.T) {
-	got := completionsFor(hajaLang, "'a'를 정하자 )) [[ <")
+	got := completionsFor(hariLang, "'a'를 정하자 )) [[ <")
 	if len(got) == 0 {
 		t.Error("keywords should still be offered for half-typed code")
 	}
@@ -94,7 +94,7 @@ func TestCompletionSurvivesBrokenCode(t *testing.T) {
 
 func TestNoDuplicateCompletionItems(t *testing.T) {
 	seen := map[string]bool{}
-	for _, it := range completionsFor(hajaLang, "'a'를 1로 정하자\n'a'를 2로 정하자\n") {
+	for _, it := range completionsFor(hariLang, "'a'를 1로 정하자\n'a'를 2로 정하자\n") {
 		k := it.Label + "|" + it.Detail
 		if seen[k] {
 			t.Errorf("duplicate %q", k)
@@ -140,10 +140,10 @@ func TestCompletionForUnknownExtensionIsEmptyList(t *testing.T) {
 }
 
 func TestCompletionOffersComparisonsAndGrammarWords(t *testing.T) {
-	haja := labels(completionsFor(hajaLang, ""))
+	hari := labels(completionsFor(hariLang, ""))
 	for _, w := range []string{"같다", "크다", "돌려주는", "우리", "가져오자", "밑설계하자"} {
-		if _, ok := haja[w]; !ok {
-			t.Errorf("haja completion is missing %q", w)
+		if _, ok := hari[w]; !ok {
+			t.Errorf("hari completion is missing %q", w)
 		}
 	}
 	kanade := labels(completionsFor(kanadeLang, ""))
@@ -157,7 +157,7 @@ func TestCompletionOffersComparisonsAndGrammarWords(t *testing.T) {
 // Each comparison word must really lex as a comparison, or the table would
 // suggest text the language does not read that way.
 func TestComparisonWordsLexAsComparisons(t *testing.T) {
-	for _, l := range []*language{hajaLang, kanadeLang} {
+	for _, l := range []*language{hariLang, kanadeLang} {
 		for _, w := range l.comparisons {
 			toks := l.lex(w)
 			if len(toks) == 0 || toks[0].Type != "COMPARE" || toks[0].Literal != w {
@@ -171,7 +171,7 @@ func TestComparisonWordsLexAsComparisons(t *testing.T) {
 // editors; a stale copy would suggest different words than the language server.
 func TestGeneratedTypeScriptKeywordsAreCurrent(t *testing.T) {
 	for lang, rel := range map[string]string{
-		"haja":   "../../haja-docs/src/utils/haja/lspKeywords.ts",
+		"hari":   "../../hari-docs/src/utils/hari/lspKeywords.ts",
 		"kanade": "../../kanade-docs/src/utils/kanade/lspKeywords.ts",
 	} {
 		got, err := os.ReadFile(rel)
@@ -180,7 +180,7 @@ func TestGeneratedTypeScriptKeywordsAreCurrent(t *testing.T) {
 			continue
 		}
 		if strings.ReplaceAll(string(got), "\r\n", "\n") != TypeScriptKeywords(lang) {
-			t.Errorf("%s is stale — run: go run ./cmd/lspgen -haja <file> -kanade <file>", rel)
+			t.Errorf("%s is stale — run: go run ./cmd/lspgen -hari <file> -kanade <file>", rel)
 		}
 	}
 }

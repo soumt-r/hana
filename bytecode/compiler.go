@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/soumt-r/hana/ast"
-	haja_lexer "github.com/soumt-r/hana/lexer/haja"
+	hari_lexer "github.com/soumt-r/hana/lexer/hari"
 	kanade_lexer "github.com/soumt-r/hana/lexer/kanade"
-	haja_parser "github.com/soumt-r/hana/parser/haja"
+	hari_parser "github.com/soumt-r/hana/parser/hari"
 	kanade_parser "github.com/soumt-r/hana/parser/kanade"
 )
 
@@ -40,7 +40,7 @@ type Compiler struct {
 	// lang carries the handful of things that differ by source language
 	// but aren't reachable through the AST alone: the literal self/static
 	// words a *ast.Identifier can be ("나"/"우리" vs "私"/"私たち" — same
-	// parse-time-vs-runtime-string-check design as parser/haja's
+	// parse-time-vs-runtime-string-check design as parser/hari's
 	// listPosition and vm/eval_expr.go's Identifier case) and how to
 	// lex+parse a template literal's {...} interpolation, which is real
 	// source text compiled fresh, not something the parser already turned
@@ -65,7 +65,7 @@ type Compiler struct {
 }
 
 type bcLang struct {
-	name              string // language key (haja/kanade), as in hana.pkg.json
+	name              string // language key (hari/kanade), as in hana.pkg.json
 	ext               string // source extension of its entry points
 	nativePrefix      string // marks an import from a package's native library
 	selfWord          string
@@ -76,17 +76,17 @@ type bcLang struct {
 	builtinErrorClass *ast.ClassDeclaration
 }
 
-var hajaLang = &bcLang{
-	name:            "haja",
-	ext:             ".hj",
+var hariLang = &bcLang{
+	name:            "hari",
+	ext:             ".hr",
 	nativePrefix:    "네이티브_",
 	selfWord:        "나",
 	pluralSelfWord:  "우리",
 	listClearMethod: "비우기",
 	defaultItemName: "아이템",
 	parseExpr: func(code string) ast.Expression {
-		l := haja_lexer.New(code)
-		p := haja_parser.New(l)
+		l := hari_lexer.New(code)
+		p := hari_parser.New(l)
 		return p.ParseExpression()
 	},
 }
@@ -117,7 +117,7 @@ type tryScope struct {
 }
 
 func NewCompiler() *Compiler {
-	return newCompiler(hajaLang)
+	return newCompiler(hariLang)
 }
 
 // NewKanadeCompiler is NewCompiler for a 카나데(Kanade) source program: same
@@ -174,9 +174,9 @@ const kanadeBuiltinErrorClassSource = `
 `
 
 func init() {
-	hajaLang.builtinErrorClass = parseBuiltinErrorClass(func() (*ast.Program, []string) {
-		l := haja_lexer.New(builtinErrorClassSource)
-		p := haja_parser.New(l)
+	hariLang.builtinErrorClass = parseBuiltinErrorClass(func() (*ast.Program, []string) {
+		l := hari_lexer.New(builtinErrorClassSource)
+		p := hari_parser.New(l)
 		return p.ParseProgram(), p.Errors()
 	})
 	kanadeLang.builtinErrorClass = parseBuiltinErrorClass(func() (*ast.Program, []string) {
@@ -327,8 +327,8 @@ func (c *Compiler) compileLocalImport(s *ast.ImportStatement) {
 		parseErrors = p.Errors()
 		sub = NewKanadeCompiler()
 	} else {
-		l := haja_lexer.New(string(content))
-		p := haja_parser.New(l)
+		l := hari_lexer.New(string(content))
+		p := hari_parser.New(l)
 		prog = p.ParseProgram()
 		parseErrors = p.Errors()
 		sub = NewCompiler()
@@ -1235,7 +1235,7 @@ func (c *Compiler) compileExpression(chunk *Chunk, expr ast.Expression) {
 		chunk.emit(PUSH_CONST, chunk.addConstant(e.Value))
 
 	case *ast.StringLiteral:
-		chunk.emit(PUSH_CONST, chunk.addConstant(unescapeHajaString(e.Value)))
+		chunk.emit(PUSH_CONST, chunk.addConstant(unescapeHariString(e.Value)))
 
 	case *ast.BooleanLiteral:
 		chunk.emit(PUSH_BOOL, e.Value)
@@ -1428,7 +1428,7 @@ func (c *Compiler) compileExpression(chunk *Chunk, expr ast.Expression) {
 }
 
 func (c *Compiler) compileTemplateLiteral(chunk *Chunk, e *ast.TemplateLiteral) {
-	raw := unescapeHajaString(e.Value)
+	raw := unescapeHariString(e.Value)
 	first := true
 
 	push := func(s string) {
@@ -1479,10 +1479,10 @@ func (c *Compiler) compileTemplateLiteral(chunk *Chunk, e *ast.TemplateLiteral) 
 	}
 }
 
-// unescapeHajaString applies the same escape processing the tree-walking
+// unescapeHariString applies the same escape processing the tree-walking
 // interpreter does at evaluation time (eval_expr.go), but once, at compile
 // time, since string/template literals are constant.
-func unescapeHajaString(s string) string {
+func unescapeHariString(s string) string {
 	s = strings.ReplaceAll(s, `\n`, "\n")
 	s = strings.ReplaceAll(s, `\"`, `"`)
 	s = strings.ReplaceAll(s, `\t`, "\t")

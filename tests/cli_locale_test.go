@@ -51,7 +51,7 @@ func TestHelpIsInBothLanguages(t *testing.T) {
 
 func TestTheLanguageComesFromTheFlagThenTheEnvironmentThenTheScript(t *testing.T) {
 	dir := t.TempDir()
-	hj := filepath.Join(dir, "a.hj")
+	hj := filepath.Join(dir, "a.hr")
 	knd := filepath.Join(dir, "a.knd")
 	os.WriteFile(hj, []byte("\"안녕\"을 출력하자\n"), 0o644)
 	os.WriteFile(knd, []byte("「こんにちは」を出力しよう\n"), 0o644)
@@ -62,7 +62,7 @@ func TestTheLanguageComesFromTheFlagThenTheEnvironmentThenTheScript(t *testing.T
 		args []string
 		want string
 	}{
-		{"a Haja script and nothing else says Korean", []string{"HANA_LANG=ko"}, []string{"run", "-t", hj}, "실행 시간"},
+		{"a Hari script and nothing else says Korean", []string{"HANA_LANG=ko"}, []string{"run", "-t", hj}, "실행 시간"},
 		{"a Kanade script means Japanese", nil, []string{"run", "-t", knd}, "実行時間"},
 		{"the environment beats the script", []string{"HANA_LANG=ko"}, []string{"run", "-t", knd}, "실행 시간"},
 		{"the flag beats the environment", []string{"HANA_LANG=ko"}, []string{"--locale", "ja", "run", "-t", hj}, "実行時間"},
@@ -80,7 +80,7 @@ func TestInitAndItsProblemsAreInBothLanguages(t *testing.T) {
 	if out := hanaSays(t, []string{"HANA_LANG=ja"}, "init", dir, "--lang", "kanade"); !strings.Contains(out, "次のコマンドで実行してみましょう") {
 		t.Errorf("Japanese init: %s", out)
 	}
-	if out := hanaSays(t, []string{"HANA_LANG=ja"}, "init", t.TempDir(), "--lang", "cobol"); !strings.Contains(out, "--langはhajaかkanadeにしてください") {
+	if out := hanaSays(t, []string{"HANA_LANG=ja"}, "init", t.TempDir(), "--lang", "cobol"); !strings.Contains(out, "--langはhariかkanadeにしてください") {
 		t.Errorf("Japanese refusal: %s", out)
 	}
 	// `init --lang kanade` alone means Japanese, when nothing else is said

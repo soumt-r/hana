@@ -54,7 +54,7 @@ func echoLibrary(t *testing.T) string {
 	return echoPath
 }
 
-const echoHaja = `
+const echoHari = `
 [echo]에서 <네이티브_Echo>를 가져오자
 [echo]에서 <네이티브_Fail>를 가져오자
 [echo]에서 <네이티브_Nothing>를 가져오자
@@ -107,11 +107,11 @@ type engineResult struct {
 	err error
 }
 
-// engines runs a Haja program on the tree-walker and on the bytecode VM.
+// engines runs a Hari program on the tree-walker and on the bytecode VM.
 func engines(t *testing.T, code string) map[string]engineResult {
 	t.Helper()
 	res := map[string]engineResult{}
-	interp, err := runHaja(t, code)
+	interp, err := runHari(t, code)
 	res["tree-walker"] = engineResult{err: err}
 	if interp != nil {
 		res["tree-walker"] = engineResult{out: interp.Output, err: err}
@@ -126,7 +126,7 @@ func engines(t *testing.T, code string) map[string]engineResult {
 
 func TestNativeLibraryRoundTripsValues(t *testing.T) {
 	echoPackage(t, "")
-	for engine, r := range engines(t, echoHaja+"<네이티브_Echo>(1, \"가나\", [2, 참, 비어있음], {\"k\": 3.5})를 출력하자\n") {
+	for engine, r := range engines(t, echoHari+"<네이티브_Echo>(1, \"가나\", [2, 참, 비어있음], {\"k\": 3.5})를 출력하자\n") {
 		if r.err != nil {
 			t.Fatalf("%s: %v", engine, r.err)
 		}
@@ -138,17 +138,17 @@ func TestNativeLibraryRoundTripsValues(t *testing.T) {
 
 func TestNativeLibraryErrorsAndNull(t *testing.T) {
 	echoPackage(t, "")
-	for engine, r := range engines(t, echoHaja+"<네이티브_Fail>()를 출력하자\n") {
+	for engine, r := range engines(t, echoHari+"<네이티브_Fail>()를 출력하자\n") {
 		if r.err == nil || !strings.Contains(r.err.Error(), "'Fail' failed: boom") {
 			t.Errorf("%s: a library error should surface with its message, got %v", engine, r.err)
 		}
 	}
-	for engine, r := range engines(t, echoHaja+"<네이티브_Nothing>()을 출력하자\n") {
+	for engine, r := range engines(t, echoHari+"<네이티브_Nothing>()을 출력하자\n") {
 		if r.err != nil || strings.Join(r.out, "|") != "비어있음" {
 			t.Errorf("%s: NULL should read as 비어있음, got %v %v", engine, r.out, r.err)
 		}
 	}
-	for engine, r := range engines(t, echoHaja+"<네이티브_Garbage>()를 출력하자\n") {
+	for engine, r := range engines(t, echoHari+"<네이티브_Garbage>()를 출력하자\n") {
 		if r.err == nil || !strings.Contains(r.err.Error(), "valid JSON") {
 			t.Errorf("%s: a non-JSON answer should be reported, got %v", engine, r.err)
 		}
@@ -157,7 +157,7 @@ func TestNativeLibraryErrorsAndNull(t *testing.T) {
 
 func TestNativeLibraryCallsBackIntoHana(t *testing.T) {
 	echoPackage(t, "")
-	program := echoHaja + `
+	program := echoHari + `
 <두배>를 만들자 ([숫자]인 '값'):
     ('값' * 2)를 돌려주자
 <네이티브_CallHost>(<두배>, 21)를 출력하자
@@ -175,7 +175,7 @@ func TestNativeLibraryCallsBackIntoHana(t *testing.T) {
 
 func TestNativeCallbackErrorsComeBackAsErrors(t *testing.T) {
 	echoPackage(t, "")
-	program := echoHaja + `
+	program := echoHari + `
 <나누기>를 만들자 ([숫자]인 '값'):
     ('값' / 0)를 돌려주자
 <네이티브_CallHost>(<나누기>, 1)을 출력하자
@@ -191,7 +191,7 @@ func TestNativeCallbackErrorsComeBackAsErrors(t *testing.T) {
 // callback to native code over and over does not register a new one each time.
 func TestTheSameFunctionKeepsItsCallbackID(t *testing.T) {
 	echoPackage(t, "")
-	program := echoHaja + `
+	program := echoHari + `
 <두배>를 만들자 ([숫자]인 '값'):
     ('값' * 2)를 돌려주자
 <네이티브_Echo>(<두배>, <두배>)를 출력하자
@@ -217,7 +217,7 @@ func TestTheSameFunctionKeepsItsCallbackID(t *testing.T) {
 // is running: it waits until the program is inside a native call (Join here).
 func TestCallbacksWaitForTheProgramToBlock(t *testing.T) {
 	echoPackage(t, "")
-	program := echoHaja + `
+	program := echoHari + `
 <틱>를 만들자 ():
     "콜백"을 출력하자
 
@@ -250,19 +250,19 @@ func TestNativeLibraryMissingFunction(t *testing.T) {
 
 func TestPackageManifestProblems(t *testing.T) {
 	echoPackage(t, `{"name": "echo", "native": {"plan9-mips": {"file": "native/x.so"}}}`)
-	for engine, r := range engines(t, echoHaja) {
+	for engine, r := range engines(t, echoHari) {
 		if r.err == nil || !strings.Contains(r.err.Error(), "no native library for "+pkg.Platform()) {
 			t.Errorf("%s: a platform without a native library: %v", engine, r.err)
 		}
 	}
 	echoPackage(t, `{"name": "echo", "native": {"`+pkg.Platform()+`": {"file": "native/missing.bin"}}}`)
-	for engine, r := range engines(t, echoHaja) {
+	for engine, r := range engines(t, echoHari) {
 		if r.err == nil || !strings.Contains(r.err.Error(), "no native library for") {
 			t.Errorf("%s: a declared file that is not there: %v", engine, r.err)
 		}
 	}
 	echoPackage(t, `{"nome": "echo"}`)
-	for engine, r := range engines(t, echoHaja) {
+	for engine, r := range engines(t, echoHari) {
 		if r.err == nil || !strings.Contains(r.err.Error(), "not valid") {
 			t.Errorf("%s: an invalid manifest: %v", engine, r.err)
 		}
@@ -271,14 +271,14 @@ func TestPackageManifestProblems(t *testing.T) {
 
 func TestPackageManifestChoosesTheEntryPoint(t *testing.T) {
 	inTempDir(t, map[string]string{
-		"packages/greeter/hana.pkg.json": `{"name": "greeter", "entry": {"haja": "src/main.hj", "kanade": "src/main.knd"}}`,
-		"packages/greeter/src/main.hj":   "<인사>를 만들자 ():\n    \"안녕\"을 출력하자\n",
+		"packages/greeter/hana.pkg.json": `{"name": "greeter", "entry": {"hari": "src/main.hr", "kanade": "src/main.knd"}}`,
+		"packages/greeter/src/main.hr":   "<인사>를 만들자 ():\n    \"안녕\"을 출력하자\n",
 		"packages/greeter/src/main.knd":  "〈挨拶〉を作ろう():\n    「こんにちは」を出力しよう\n",
-		"packages/greeter/haja/index.hj": "<인사>를 만들자 ():\n    \"틀렸어요\"를 출력하자\n",
+		"packages/greeter/hari/index.hr": "<인사>를 만들자 ():\n    \"틀렸어요\"를 출력하자\n",
 	})
 	for engine, r := range engines(t, "[greeter]에서 <인사>를 가져오자\n<인사>()를 실행하자\n") {
 		if r.err != nil || strings.Join(r.out, "|") != "안녕" {
-			t.Errorf("haja %s: %v %v", engine, r.out, r.err)
+			t.Errorf("hari %s: %v %v", engine, r.out, r.err)
 		}
 	}
 	k, err := runKanade(t, "【greeter】から〈挨拶〉を持ってこよう\n〈挨拶〉()を実行しよう\n")
@@ -293,7 +293,7 @@ func TestPackageManifestChoosesTheEntryPoint(t *testing.T) {
 
 func TestPackageImportsSeveralItemsAndAll(t *testing.T) {
 	inTempDir(t, map[string]string{
-		"packages/tools/haja/index.hj": "<하나>를 만들자 ():\n    \"1\"을 출력하자\n<둘>을 만들자 ():\n    \"2\"를 출력하자\n",
+		"packages/tools/hari/index.hr": "<하나>를 만들자 ():\n    \"1\"을 출력하자\n<둘>을 만들자 ():\n    \"2\"를 출력하자\n",
 	})
 	for engine, r := range engines(t, "[tools]에서 <하나>와 <둘>을 가져오자\n<하나>()를 실행하자\n<둘>()을 실행하자\n") {
 		if r.err != nil || strings.Join(r.out, "|") != "1|2" {
@@ -313,10 +313,10 @@ func TestPackageImportsSeveralItemsAndAll(t *testing.T) {
 // the same name wins.
 func TestSharedPackagesAreFoundFromAnyFolder(t *testing.T) {
 	shared := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(shared, "greeter", "haja"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(shared, "greeter", "hari"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(shared, "greeter", "haja", "index.hj"), []byte("<인사>를 만들자 ():\n    \"공유 패키지\"를 출력하자\n"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(shared, "greeter", "hari", "index.hr"), []byte("<인사>를 만들자 ():\n    \"공유 패키지\"를 출력하자\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	t.Setenv(pkg.EnvPackages, shared)
@@ -329,10 +329,10 @@ func TestSharedPackagesAreFoundFromAnyFolder(t *testing.T) {
 		}
 	}
 
-	if err := os.MkdirAll(filepath.Join("packages", "greeter", "haja"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join("packages", "greeter", "hari"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join("packages", "greeter", "haja", "index.hj"), []byte("<인사>를 만들자 ():\n    \"프로젝트 패키지\"를 출력하자\n"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join("packages", "greeter", "hari", "index.hr"), []byte("<인사>를 만들자 ():\n    \"프로젝트 패키지\"를 출력하자\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	for engine, r := range engines(t, program) {

@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/soumt-r/hana/lexer/haja"
-	parser "github.com/soumt-r/hana/parser/haja"
+	"github.com/soumt-r/hana/lexer/hari"
+	parser "github.com/soumt-r/hana/parser/hari"
 )
 
-func TestHajaParsing(t *testing.T) {
+func TestHariParsing(t *testing.T) {
 	input := `
 (참고) 모든 무기가 공통으로 가질 인터페이스를 만들어요
 [무기]를 규정하자:
@@ -45,7 +45,7 @@ func TestHajaParsing(t *testing.T) {
 '주인공'의 <공격>()을 실행하자
 `
 
-	l := haja.New(input)
+	l := hari.New(input)
 
 	for _, tok := range l.Tokens {
 		fmt.Printf("%+v\n", tok)

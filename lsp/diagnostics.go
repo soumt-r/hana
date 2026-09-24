@@ -5,7 +5,7 @@ import (
 	"unicode/utf16"
 
 	"github.com/soumt-r/hana/errs"
-	hajaparser "github.com/soumt-r/hana/parser/haja"
+	hariparser "github.com/soumt-r/hana/parser/hari"
 )
 
 type position struct {
@@ -53,7 +53,7 @@ func splitLines(text string) []string {
 // LSP range (0-based line, UTF-16 units). Diagnostics with no literal — the
 // parser ran off the end of the input — are pinned to the last character of
 // the last non-empty line so they stay visible.
-func rangeOf(lines []string, d hajaparser.Diagnostic) lspRange {
+func rangeOf(lines []string, d hariparser.Diagnostic) lspRange {
 	line := d.Line - 1
 	col, length := d.Col, d.Length
 	if line >= len(lines) || d.Literal == "" {

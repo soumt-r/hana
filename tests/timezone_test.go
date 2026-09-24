@@ -1,6 +1,6 @@
 package tests
 
-// The timezone package end to end: the real package folder (manifest, Haja and
+// The timezone package end to end: the real package folder (manifest, Hari and
 // Kanade entries) plus its native library built from packages/timezone/native (the
 // IANA database behind ABI v1), run on both engines. Needs a C toolchain, like
 // native_plugin_test.go, and is skipped without one.
@@ -74,7 +74,7 @@ func timezonePackage(t *testing.T) {
 	tzRuns++
 	dir := filepath.Join(filepath.Dir(tzLibPath), fmt.Sprintf("run-%d-%d", os.Getpid(), tzRuns))
 	pkgDir := filepath.Join(dir, "packages", "timezone")
-	for _, rel := range []string{"hana.pkg.json", filepath.Join("haja", "index.hj"), filepath.Join("kanade", "index.knd")} {
+	for _, rel := range []string{"hana.pkg.json", filepath.Join("hari", "index.hr"), filepath.Join("kanade", "index.knd")} {
 		data, err := os.ReadFile(filepath.Join(src, rel))
 		if err != nil {
 			t.Fatal(err)

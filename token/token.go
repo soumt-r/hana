@@ -80,6 +80,6 @@ const (
 	// KW_ELIF: an "else if" fused into one word (카나데: "もしくは"). 하자
 	// has no equivalent — it chains else-if by writing KW_ELSE immediately
 	// followed by a separate KW_IF token ("그렇지 않고 만약"). Added
-	// alongside parser/haja's parseIf support for it.
+	// alongside parser/hari's parseIf support for it.
 	KW_ELIF = "KW_ELIF"
 )

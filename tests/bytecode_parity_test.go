@@ -20,7 +20,7 @@ func TestBytecodeMatchesTreeWalkerOnFormerlyDivergentFeatures(t *testing.T) {
 		{
 			name: "quoted 나/私 with no self bound is an ordinary variable",
 			c: dualRun{
-				haja:   "'가'를 [숫자]인 10으로 정하자\n'나'를 [숫자]인 20으로 정하자\n'가' + '나'를 출력하자\n",
+				hari:   "'가'를 [숫자]인 10으로 정하자\n'나'를 [숫자]인 20으로 정하자\n'가' + '나'를 출력하자\n",
 				kanade: "『私』を【数字】の20にしよう\n『私』を出力しよう\n",
 			},
 			wantKo: []string{"30"}, wantJa: []string{"20"},
@@ -28,7 +28,7 @@ func TestBytecodeMatchesTreeWalkerOnFormerlyDivergentFeatures(t *testing.T) {
 		{
 			name: "class name as a value reaches its static fields",
 			c: dualRun{
-				haja: `[자동차]를 설계하자:
+				hari: `[자동차]를 설계하자:
     '우리'의 '총생산량'을 [숫자]인 7로 정하자
 
 틀"수: {'자동차'의 '총생산량'}"을 출력하자
@@ -44,7 +44,7 @@ func TestBytecodeMatchesTreeWalkerOnFormerlyDivergentFeatures(t *testing.T) {
 		{
 			name: "getter runs on read",
 			c: dualRun{
-				haja: `[지갑]을 설계하자:
+				hari: `[지갑]을 설계하자:
     '_돈'을 [숫자]인 5로 정하여 숨기자
 
     '돈'을 [숫자]로 정하자:
@@ -76,7 +76,7 @@ func TestBytecodeMatchesTreeWalkerOnFormerlyDivergentFeatures(t *testing.T) {
 		{
 			name: "static field assigned from inside a static method",
 			c: dualRun{
-				haja: `[싱글]을 설계하자:
+				hari: `[싱글]을 설계하자:
     '우리'의 '_값'을 비어있음으로 정하여 숨기자
 
     [문자열]을 돌려주는 '우리'의 <가져오기>를 만들자 ():
@@ -104,7 +104,7 @@ func TestBytecodeMatchesTreeWalkerOnFormerlyDivergentFeatures(t *testing.T) {
 		{
 			name: "== calls the class's equality magic method",
 			c: dualRun{
-				haja: `[좌표]를 설계하자:
+				hari: `[좌표]를 설계하자:
     'x'를 [숫자]인 0으로 정하자
 
     처음 만들어질 때 ([숫자]인 '초기x') 다음과 같이 하자:
@@ -152,7 +152,7 @@ func TestBytecodeMatchesTreeWalkerOnFormerlyDivergentFeatures(t *testing.T) {
 		{
 			name: "dynamic reflection <'변수'>() calls the method the variable names",
 			c: dualRun{
-				haja: `[주문]을 설계하자:
+				hari: `[주문]을 설계하자:
     <취소하기>를 만들자 ():
         "취소됨"을 출력하자
 
@@ -196,17 +196,17 @@ func TestBytecodeMatchesTreeWalkerOnFormerlyDivergentFeatures(t *testing.T) {
 func TestDefaultLoopItemNameIsTheLanguages(t *testing.T) {
 	c := dualRun{
 		name:   "default loop item",
-		haja:   "'과일들'을 [\"사과\", \"배\"]로 정하자\n'과일들'마다 반복하자:\n    '아이템'을 출력하자\n",
+		hari:   "'과일들'을 [\"사과\", \"배\"]로 정하자\n'과일들'마다 반복하자:\n    '아이템'을 출력하자\n",
 		kanade: "『果物たち』を【「りんご」、「なし」】にしよう\n『果物たち』ごとに繰り返そう:\n    『アイテム』を出力しよう\n",
 	}
 	outs, errs := runAllFour(t, c)
-	for i, label := range []string{"haja tree", "haja bytecode", "kanade tree", "kanade bytecode"} {
+	for i, label := range []string{"hari tree", "hari bytecode", "kanade tree", "kanade bytecode"} {
 		if errs[i] != nil {
 			t.Errorf("%s: %v", label, errs[i])
 		}
 	}
 	if strings.Join(outs[0], "|") != "사과|배" || strings.Join(outs[1], "|") != "사과|배" {
-		t.Errorf("haja: tree %v, bytecode %v", outs[0], outs[1])
+		t.Errorf("hari: tree %v, bytecode %v", outs[0], outs[1])
 	}
 	if strings.Join(outs[2], "|") != "りんご|なし" || strings.Join(outs[3], "|") != "りんご|なし" {
 		t.Errorf("kanade: tree %v, bytecode %v", outs[2], outs[3])

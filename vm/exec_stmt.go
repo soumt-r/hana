@@ -36,7 +36,7 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 			} else {
 				// 에러 타입 매칭 (Runtime 스펙 4.2): 타입이 없는 핸들러는 무조건 매칭되고,
 				// 타입이 있는 핸들러는 던져진 값이 그 타입의 인스턴스일 때만(업캐스팅 포함)
-				// 매칭된다. 엔진이 직접 던진 에러(TypeError 등, HajaObject가 아님)는 어떤
+				// 매칭된다. 엔진이 직접 던진 에러(TypeError 등, HariObject가 아님)는 어떤
 				// 하자 클래스의 인스턴스도 아니므로 타입 없는 핸들러로만 잡을 수 있다.
 				var matchedHandler *ast.CatchClause
 				errStr := errs.Localize(i.Config.Locale, err)
@@ -53,9 +53,9 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 				// 바로 return하면 안 되고 finally를 거친 뒤에 다시 던져져야 한다.
 				if matchedHandler != nil {
 					catchEnv := NewEnvironment(env)
-					errObj := NewHajaObject(i.Config.BuiltinErrorClass)
+					errObj := NewHariObject(i.Config.BuiltinErrorClass)
 					if tErr, ok := err.(*ThrownError); ok {
-						if obj, isObj := tErr.Value.(*HajaObject); isObj {
+						if obj, isObj := tErr.Value.(*HariObject); isObj {
 							errObj = obj
 						} else {
 							errObj.Props[i.Config.BuiltinErrorMessage] = tErr.Error()
@@ -237,7 +237,7 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 			for _, item := range items {
 				// 반복문 환경 생성 (옵션)
 				loopEnv := i.newScope(env)
-				// 원래 Haja 스펙에서는 '꺼낸 값' 같은 특수 키워드나 명시적 순회 변수가 필요하지만
+				// 원래 Hari 스펙에서는 '꺼낸 값' 같은 특수 키워드나 명시적 순회 변수가 필요하지만
 				// ForEachLoop의 순회 변수를 현재 AST가 지원하지 않으므로, 임시로 '아이템'이라고 지정
 				loopEnv.DeclareSym(itemSym, item)
 				for _, bs := range s.Body.Statements {
@@ -423,20 +423,20 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 				return nil, err
 			}
 
-			if hajaObj, ok := obj.(*HajaObject); ok {
+			if hariObj, ok := obj.(*HariObject); ok {
 				if propId, ok := mem.Property.(*ast.Identifier); ok {
 					// Check for setter
-					setter := i.classMember(i.classOf(hajaObj), propId.Symbol()).setter
+					setter := i.classMember(i.classOf(hariObj), propId.Symbol()).setter
 
 					if setter != nil {
-						setterEnv := NewEnvironment(i.globalOf(i.classOf(hajaObj).Module))
-						setterEnv.this = hajaObj
-						setterEnv.DeclareSym(thisSym, hajaObj)
-						setterEnv.DeclareSym(selfClassSym, hajaObj.ClassName)
+						setterEnv := NewEnvironment(i.globalOf(i.classOf(hariObj).Module))
+						setterEnv.this = hariObj
+						setterEnv.DeclareSym(thisSym, hariObj)
+						setterEnv.DeclareSym(selfClassSym, hariObj.ClassName)
 						if setter.Param != nil {
 							setterEnv.DeclareSym(setter.Param.Symbol(), val)
 						}
-						prev := i.enterModule(i.classOf(hajaObj).Module)
+						prev := i.enterModule(i.classOf(hariObj).Module)
 						for _, bs := range setter.Body {
 							_, err := i.Execute(bs, setterEnv)
 							if err != nil {
@@ -449,10 +449,10 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 						}
 						i.scope = prev
 					} else {
-						if err := i.checkField(hajaObj, propId.Value, val); err != nil {
+						if err := i.checkField(hariObj, propId.Value, val); err != nil {
 							return nil, err
 						}
-						hajaObj.Props[propId.Value] = val
+						hariObj.Props[propId.Value] = val
 					}
 				}
 

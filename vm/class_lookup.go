@@ -11,7 +11,7 @@ import (
 //
 // 어떤 클래스에서 이름은 있는데 원하는 조건(예: getter가 실제로 있는지)은 아닐 때도
 // visit이 true를 반환하면, 그 시점에 부모 탐색을 멈춥니다 — 이름이 한 번 그 클래스에서
-// "발견"되면(섀도잉되면) 더 위 조상까지 올라가 같은 이름을 찾지 않는다는 하자의 규칙을
+// "발견"되면(섀도잉되면) 더 위 조상까지 올라가 같은 이름을 찾지 않는다는 하리의 규칙을
 // 그대로 따릅니다. 이 판단은 visit 클로저가 맡습니다.
 // classMembers are the answers found so far for one class, indexed by Symbol.
 type classMembers struct {
@@ -79,7 +79,7 @@ func (i *Interpreter) classMember(cls *ast.ClassDeclaration, sym symbol.Symbol) 
 
 // classOf는 객체의 클래스 선언입니다. 처음 찾은 것을 객체가 기억해 두어, 멤버에 접근할
 // 때마다 이름으로 클래스를 다시 찾지 않습니다.
-func (i *Interpreter) classOf(obj *HajaObject) *ast.ClassDeclaration {
+func (i *Interpreter) classOf(obj *HariObject) *ast.ClassDeclaration {
 	if obj.class == nil {
 		obj.class = i.Classes[obj.ClassName]
 	}
@@ -125,17 +125,17 @@ func (i *Interpreter) classIsOrExtends(className, targetName string) bool {
 }
 
 // thrownValueMatchesType checks whether the value a TryStatement's block
-// threw matches a CatchClause's declared type. Only a thrown *HajaObject (an
+// threw matches a CatchClause's declared type. Only a thrown *HariObject (an
 // actual class instance, typically of [오류] or a subclass) has a class to
 // match against — an engine-raised error (TypeError, IndexOutOfBoundsError,
-// etc., a plain Go error with no Haja class) can never match a specific
+// etc., a plain Go error with no Hari class) can never match a specific
 // type and is only reachable through an untyped `오류가 발생했다면` handler.
 func (i *Interpreter) thrownValueMatchesType(err error, typeName string) bool {
 	tErr, ok := err.(*ThrownError)
 	if !ok {
 		return false
 	}
-	obj, ok := tErr.Value.(*HajaObject)
+	obj, ok := tErr.Value.(*HariObject)
 	if !ok {
 		return false
 	}

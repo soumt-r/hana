@@ -6,15 +6,15 @@ import (
 
 	"github.com/soumt-r/hana/ast"
 	"github.com/soumt-r/hana/errs"
-	haja_lexer "github.com/soumt-r/hana/lexer/haja"
+	hari_lexer "github.com/soumt-r/hana/lexer/hari"
 	kanade_lexer "github.com/soumt-r/hana/lexer/kanade"
-	haja_parser "github.com/soumt-r/hana/parser/haja"
+	hari_parser "github.com/soumt-r/hana/parser/hari"
 	kanade_parser "github.com/soumt-r/hana/parser/kanade"
 	"github.com/soumt-r/hana/symbol"
 )
 
 type LangConfig struct {
-	// Name is the language's directory name inside a package ("haja",
+	// Name is the language's directory name inside a package ("hari",
 	// "kanade"), SourceExt its source file extension. A package provides one
 	// entry point per language at <package>/<Name>/index<SourceExt>.
 	Name      string
@@ -85,7 +85,7 @@ type LangConfig struct {
 	Locale errs.Locale
 
 	// EqualsMethodName is the magic method eval_expr.go's BinaryExpression
-	// case looks for on a *HajaObject operand of == / != (operator
+	// case looks for on a *HariObject operand of == / != (operator
 	// overloading — spec 3.5's "매직 메서드"). This was hardcoded to the
 	// Korean literal "기호 같다" regardless of language until a real
 	// kanade-docs example (oop/1-classes.md's 〈記号 同じだ〉) was found to
@@ -141,11 +141,11 @@ func (c *LangConfig) IsSelfSym(s symbol.Symbol) bool       { return symbolIn(s, 
 func (c *LangConfig) IsPluralSelfSym(s symbol.Symbol) bool { return symbolIn(s, c.pluralSelfSyms) }
 
 var KoreanConfig = LangConfig{
-	Name:      "haja",
-	SourceExt: ".hj",
+	Name:      "hari",
+	SourceExt: ".hr",
 	Types:     typecheck.Names{Number: "숫자", String: "문자열", Boolean: "논리", Any: "아무거나", List: "목록", Dict: "사전", Null: "비어있음"},
 	ParseProgram: func(source string) (*ast.Program, []string) {
-		p := haja_parser.New(haja_lexer.New(source))
+		p := hari_parser.New(hari_lexer.New(source))
 		prog := p.ParseProgram()
 		return prog, p.Errors()
 	},
@@ -234,7 +234,7 @@ var JapaneseConfig = LangConfig{
 var allConfigs = []LangConfig{KoreanConfig, JapaneseConfig}
 
 // ConfigForFile picks the language of a source file from its extension, so
-// a Haja file can import a Kanade file and the other way round: the imported
+// a Hari file can import a Kanade file and the other way round: the imported
 // file always runs in its own language.
 func ConfigForFile(filename string) LangConfig {
 	for _, c := range allConfigs {

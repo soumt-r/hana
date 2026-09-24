@@ -1,5 +1,5 @@
 // Kanade(카나데) regression tests: lex + parse + run a Japanese-syntax
-// script through the same tree-walker/bytecode engines as Haja, via
+// script through the same tree-walker/bytecode engines as Hari, via
 // parser/kanade + vm.JapaneseConfig / bytecode.NewKanadeCompiler +
 // bcstdlib.Japanese, and assert on output. Sources here are lifted
 // verbatim or near-verbatim from kanade-docs' actual published examples
@@ -335,7 +335,7 @@ func TestKanadeBytecodeListClearMethod(t *testing.T) {
 // example's exact phrasing to trigger.
 
 // From kanade-docs/src/pages/docs/patterns/1-singleton.md: calling a static
-// method via "TYPE의 〈메서드〉()" — parser/haja's TYPE_IN branch used to
+// method via "TYPE의 〈메서드〉()" — parser/hari's TYPE_IN branch used to
 // always collapse "TYPE의 X" into just X, discarding the TYPE, which is
 // right for "TYPE의 0" (a type-annotated value) but wrong here since the
 // TYPE itself is the receiver of a static method call.

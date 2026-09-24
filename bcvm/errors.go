@@ -51,7 +51,7 @@ func (vm *VM) dispatchError(err error, tryStack *[]*tryHandler, stack *[]interfa
 	return 0, false, err
 }
 
-// thrownValue wraps whatever a THROW statement raised (any Haja value, not
+// thrownValue wraps whatever a THROW statement raised (any Hari value, not
 // just an *Object — 던지자 "문자열" is legal, just only catchable by an
 // untyped handler). Mirrors vm.ThrownError.
 type thrownValue struct {

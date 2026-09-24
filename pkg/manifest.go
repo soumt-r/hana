@@ -3,7 +3,7 @@
 // native library for each platform.
 //
 // A package folder needs no manifest: without one, the conventional layout
-// (haja/index.hj, kanade/index.knd) is assumed and there is no native library
+// (hari/index.hr, kanade/index.knd) is assumed and there is no native library
 // beyond the legacy <name>.dll next to it.
 package pkg
 
@@ -27,7 +27,7 @@ const FileName = "hana.pkg.json"
 type Manifest struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
-	// Entry maps a language key ("haja", "kanade") to the entry point's path,
+	// Entry maps a language key ("hari", "kanade") to the entry point's path,
 	// relative to the package folder. A missing key means the conventional path.
 	Entry map[string]string `json:"entry"`
 	// Native maps a platform ("windows-amd64", "linux-arm64", ...) to the
@@ -53,7 +53,7 @@ type NativeFile struct {
 }
 
 var (
-	languages  = map[string]bool{"haja": true, "kanade": true}
+	languages  = map[string]bool{"hari": true, "kanade": true}
 	platformRe = regexp.MustCompile(`^[a-z0-9]+-[a-z0-9]+$`)
 	sha256Re   = regexp.MustCompile(`^[0-9a-fA-F]{64}$`)
 )
@@ -89,7 +89,7 @@ func Parse(data []byte) (*Manifest, error) {
 func (m *Manifest) validate() error {
 	for lang, entry := range m.Entry {
 		if !languages[lang] {
-			return fmt.Errorf("entry: unknown language %q (use haja or kanade)", lang)
+			return fmt.Errorf("entry: unknown language %q (use hari or kanade)", lang)
 		}
 		if err := relativePath("entry."+lang, entry); err != nil {
 			return err

@@ -9,7 +9,7 @@ import "testing"
 // enclosing VariableDeclaration ended up aliasing the target name to the
 // entire original list instead of the popped element.
 func TestListPopExpression(t *testing.T) {
-	interp, err := runHaja(t, `
+	interp, err := runHari(t, `
 '과일'을 [(문자열)목록]인 ["사과", "포도"]로 정하자
 '과일' 앞에 "바나나"를 추가하자
 '과일' 뒤에 "수박"을 추가하자
@@ -36,13 +36,13 @@ func TestListPopExpression(t *testing.T) {
 // Runtime spec 5.1: popping from an empty list must raise
 // IndexOutOfBoundsError, for both the statement and expression forms.
 func TestListPopEmptyListErrors(t *testing.T) {
-	_, err := runHaja(t, `
+	_, err := runHari(t, `
 '빈목록'을 [목록]인 []로 정하자
 '빈목록' 뒤에서 꺼내자
 `)
 	requireErrorContains(t, err, "IndexOutOfBoundsError")
 
-	_, err = runHaja(t, `
+	_, err = runHari(t, `
 '빈목록'을 [목록]인 []로 정하자
 '값'을 '빈목록' 뒤에서 꺼낸 값으로 정하자
 `)

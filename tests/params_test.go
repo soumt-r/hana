@@ -3,15 +3,15 @@ package tests
 import (
 	"testing"
 
-	lexer "github.com/soumt-r/hana/lexer/haja"
-	parser "github.com/soumt-r/hana/parser/haja"
+	lexer "github.com/soumt-r/hana/lexer/hari"
+	parser "github.com/soumt-r/hana/parser/hari"
 	"github.com/soumt-r/hana/vm"
 )
 
 // Runtime spec 1.2: missing a required argument (no default) must raise
 // MissingArgumentError, never silently leave the parameter unbound.
 func TestMissingArgumentErrorOnFunctionCall(t *testing.T) {
-	_, err := runHaja(t, `
+	_, err := runHari(t, `
 <더하기>를 만들자 ([숫자]인 '가', [숫자]인 '나'):
     '가' + '나'를 돌려주자
 <더하기>(1)를 실행하자
@@ -22,7 +22,7 @@ func TestMissingArgumentErrorOnFunctionCall(t *testing.T) {
 // Runtime spec 1.2: more arguments than declared parameters must raise
 // ArgumentError, never silently drop the extras.
 func TestTooManyArgumentsErrorOnFunctionCall(t *testing.T) {
-	_, err := runHaja(t, `
+	_, err := runHari(t, `
 <더하기>를 만들자 ([숫자]인 '가', [숫자]인 '나'):
     '가' + '나'를 돌려주자
 <더하기>(1, 2, 3)를 실행하자
@@ -33,7 +33,7 @@ func TestTooManyArgumentsErrorOnFunctionCall(t *testing.T) {
 // A parameter with a default (`= 값`) must fall back to it when the
 // argument is omitted, and accept an explicit override.
 func TestDefaultParameterValue(t *testing.T) {
-	interp, err := runHaja(t, `
+	interp, err := runHari(t, `
 [숫자]를 돌려주는 <더하기>를 만들자 ([숫자]인 '가', [숫자]인 '나' = 10):
     '가' + '나'를 돌려주자
 
@@ -55,7 +55,7 @@ func TestDefaultParameterValue(t *testing.T) {
 // a missing required constructor argument must also raise
 // MissingArgumentError, and a constructor default must also be usable.
 func TestConstructorParameterBinding(t *testing.T) {
-	_, err := runHaja(t, `
+	_, err := runHari(t, `
 [상자]를 설계하자:
     '값'을 [숫자]인 0으로 정하자
     처음 만들어질 때 ([숫자]인 '초기값') 다음과 같이 하자:
@@ -65,7 +65,7 @@ func TestConstructorParameterBinding(t *testing.T) {
 `)
 	requireErrorContains(t, err, "MissingArgumentError")
 
-	interp, err := runHaja(t, `
+	interp, err := runHari(t, `
 [상자]를 설계하자:
     '값'을 [숫자]인 0으로 정하자
     처음 만들어질 때 ([숫자]인 '초기값' = 99) 다음과 같이 하자:

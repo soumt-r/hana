@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	lexer "github.com/soumt-r/hana/lexer/haja"
-	parser "github.com/soumt-r/hana/parser/haja"
+	lexer "github.com/soumt-r/hana/lexer/hari"
+	parser "github.com/soumt-r/hana/parser/hari"
 	"github.com/soumt-r/hana/vm"
 )
 
-func TestHajaLoops(t *testing.T) {
+func TestHariLoops(t *testing.T) {
 	input := `
 (참고) 반복문 테스트
 <반복테스트>를 만들자 ():
@@ -33,7 +33,7 @@ func TestHajaLoops(t *testing.T) {
 	fmt.Printf("AST:\n%s\n", prog.String())
 
 	interpreter := vm.NewInterpreter(prog)
-	fmt.Println("=== Haja 루프 테스트 ===")
+	fmt.Println("=== Hari 루프 테스트 ===")
 	err := interpreter.Run()
 	if err != nil {
 		t.Fatalf("런타임 에러: %v", err)

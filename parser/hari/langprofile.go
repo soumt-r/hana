@@ -1,4 +1,4 @@
-package haja
+package hari
 
 import (
 	"strings"
@@ -25,7 +25,7 @@ const (
 // token's raw Literal (see listPosition's comment for why that raw text is
 // never allowed to leak into the AST itself).
 //
-// hajaProfile below is the locale hana was originally written against;
+// hariProfile below is the locale hana was originally written against;
 // other locales (e.g. kanade) construct their own profile and parse tokens
 // produced by their own lexer via NewFromTokens.
 type LangProfile struct {
@@ -131,7 +131,7 @@ func literalIn(literal string, options []string) bool {
 	return false
 }
 
-var hajaProfile = &LangProfile{
+var hariProfile = &LangProfile{
 	ErrorLiterals:           []string{"오류", "오류가"},
 	PluralSelfWords:         []string{"우리", "'우리'"},
 	ConditionThenWords:      []string{"라면"},

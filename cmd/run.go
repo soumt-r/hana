@@ -13,9 +13,9 @@ import (
 	"github.com/soumt-r/hana/bytecode"
 	"github.com/soumt-r/hana/console"
 	"github.com/soumt-r/hana/errs"
-	lexer "github.com/soumt-r/hana/lexer/haja"
+	lexer "github.com/soumt-r/hana/lexer/hari"
 	kanadeLexer "github.com/soumt-r/hana/lexer/kanade"
-	parser "github.com/soumt-r/hana/parser/haja"
+	parser "github.com/soumt-r/hana/parser/hari"
 	kanadeParser "github.com/soumt-r/hana/parser/kanade"
 	"github.com/soumt-r/hana/runner"
 	"github.com/soumt-r/hana/std/stdimpl"
@@ -25,7 +25,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// A Haja program allocates a lot of short-lived values; collecting less often
+// A Hari program allocates a lot of short-lived values; collecting less often
 // (the Go default is 100) makes it about 10% faster for a few times the memory.
 const runGCPercent = 400
 
@@ -102,7 +102,7 @@ var runCmd = &cobra.Command{
 				os.Exit(1)
 			}
 
-			bcLang := bytecode.LangHaja
+			bcLang := bytecode.LangHari
 			if isKanade {
 				bcLang = bytecode.LangKanade
 			}

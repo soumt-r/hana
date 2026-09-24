@@ -13,7 +13,7 @@ import (
 // drift apart silently.
 func grammarKeywords(t *testing.T, file string) map[string]bool {
 	t.Helper()
-	path := filepath.Join("..", "..", "vscode-haja", "syntaxes", file)
+	path := filepath.Join("..", "..", "vscode-hari", "syntaxes", file)
 	data, err := os.ReadFile(path)
 	if err != nil {
 		t.Skipf("extension sources not next to hana: %v", err)
@@ -44,7 +44,7 @@ func grammarKeywords(t *testing.T, file string) map[string]bool {
 }
 
 func TestGrammarHighlightsEverySuggestedKeyword(t *testing.T) {
-	for file, l := range map[string]*language{"haja.tmLanguage.json": hajaLang, "kanade.tmLanguage.json": kanadeLang} {
+	for file, l := range map[string]*language{"hari.tmLanguage.json": hariLang, "kanade.tmLanguage.json": kanadeLang} {
 		have := grammarKeywords(t, file)
 		for _, kw := range l.keywords {
 			if !have[kw] {

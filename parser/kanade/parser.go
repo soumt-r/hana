@@ -1,7 +1,7 @@
 // Package kanade is a thin locale wrapper: it feeds a kanade lexer's token
-// stream into the shared parser/haja.Parser (see LangProfile there) along
+// stream into the shared parser/hari.Parser (see LangProfile there) along
 // with kanadeProfile, so Kanade(카나데) scripts produce the exact same
-// *ast.Program shape as Haja scripts, ready for the tree-walker or
+// *ast.Program shape as Hari scripts, ready for the tree-walker or
 // bytecode compiler unchanged.
 package kanade
 
@@ -9,15 +9,15 @@ import (
 	"strings"
 
 	kanadelexer "github.com/soumt-r/hana/lexer/kanade"
-	"github.com/soumt-r/hana/parser/haja"
+	"github.com/soumt-r/hana/parser/hari"
 	"github.com/soumt-r/hana/token"
 )
 
-func New(l *kanadelexer.Lexer) *haja.Parser {
-	return haja.NewFromTokens(l.Tokens, kanadeProfile)
+func New(l *kanadelexer.Lexer) *hari.Parser {
+	return hari.NewFromTokens(l.Tokens, kanadeProfile)
 }
 
-var kanadeProfile = &haja.LangProfile{
+var kanadeProfile = &hari.LangProfile{
 	ErrorLiterals: []string{"エラー", "エラーが"},
 	// 『私たち』(quoted, matching kanade-docs literally) — not "私達": see
 	// hana/CLAUDE.md for how this was caught (a failing doctest run against
@@ -57,14 +57,14 @@ var kanadeProfile = &haja.LangProfile{
 	// (see lexer/kanade's KW_LOOP regex) since unspaced Japanese text can't
 	// carry a separate trailing marker word without it merging into the
 	// verb token.
-	ClassifyLoop: func(verb token.Token, components []haja.Component) haja.LoopKind {
+	ClassifyLoop: func(verb token.Token, components []hari.Component) hari.LoopKind {
 		switch {
 		case strings.HasPrefix(verb.Literal, "ごとに"):
-			return haja.LoopForEach
+			return hari.LoopForEach
 		case strings.HasPrefix(verb.Literal, "間"):
-			return haja.LoopWhile
+			return hari.LoopWhile
 		default:
-			return haja.LoopRange
+			return hari.LoopRange
 		}
 	},
 	NormalizeCompareOpSOV: func(op string) string {

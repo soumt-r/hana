@@ -17,7 +17,7 @@
 
 <p align="center">
   <b>Hana</b> runs two programming languages written in Korean and Japanese:<br>
-  <b>Haja</b> (하자) and <b>Kanade</b> (カナデ). One Go binary.<br>
+  <b>Hari</b> (하자) and <b>Kanade</b> (カナデ). One Go binary.<br>
   <sub>이름 <b>하나</b>는 숫자 하나(one)와 花(はな, 꽃)를 함께 뜻해요.</sub>
 </p>
 
@@ -25,17 +25,17 @@
 
 <table>
 <tr>
-<th align="center">하자 (Haja) · 한국어</th>
+<th align="center">하리 (Hari) · 한국어</th>
 <th align="center">カナデ (Kanade) · 日本語</th>
 </tr>
 <tr>
 <td valign="top">
 
-```haja
+```hari
 <인사>를 만들자 ([문자열]인 '이름'):
     틀"안녕, {'이름'}!"을 출력하자
 
-'이름들'을 [(문자열)목록]인 ["하자", "카나데"]로 정하자
+'이름들'을 [(문자열)목록]인 ["하리", "카나데"]로 정하자
 '이름들'의 '이름'마다 반복하자:
     <인사>('이름')을 실행하자
 ```
@@ -67,7 +67,7 @@
 ```bash
 go build -o hana .                       # 윈도우에서는 hana.exe가 만들어져요
 ./hana init hello                        # 시작 파일이 있는 새 프로젝트 (--lang kanade 도 있어요)
-./hana run hello/main.hj
+./hana run hello/main.hr
 ```
 
 빌드하지 않고 받으려면 [Releases](https://github.com/soumt-r/hana/releases)에서 플랫폼에 맞는 `hana-<버전>-<os>-<arch>` 파일을 받아 풀어요. `hana`, `hana-runtime`, 기본 패키지(`packages/`)가 들어 있고, `hana version`으로 버전을 볼 수 있어요. 다른 운영체제용 실행 파일을 `hana pack --target`으로 만들려면 그 플랫폼의 `hana-runtime-<os>-<arch>` 파일도 받아 `hana` 옆에 두세요.
@@ -78,17 +78,17 @@ go build -o hana .                       # 윈도우에서는 hana.exe가 만들
 go build -ldflags="-s -w" -trimpath -o hana-runtime ./cmd/hana-runtime
 ```
 
-문서: [하자 문서](https://haja.soumt.moe) · [カナデ ドキュメント](https://kanade.soumt.moe)
+문서: [하자 문서](https://hari.soumt.moe) · [カナデ ドキュメント](https://kanade.soumt.moe)
 
 ## 명령
 
 | 명령 | 하는 일 |
 | --- | --- |
-| `hana run <파일>` | `.hj`(하자), `.knd`(카나데), `.hn`(컴파일된 바이트코드)를 실행해요 |
+| `hana run <파일>` | `.hr`(하자), `.knd`(카나데), `.hn`(컴파일된 바이트코드)를 실행해요 |
 | `hana build <파일>` | 바이트코드(`.hn`)로 컴파일해서 저장해요 |
 | `hana disasm <파일>` | 바이트코드를 디스어셈블한 결과를 보여줘요 |
 | `hana pack <파일>` | 프로그램을 실행 파일 하나로 묶어요. 다른 운영체제용도 만들 수 있어요(`--target linux-amd64`) |
-| `hana init [폴더]` | 시작 파일과 `.gitignore`가 있는 새 프로젝트를 만들어요(`--lang haja` 또는 `kanade`) |
+| `hana init [폴더]` | 시작 파일과 `.gitignore`가 있는 새 프로젝트를 만들어요(`--lang hari` 또는 `kanade`) |
 | `hana lsp` | 에디터용 언어 서버(LSP)를 표준 입출력으로 실행해요 |
 | `hana add <git 경로>[@버전]` | 패키지를 프로젝트에 추가하고 `hana.json`, `hana-lock.json`에 적어요 |
 | `hana install` | `hana-lock.json`에 적힌 패키지를 모두 내려받아요 |
@@ -101,7 +101,7 @@ go build -ldflags="-s -w" -trimpath -o hana-runtime ./cmd/hana-runtime
 
 ## 언어와 표준 모듈
 
-하자는 `'나이'를 [숫자]인 20으로 정하자`처럼 타입을 대괄호로 쓰고, 조사(`을`, `를`, `로`, `의` …)가 문법의 일부인 언어예요. 카나데는 같은 구조를 일본어 어순으로 써요.
+하리는 `'나이'를 [숫자]인 20으로 정하자`처럼 타입을 대괄호로 쓰고, 조사(`을`, `를`, `로`, `의` …)가 문법의 일부인 언어예요. 카나데는 같은 구조를 일본어 어순으로 써요.
 
 임포트 없이 쓰는 것은 문법과 몇 가지 형변환뿐이고, 나머지는 `[모듈]에서 <도구>를 가져오자`로 가져와요.
 
@@ -117,14 +117,14 @@ go build -ldflags="-s -w" -trimpath -o hana-runtime ./cmd/hana-runtime
 
 ## 패키지
 
-[`packages/`](packages)는 hana와 함께 배포하는 패키지예요. 하자/카나데 소스로 만들거나, 네이티브 라이브러리(`.dll`/`.so`/`.dylib`, 간단한 C ABI)를 함께 둘 수 있어요.
+[`packages/`](packages)는 hana와 함께 배포하는 패키지예요. 하리/카나데 소스로 만들거나, 네이티브 라이브러리(`.dll`/`.so`/`.dylib`, 간단한 C ABI)를 함께 둘 수 있어요.
 
 | 패키지 | 하는 일 |
 | --- | --- |
 | [`http_server`](packages/http_server) | Go `net/http` 위의 HTTP 서버 |
 | [`timezone`](packages/timezone) | IANA 시간대로 시각 서식·읽기·요일·오프셋 |
 
-외부 패키지는 git 경로가 이름이에요. `hana add github.com/주인/저장소`로 추가하고 `[github.com/주인/저장소]에서 <함수>를 가져오자`로 써요. 버전은 최소 버전으로 적고(`hana.json`), 고른 버전과 커밋은 `hana-lock.json`에 고정해요. 패키지 만드는 법은 [문서 사이트](https://haja.soumt.moe/docs/hana/packages)에 있어요.
+외부 패키지는 git 경로가 이름이에요. `hana add github.com/주인/저장소`로 추가하고 `[github.com/주인/저장소]에서 <함수>를 가져오자`로 써요. 버전은 최소 버전으로 적고(`hana.json`), 고른 버전과 커밋은 `hana-lock.json`에 고정해요. 패키지 만드는 법은 [문서 사이트](https://hari.soumt.moe/docs/hana/packages)에 있어요.
 
 네이티브 라이브러리는 각 패키지의 `native/`에서 `build.sh`(또는 `build.ps1`)로 만들어요. Go와 C 컴파일러(cgo)가 필요해요. `hana pack`은 프로그램이 쓰는 패키지의 라이브러리를 실행 파일 옆(`libraries/`)에 내보내거나, `--embed`로 실행 파일 안에 넣어요.
 
@@ -137,7 +137,7 @@ go build -ldflags="-s -w" -trimpath -o hana-runtime ./cmd/hana-runtime
 
 | 폴더 | 내용 |
 | --- | --- |
-| [`lexer/`](lexer), [`parser/`](parser), [`ast/`](ast) | 하자와 카나데의 렉서·파서(같은 AST를 만들어요) |
+| [`lexer/`](lexer), [`parser/`](parser), [`ast/`](ast) | 하리와 카나데의 렉서·파서(같은 AST를 만들어요) |
 | [`vm/`](vm), [`stdlib/`](stdlib) | 트리워킹 인터프리터와 그 표준 라이브러리 |
 | [`bytecode/`](bytecode), [`bcvm/`](bcvm), [`bcstdlib/`](bcstdlib) | 바이트코드 컴파일러, 스택 VM, 그 표준 라이브러리 |
 | [`std/`](std) | 표준 모듈의 이름표([`std.go`](std/std.go))와 공유 구현([`stdimpl/`](std/stdimpl)) |
@@ -158,10 +158,10 @@ go build -ldflags="-s -w" -trimpath -o hana-runtime ./cmd/hana-runtime
 
 ```bash
 go test ./...
-go test ./tests -run XXX -bench Programs -benchtime 4x     # bench/*.hj를 두 엔진에서 재요
+go test ./tests -run XXX -bench Programs -benchtime 4x     # bench/*.hr를 두 엔진에서 재요
 ```
 
-네이티브 라이브러리를 실제로 불러 보는 테스트는 C 컴파일러가 없으면 건너뛰어요. 트리워킹 인터프리터와 바이트코드 VM이 같은 결과를 내는지 확인하는 테스트가 많아요. 두 엔진은 언제나 같게 동작해야 해요. [`bench.hj`](bench.hj)는 `hana run -t bench.hj`와 `hana run --bc -t bench.hj`로 두 엔진의 속도를 비교하는 부하 프로그램이에요.
+네이티브 라이브러리를 실제로 불러 보는 테스트는 C 컴파일러가 없으면 건너뛰어요. 트리워킹 인터프리터와 바이트코드 VM이 같은 결과를 내는지 확인하는 테스트가 많아요. 두 엔진은 언제나 같게 동작해야 해요. [`bench.hr`](bench.hr)는 `hana run -t bench.hr`와 `hana run --bc -t bench.hr`로 두 엔진의 속도를 비교하는 부하 프로그램이에요.
 
 </details>
 
@@ -172,17 +172,17 @@ go test ./tests -run XXX -bench Programs -benchtime 4x     # bench/*.hj를 두 �
 
 문서 사이트는 별도 저장소예요. 사이트의 실행 버튼은 이 저장소의 엔진을 TypeScript로 옮긴 브라우저 엔진을 써요.
 
-- 하자: [soumt-r/haja-document](https://github.com/soumt-r/haja-document)
+- 하자: [soumt-r/hari-document](https://github.com/soumt-r/hari-document)
 - 카나데: [soumt-r/kanade-document](https://github.com/soumt-r/kanade-document)
 
-두 저장소를 `haja-docs`, `kanade-docs`라는 폴더 이름으로 `hana` 옆에 나란히 두면 다음이 동작해요.
+두 저장소를 `hari-docs`, `kanade-docs`라는 폴더 이름으로 `hana` 옆에 나란히 두면 다음이 동작해요.
 
 ```bash
-git clone https://github.com/soumt-r/haja-document haja-docs
+git clone https://github.com/soumt-r/hari-document hari-docs
 git clone https://github.com/soumt-r/kanade-document kanade-docs
 
 # 문서 속 모든 코드 블록을 실제로 실행해서 확인
-go run ./cmd/doctest ../haja-docs/src/pages/docs
+go run ./cmd/doctest ../hari-docs/src/pages/docs
 go run ./cmd/doctest ../kanade-docs/src/pages/docs
 ```
 

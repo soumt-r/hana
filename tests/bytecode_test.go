@@ -13,11 +13,11 @@ import (
 	"github.com/soumt-r/hana/bcstdlib"
 	"github.com/soumt-r/hana/bcvm"
 	"github.com/soumt-r/hana/bytecode"
-	lexer "github.com/soumt-r/hana/lexer/haja"
-	parser "github.com/soumt-r/hana/parser/haja"
+	lexer "github.com/soumt-r/hana/lexer/hari"
+	parser "github.com/soumt-r/hana/parser/hari"
 )
 
-// runBytecode lexes, parses, compiles, and runs a haja source string
+// runBytecode lexes, parses, compiles, and runs a hari source string
 // through the bytecode VM (with the standard library registered, same as
 // the real CLI), returning the VM (for Output) and any error (parse,
 // compile, or runtime — the caller usually only cares that there is or
@@ -706,7 +706,7 @@ func TestBytecodeMathModuleGatedByImport(t *testing.T) {
 
 func TestBytecodeLocalFileImportFunctionAndClass(t *testing.T) {
 	dir := t.TempDir()
-	utilsPath := filepath.Join(dir, "utils.hj")
+	utilsPath := filepath.Join(dir, "utils.hr")
 	if err := os.WriteFile(utilsPath, []byte(`
 [숫자]를 돌려주는 <제곱>을 만들자 ([숫자]인 '값'):
     ('값' * '값')를 돌려주자
@@ -739,7 +739,7 @@ func TestBytecodeLocalFileImportFunctionAndClass(t *testing.T) {
 }
 
 func TestBytecodeLocalImportMissingFile(t *testing.T) {
-	l := lexer.New(`"이런파일없음.hj"에서 <아무거나>를 가져오자`)
+	l := lexer.New(`"이런파일없음.hr"에서 <아무거나>를 가져오자`)
 	p := parser.New(l)
 	prog := p.ParseProgram()
 	if len(p.Errors()) > 0 {
@@ -755,8 +755,8 @@ func TestBytecodeLocalImportMissingFile(t *testing.T) {
 
 func TestBytecodeCircularLocalImportIsRejected(t *testing.T) {
 	dir := t.TempDir()
-	aPath := filepath.Join(dir, "a.hj")
-	bPath := filepath.Join(dir, "b.hj")
+	aPath := filepath.Join(dir, "a.hr")
+	bPath := filepath.Join(dir, "b.hr")
 	bPathEscaped := strings.ReplaceAll(bPath, `\`, `\\`)
 	aPathEscaped := strings.ReplaceAll(aPath, `\`, `\\`)
 
@@ -789,8 +789,8 @@ func TestBytecodeCircularLocalImportIsRejected(t *testing.T) {
 
 func TestBytecodeImportAliasResolvesNameCollision(t *testing.T) {
 	dir := t.TempDir()
-	pkgAPath := filepath.Join(dir, "pkgA.hj")
-	pkgBPath := filepath.Join(dir, "pkgB.hj")
+	pkgAPath := filepath.Join(dir, "pkgA.hr")
+	pkgBPath := filepath.Join(dir, "pkgB.hr")
 	if err := os.WriteFile(pkgAPath, []byte(`
 [숫자]를 돌려주는 <계산하기>를 만들자 ([숫자]인 '값'):
     ('값' + 1)를 돌려주자
@@ -864,7 +864,7 @@ func TestBytecodeStringPseudoMethods(t *testing.T) {
 	vm, err := runBytecode(t, `
 '문장'을 [문자열]인 "안녕하세요 세계"로 정하자
 틀"{'문장'의 <자르기>(1, 2)}"를 출력하자
-틀"{'문장'의 <바꾸기>("세계", "하자")}"를 출력하자
+틀"{'문장'의 <바꾸기>("세계", "하리")}"를 출력하자
 틀"{'문장'의 <분리하기>(" ")}"를 출력하자
 틀"{'문장'의 <포함확인>("세계")}"를 출력하자
 틀"{'문장'의 <포함확인>("없음")}"를 출력하자
@@ -872,7 +872,7 @@ func TestBytecodeStringPseudoMethods(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	want := []string{"안녕", "안녕하세요 하자", "[안녕하세요, 세계]", "참", "거짓"}
+	want := []string{"안녕", "안녕하세요 하리", "[안녕하세요, 세계]", "참", "거짓"}
 	if strings.Join(vm.Output, ",") != strings.Join(want, ",") {
 		t.Errorf("Output = %v, want %v", vm.Output, want)
 	}

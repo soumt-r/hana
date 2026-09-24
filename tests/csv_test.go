@@ -15,7 +15,7 @@ func TestCSVParse(t *testing.T) {
 		{`<파싱>("a,b")`, "[[a, b]]"},
 		{`<파싱>("a,b\nc,d")`, "[[a, b], [c, d]]"},
 		{`<파싱>("a,b\nc,d\n")`, "[[a, b], [c, d]]"},      // a final line break starts no row
-		{`<파싱>("a" + <글자로>(13) + "\nb")`, "[[a], [b]]"}, // CRLF; Haja text has no  escape
+		{`<파싱>("a" + <글자로>(13) + "\nb")`, "[[a], [b]]"}, // CRLF; Hari text has no  escape
 		{`<파싱>("\"x,y\",z")`, "[[x,y, z]]"},
 		{`<파싱>("\"a\"\"b\"")`, `[[a"b]]`},
 		{`<파싱>("\"a\nb\",c")`, "[[a\nb, c]]"}, // a line break inside quotes belongs to the cell

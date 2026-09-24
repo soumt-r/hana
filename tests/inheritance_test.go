@@ -8,7 +8,7 @@ import "testing"
 // body and never walked the BaseClass chain, so the parent constructor
 // silently never ran.
 func TestInheritedConstructorRunsAutomatically(t *testing.T) {
-	interp, err := runHaja(t, `
+	interp, err := runHari(t, `
 [동물]을 설계하자:
     '이름'을 [문자열]인 ""로 정하여 물려주자
     처음 만들어질 때 ([문자열]인 '초기이름') 다음과 같이 하자:
@@ -32,7 +32,7 @@ func TestInheritedConstructorRunsAutomatically(t *testing.T) {
 // The explicit form (`부모의 <처음 만들어질 때>(...)`) must still work and
 // still enforce MissingArgumentError for its own parameters.
 func TestExplicitSuperConstructorCall(t *testing.T) {
-	interp, err := runHaja(t, `
+	interp, err := runHari(t, `
 [동물]을 설계하자:
     '이름'을 [문자열]인 ""로 정하여 물려주자
     처음 만들어질 때 ([문자열]인 '초기이름') 다음과 같이 하자:
@@ -54,7 +54,7 @@ func TestExplicitSuperConstructorCall(t *testing.T) {
 		t.Errorf("결과 = %v, want \"바둑이\"", got)
 	}
 
-	_, err = runHaja(t, `
+	_, err = runHari(t, `
 [동물]을 설계하자:
     처음 만들어질 때 ([문자열]인 '초기이름') 다음과 같이 하자:
         '나'의 '이름'을 '초기이름'으로 정하자

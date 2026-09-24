@@ -1,6 +1,6 @@
-# hana — Haja/Kanade Go 런타임
+# hana — Hari/Kanade Go 런타임
 
-Go로 작성된 '하자(Haja)'와 '카나데(Kanade)' 언어의 인터프리터/컴파일러/CLI입니다. 언어의 규칙은
+Go로 작성된 '하리(Hari)'와 '카나데(Kanade)' 언어의 인터프리터/컴파일러/CLI입니다. 언어의 규칙은
 하자·카나데 문서 사이트의 기술 스펙(개요, AST, 런타임)이 기준이고, 이 문서와 코드 주석의 "스펙 2.2"
 같은 번호는 그 스펙의 절 번호입니다 — 구현이 스펙과 다르게 동작하면 버그입니다.
 
@@ -9,7 +9,7 @@ Go로 작성된 '하자(Haja)'와 '카나데(Kanade)' 언어의 인터프리터/
 - **소스 파일을 직접 Edit하세요.** `patch1.py`처럼 정규식/문자열 치환으로 소스를 고치는
   1회성 스크립트를 새로 만들지 마세요. 과거 세션에서 이런 스크립트가 147개 쌓여 커밋까지
   되었고, 실행 후 아무도 지우지 않아 저장소가 정리 불가능한 상태가 됐습니다.
-- 실험적으로 동작을 확인하려고 만드는 `.hj` 스크립트나 디버그 출력은 커밋하지 마세요.
+- 실험적으로 동작을 확인하려고 만드는 `.hr` 스크립트나 디버그 출력은 커밋하지 마세요.
   `.gitignore`에 `debug_*`, `temp_*` 패턴이 이미 등록되어 있습니다. 재사용 가치가 있는
   예제/회귀 테스트라면 `tests/`에 의미 있는 이름으로 두고 의도적으로 커밋하세요.
 - 빌드 산출물(`hana.exe` 등)은 커밋하지 않습니다. `go build ./cmd` 등으로 로컬에서 생성하세요.
@@ -49,11 +49,11 @@ docs가 이미 인용하는 문구(접근 위반·목록 범위 초과·사전 �
 그대로 씁니다 — 바꾸면 docs도 같이 고쳐야 합니다. `bcvm`은 일반 문자열 `TypeError`를 `errs`로 안 바꾼
 곳(`.hn` 포맷 에러, `unimplemented opcode`)이 일부러 남아 있습니다(개발자/툴링용).
 
-파서 계층도 같은 패턴으로 이미 추상화되어 있습니다: `parser/haja.Parser`는 실제로는
+파서 계층도 같은 패턴으로 이미 추상화되어 있습니다: `parser/hari.Parser`는 실제로는
 언어-무관한 공유 구현체이고, 어떤 리터럴을 인식할지는 생성자에 넘기는
-`parser/haja.LangProfile`이 결정합니다 (`hajaProfile`). `parser/kanade`는 이 Parser에
+`parser/hari.LangProfile`이 결정합니다 (`hariProfile`). `parser/kanade`는 이 Parser에
 자기 것(`kanadeProfile`)과 `lexer/kanade`가 만든 토큰 스트림을 넘기는 얇은 wrapper일
-뿐, 별도 AST나 별도 파서 구현이 아닙니다 — `카나데(Kanade)` 스크립트도 하자와 완전히
+뿐, 별도 AST나 별도 파서 구현이 아닙니다 — `카나데(Kanade)` 스크립트도 하리와 완전히
 같은 `*ast.Program`을 만들어내므로 bytecode 컴파일러/VM도 수정 없이 그대로 씁니다.
 
 ### 카나데 구두점은 전각 문자 — ASCII가 아님
@@ -67,13 +67,13 @@ kanade-docs(`kanade-docs/src/pages/docs`)가 이렇게 쓰기 때문** — 세�
 문법을 추측으로 만들지 마세요** — 반드시 `kanade-docs/src/pages/docs`의 ` ```kanade `
 블록을 먼저 찾아 확인하세요.
 
-이 전각 구두점 때문에 `parser/haja/parser.go`가 예전엔 델리미터를 `literal[1:len-1]`로
-하드코딩해서 벗기던 자리 전부가 `LangProfile.DelimLen`(하자 1바이트, 카나데는 모든
+이 전각 구두점 때문에 `parser/hari/parser.go`가 예전엔 델리미터를 `literal[1:len-1]`로
+하드코딩해서 벗기던 자리 전부가 `LangProfile.DelimLen`(하리 1바이트, 카나데는 모든
 델리미터가 3바이트로 통일)을 쓰도록 바뀌었습니다. `TypeOpen`/`TypeClose`도 TYPE 판별용
 prefix/suffix 문자를 담습니다(하자 `[`/`]`, 카나데 `【`/`】`).
 
 카나데 렉서(`lexer/kanade`)를 건드릴 때 꼭 알아야 할 것: 일본어 텍스트는 띄어쓰기가
-없어서, "조사/마커 단어 + 별도 동사" 처럼 하자 문법을 그대로 토큰 2개로 나누면 일반
+없어서, "조사/마커 단어 + 별도 동사" 처럼 하리 문법을 그대로 토큰 2개로 나누면 일반
 IDENT 정규식이 둘을 하나로 욕심껏 삼켜버립니다(예: "동안 반복하자"를 그대로 옮기면
 "間繰り返そう"가 통째로 한 IDENT가 됨). 그래서 루프 종류(while/foreach/range)는
 동사 리터럴 자체에 融合되어 있고(`KW_LOOP` 정규식 3종, 뒤에서 꺼낸 값 표현식용 KW_FRONT/
@@ -83,7 +83,7 @@ vs `それ以外なら`)는 반드시 **긴 것부터** 스펙 배열에 넣어�
 쪼개짐).
 
 카나데는 TYPE_IN(`[타입]인 값`의 "인")과 MemberParticle(멤버 접근의 "의")에 **같은 단어
-"の"를 재사용**합니다(kanade-docs 실측). 이 때문에 `parser/haja/parser.go`의
+"の"를 재사용**합니다(kanade-docs 실측). 이 때문에 `parser/hari/parser.go`의
 `parseMemberAndCall`이 "の"를 보면 곧장 멤버 접근으로 먹어버리기 전에, 바로 다음이
 KW_FRONT/KW_BACK인지(목록 앞/뒤 조작, "『果物』の前に..." 처럼 카나데는 이 위치에도 조사를
 붙임) 먼저 살펴보고 아니면 넘기는 lookahead가 들어가 있습니다.
@@ -108,9 +108,9 @@ KW_FRONT/KW_BACK인지(목록 앞/뒤 조작, "『果物』の前に..." 처럼 
 인덱싱 관련해서도 실제 문서 기준으로 두 개 더 고쳤습니다:
 - **`番目`(서수 조사)가 카나데 PARTICLE 정규식에 빠져 있었음** — `길이`/`값`과 달리 이건
   토큰화 자체가 안 돼서 일반 IDENT로 떨어지고, 그 뒤로 엉뚱한 SOV 컴포넌트가 하나 더
-  생겨 파싱이 깨졌습니다(하자의 PARTICLE 목록엔 "번째"가 이미 있었음 — 카나데 쪽만 놓침).
+  생겨 파싱이 깨졌습니다(하리의 PARTICLE 목록엔 "번째"가 이미 있었음 — 카나데 쪽만 놓침).
 - **인덱싱 뒤에 조사로 연결된 장식용 "の値"**(`『果物』の1番目の値` = "그 목록의 1번째")를
-  `parseMemberAndCall`에서 미리 감지해 건너뛰게 했습니다. 하자는 "1번째 값"처럼 조사 없이
+  `parseMemberAndCall`에서 미리 감지해 건너뛰게 했습니다. 하리는 "1번째 값"처럼 조사 없이
   붙여 써서 바깥 조사 수집 루프가 그냥 버리는데, 카나데는 "의"로 연결해 일반 멤버 접근처럼
   보이는 바람에 그냥 두면 인덱싱 결과(문자열)에 없는 '값'이라는 필드를 찾으려 듭니다.
 - **"値にしよう"가 통째로 IDENT 하나로 삼켜짐** — `もしくは`/`もし`와 같은 원인(짧은 예약어
@@ -143,14 +143,14 @@ Y를 더하자`처럼 런타임에 평가되는 경로)은 조용히 "Variable '
 흩어진 필드 중 하나를 빠뜨리는 게 실수의 반복되는 형태였습니다.
 
 현재 상태: **`go run ./cmd/doctest ../kanade-docs/src/pages/docs`로 실제 문서 66블록
-전부(100%) 통과**, `../haja-docs/...`도 여전히 66/66. `hana/tests/kanade_test.go`
+전부(100%) 통과**, `../hari-docs/...`도 여전히 66/66. `hana/tests/kanade_test.go`
 18개(트리워커 12개, 바이트코드 6개 — 정적 메서드 호출, 빌트인 변환, 서수+장식값 인덱싱,
 문자열 유사메서드, 동적 리플렉션 등 이번에 고친 것마다 회귀 테스트 추가)도 전부 통과.
 오류 객체를 출력하면 `[클래스 객체]` 형태로 찍히고 `__toString__` 같은 변환 훅은 없습니다 — 스펙에 없는 기능이라
 지원하지 않는 것이 의도입니다(이전에는 한계로 적어 두었으나 버그가 아님). `bytecode.compileForEach`의 기본 항목 이름은
 `bcLang.defaultItemName`으로 언어별로 처리합니다(`tests/bytecode_parity_test.go`가 지킴).
 
-`hana/parser/haja/langprofile.go`의 `LangProfile`이 지금까지 뽑아낸 언어별 항목 전체
+`hana/parser/hari/langprofile.go`의 `LangProfile`이 지금까지 뽑아낸 언어별 항목 전체
 목록(새 문법 추가 시 참고): ErrorLiterals, PluralSelfWords, ConditionThenWords,
 PoppedValueWord, MemberParticle, TypeInWord, TemplatePrefix/Suffix,
 ConstructorFunctionName, FrontMarker, AccessModifierFromVerb, IsConstVerb,
@@ -171,12 +171,12 @@ DelimLen, TypeOpen/TypeClose.
 - `bytecode.Compiler`에 `NewKanadeCompiler()` 추가(`NewCompiler()`는 그대로 하자용).
   내부적으로 `lang *bcLang`(selfWord/pluralSelfWord/parseExpr/builtinErrorClass)을 들고
   다니며 자기참조(`나`/`私`), 정적참조(`우리`/`私たち`), 템플릿 문자열 `{}` 보간용
-  렉서/파서, 내장 오류 클래스(하자는 `[오류]`+`'메시지'`, 카나데는 `【エラー】`+
+  렉서/파서, 내장 오류 클래스(하리는 `[오류]`+`'메시지'`, 카나데는 `【エラー】`+
   `『メッセージ』`)를 결정합니다. `compileLocalImport`(로컬 파일 임포트)는 이 필드가 아니라
-  **가져오는 파일 자신의 확장자**(`.knd` 여부)로 렉서/파서를 고르므로, 하자 파일이
+  **가져오는 파일 자신의 확장자**(`.knd` 여부)로 렉서/파서를 고르므로, 하리 파일이
   카나데 파일을 가져오거나 그 반대도 됩니다.
 - `.hn` 포맷(`bytecode/serialize.go`)이 v2로 올라가면서 매직+버전 뒤에 1바이트
-  `Lang`(`LangHaja`/`LangKanade`)이 추가됐습니다 — `.hn`엔 원래 소스 언어 정보가 전혀
+  `Lang`(`LangHari`/`LangKanade`)이 추가됐습니다 — `.hn`엔 원래 소스 언어 정보가 전혀
   없어서, `hana build`로 만든 `.knd` 유래 `.hn`을 나중에 `hana run`이 열 때 어떤
   bcstdlib 이름 세트를 등록해야 하는지 알 방법이 없었기 때문입니다. `Encode`/
   `ReadProgram` 시그니처가 이 때문에 바뀌었습니다(`Encode(w, lang)`,
@@ -191,7 +191,7 @@ DelimLen, TypeOpen/TypeClose.
 ## 리스트 pseudo-method `<비우기>`
 
 스펙 2.6: 리스트는 기본적으로 객체지향 메서드가 아니라 네이티브 구문(추가하자/꺼내자)으로
-조작합니다. 예외가 딱 하나 있는데, TS 참조 구현(haja-docs)에도 있는 `<비우기>()`(카나데:
+조작합니다. 예외가 딱 하나 있는데, TS 참조 구현(hari-docs)에도 있는 `<비우기>()`(카나데:
 `<空にする>()`, 목록을 즉석에서 비움, 인자 없음, 반환값 없음)입니다.
 
 트리워커는 `vm/eval_expr.go`가 리스트에 대한 `FunctionReference` 접근을 `BoundListMethod`로 만들고
@@ -217,7 +217,7 @@ DelimLen, TypeOpen/TypeClose.
 변수와 멤버를 문자열로 찾던 것을 프로세스 전체에서 유일한 정수 `symbol.Symbol`(`symbol/symbol.go`)로 바꿨습니다: `bcvm/frame.go`의 프레임은 `Symbol`을 비교하고(큰 프레임은 `Symbol`로 인덱싱하는 표), 클래스 멤버 캐시도 `Symbol`이 열쇠입니다.
 `.hn` 파일에는 여전히 이름 문자열만 있고(형식 변경 없음), `Chunk.Symbols()`/`Function.ParamSymbols()`가 처음 실행할 때 한 번 계산해 둡니다. VM에서 이름 글자가 필요한 곳(오류 문구, 클래스 이름으로 찾기)만 `Symbol.String()`을 씁니다.
 새 명령을 만들 때 변수 이름을 다루면 `chunk.Names[i]` 대신 `syms[i]`(exec 첫머리의 `chunk.Symbols()`)를 쓰세요.
-트리워커도 같은 `symbol.Symbol`을 씁니다: `ast.Identifier.Symbol()`/`ast.FunctionReference.Symbol()`이 노드에 한 번 계산해 두고(`FunctionReference`는 동적 리플렉션이 `Name`을 바꿀 수 있어 이름이 같을 때만 재사용), `Environment`의 `GetSym`/`DeclareSym`/`AssignSym`이 Symbol로 찾습니다. 글자만 가진 곳(임포트, 내장 함수 등록)은 `Get`/`Declare`/`Assign`이 대신 Intern합니다. `HajaObject.class`(`Interpreter.classOf`)가 클래스 선언을 기억하고 클래스 멤버 캐시는 (클래스, Symbol)이 열쇠입니다.
+트리워커도 같은 `symbol.Symbol`을 씁니다: `ast.Identifier.Symbol()`/`ast.FunctionReference.Symbol()`이 노드에 한 번 계산해 두고(`FunctionReference`는 동적 리플렉션이 `Name`을 바꿀 수 있어 이름이 같을 때만 재사용), `Environment`의 `GetSym`/`DeclareSym`/`AssignSym`이 Symbol로 찾습니다. 글자만 가진 곳(임포트, 내장 함수 등록)은 `Get`/`Declare`/`Assign`이 대신 Intern합니다. `HariObject.class`(`Interpreter.classOf`)가 클래스 선언을 기억하고 클래스 멤버 캐시는 (클래스, Symbol)이 열쇠입니다.
 
 ## 패키지 형식(`hana.pkg.json`)과 네이티브 라이브러리(`.dll`/`.so`/`.dylib`)
 
@@ -225,7 +225,7 @@ DelimLen, TypeOpen/TypeClose.
 
 `packages/<모듈>/`은 hana와 **함께 배포하는 builtin 패키지**입니다(`hana add` 같은 설치 명령과는 무관 — 서드파티 설치는 나중의 별개 주제). `pkg` 패키지(`pkg/manifest.go`)가
 그 안의 `hana.pkg.json`(이름·버전·언어별 진입점 `entry`·플랫폼별 미리 빌드한 네이티브 파일 `native`·`dependencies`)을 읽고 검증합니다. 매니페스트는
-없어도 되고(없으면 `haja/index.hj`, `kanade/index.knd`와 옛 `<모듈>.dll` 관례), 있으면 두 엔진이 진입점 경로와 이 플랫폼의 네이티브 파일을 거기서 정합니다.
+없어도 되고(없으면 `hari/index.hr`, `kanade/index.knd`와 옛 `<모듈>.dll` 관례), 있으면 두 엔진이 진입점 경로와 이 플랫폼의 네이티브 파일을 거기서 정합니다.
 잘못된 매니페스트는 `ImportManifestInvalid`, 이 플랫폼용 파일이 없으면 `ImportNativeMissing`입니다. `url`/`sha256`은 나중에 내려받기가 생기면 쓸 자리이고
 `hana run`은 안 봅니다.
 
@@ -247,9 +247,9 @@ DelimLen, TypeOpen/TypeClose.
 `tests/http_server_test.go`)는 두 엔진에서 돌고 C 컴파일러가 있어야 하며 없으면 건너뜁니다. Linux는 WSL에서 Go를 깔아 cgo 켠/끈 두 방식으로 통과를 확인했고,
 **macOS는 아직 실제로 돌려 보지 못했습니다**. `hana` 내장 네이티브 모듈(`[수학]`, `[파일]` 등)은 이 경로가 아니라 바이너리에 컴파일되는 `std`입니다.
 
-`packages/timezone/`은 시간대 패키지입니다(IANA 데이터베이스가 `time/tzdata`로 라이브러리 안에 있어 컴퓨터에 따로 필요 없음, 약 2.7MB). `std`가 아니라 패키지인 이유는 3.5의 기준대로 데이터가 크고 서머타임 규칙까지 브라우저 엔진과 맞춰야 해서입니다. 네이티브 함수 `Offset`·`Format`·`Parse`·`Weekday`(`native/main.go`)를 `haja/index.hj`·`kanade/index.knd`가 `<시간대오프셋>`·`<시간대서식>`·`<시간대읽기>`·`<시간대요일>`(카나데 `〈時間帯オフセット〉` …)로 감쌉니다. 시각은 [날짜]와 같은 유닉스 초이고 서식 토큰(`YYYY MM DD HH mm ss`)과 검증도 같습니다. 시간대는 IANA 이름이나 `UTC`나 고정 오프셋(`+09:00`)이고 컴퓨터의 시간대(`""`, `Local`)는 일부러 거절합니다. 읽기에서 시계가 건너뛴 시각은 에러, 두 번 나오는 시각은 이른 쪽입니다. 네이티브 에러 문구는 영어입니다. `tests/timezone_test.go`가 라이브러리를 직접 빌드해(C 컴파일러가 없으면 건너뜀) 14개 시간대의 옛 날짜와 전환 경계 수천 건을 Go 자신의 데이터와 두 엔진에서 대조합니다.
+`packages/timezone/`은 시간대 패키지입니다(IANA 데이터베이스가 `time/tzdata`로 라이브러리 안에 있어 컴퓨터에 따로 필요 없음, 약 2.7MB). `std`가 아니라 패키지인 이유는 3.5의 기준대로 데이터가 크고 서머타임 규칙까지 브라우저 엔진과 맞춰야 해서입니다. 네이티브 함수 `Offset`·`Format`·`Parse`·`Weekday`(`native/main.go`)를 `hari/index.hr`·`kanade/index.knd`가 `<시간대오프셋>`·`<시간대서식>`·`<시간대읽기>`·`<시간대요일>`(카나데 `〈時間帯オフセット〉` …)로 감쌉니다. 시각은 [날짜]와 같은 유닉스 초이고 서식 토큰(`YYYY MM DD HH mm ss`)과 검증도 같습니다. 시간대는 IANA 이름이나 `UTC`나 고정 오프셋(`+09:00`)이고 컴퓨터의 시간대(`""`, `Local`)는 일부러 거절합니다. 읽기에서 시계가 건너뛴 시각은 에러, 두 번 나오는 시각은 이른 쪽입니다. 네이티브 에러 문구는 영어입니다. `tests/timezone_test.go`가 라이브러리를 직접 빌드해(C 컴파일러가 없으면 건너뜀) 14개 시간대의 옛 날짜와 전환 경계 수천 건을 Go 자신의 데이터와 두 엔진에서 대조합니다.
 
-`packages/http_server/`가 본보기 패키지입니다: `hana.pkg.json` + `haja/index.hj` + `kanade/index.knd` + `native/main.go`(Go의 `net/http`를 ABI v1 뒤에 둔 c-shared 라이브러리,
+`packages/http_server/`가 본보기 패키지입니다: `hana.pkg.json` + `hari/index.hr` + `kanade/index.knd` + `native/main.go`(Go의 `net/http`를 ABI v1 뒤에 둔 c-shared 라이브러리,
 `native/build.sh`·`build.ps1`로 이 플랫폼 것만 빌드, 결과물은 git이 무시). 핸들러는 요청 딕셔너리(`method`, `path`, `query`, `headers`, `body`, `remote`)를 받아 글자나 `<응답>`(`status`,
 `body`, `type`, `headers`)을 돌려줍니다.
 
@@ -286,16 +286,16 @@ DelimLen, TypeOpen/TypeClose.
 
 ## `hana pack`: 프로그램을 실행 파일 하나로
 
-`hana pack 앱.hj -o 앱`은 `hana-runtime`(`cmd/hana-runtime`: 바이트코드 VM + 표준 라이브러리만, 파서·트리워커·LSP·cobra 없음, `-ldflags="-s -w" -trimpath`로 약 6MB — 표준 라이브러리에 네트워크(`[HTTP]`의 https)가 들어오기 전에는 3.5MB였습니다)을 복사한 뒤 뒤에 페이로드를 붙입니다.
+`hana pack 앱.hr -o 앱`은 `hana-runtime`(`cmd/hana-runtime`: 바이트코드 VM + 표준 라이브러리만, 파서·트리워커·LSP·cobra 없음, `-ldflags="-s -w" -trimpath`로 약 6MB — 표준 라이브러리에 네트워크(`[HTTP]`의 https)가 들어오기 전에는 3.5MB였습니다)을 복사한 뒤 뒤에 페이로드를 붙입니다.
 형식은 `[런타임][zip 페이로드][트레일러 24바이트: 매직 | 크기 | 페이로드 SHA-256 앞 8바이트]`이고 `pack` 패키지가 읽고 씁니다. 페이로드에는 `program.hn`과 `libraries.json`(프로그램이 **실행 때** 네이티브 라이브러리를 여는 패키지 이름들, `Compiler.LibraryModules()`)이 들어갑니다
-(하자 소스로 된 패키지 코드는 컴파일 때 이미 프로그램 안에 있음). 라이브러리 파일은 매니페스트 없이 이름만 `<패키지><확장자>`로 바꿔 기본적으로 실행 파일 **옆 `libraries/`**에 내보냅니다(`pack.Install`) — 실행 파일은 작게 남고 파일 구성이 단순합니다.
+(하리 소스로 된 패키지 코드는 컴파일 때 이미 프로그램 안에 있음). 라이브러리 파일은 매니페스트 없이 이름만 `<패키지><확장자>`로 바꿔 기본적으로 실행 파일 **옆 `libraries/`**에 내보냅니다(`pack.Install`) — 실행 파일은 작게 남고 파일 구성이 단순합니다.
 `--embed`면 페이로드 안에 `libraries/<패키지><확장자>`로 넣어 파일 하나로 만들고(압축되어 더 작아짐), 실행할 때 사용자 캐시 폴더 `hj-packed/<id>/libraries`에 한 번 풉니다(같은 크기 파일이 있으면 그대로 둠 — 윈도우는 로드된 DLL을 못 덮어씀).
 어느 쪽이든 `Activate`가 `native.Bundled`(패키지 이름 → 라이브러리 경로)를 채우고, `native.OpenModule`(`bcvm`이 부름)이 패키지 폴더보다 먼저 그걸 봅니다. `--target 플랫폼`(예 `linux-amd64`)과 `--runtime`으로 다른 OS용도 만들 수 있고(그 OS용 런타임을 `hana-runtime-<플랫폼>`으로 hana 옆에 두거나 `--runtime`),
 `hana run x.hn`과 패키지 실행은 `runner.NewVM`을 함께 씁니다. 서명은 붙인 다음에 하세요(뒤에 덧붙이면 서명이 깨짐). 테스트는 `tests/pack_test.go`(실제 `hana`와 `hana-runtime`을 빌드해서 돌림).
 
 ## 임포트는 가져오는 파일/패키지의 언어로 실행됨
 
-`vm/config.go`의 `LangConfig`가 `Name`(`haja`/`kanade`), `SourceExt`(`.hj`/`.knd`), `ParseProgram`을 갖고,
+`vm/config.go`의 `LangConfig`가 `Name`(`hari`/`kanade`), `SourceExt`(`.hr`/`.knd`), `ParseProgram`을 갖고,
 `vm/import.go`가 이걸로 언어를 고릅니다: 로컬 파일 임포트(`"파일"에서 …`)는 **그 파일의 확장자**로
 (`ConfigForFile`), 패키지 임포트(`[모듈]에서 …`)는 **임포트하는 쪽 언어**의 진입점
 `packages/<모듈>/<Name>/index<SourceExt>`로 갑니다. 그 언어 진입점만 없으면 `ImportUnsupportedLocale`.
@@ -313,8 +313,8 @@ DelimLen, TypeOpen/TypeClose.
 `LangConfig`에 모듈/함수 이름 필드를 다시 추가하지 마세요.
 
 새 네이티브 함수 추가: ① `std.go`에 ID 상수 + `Modules` + 두 언어 이름 → ② `std/stdimpl`의 `Impls`에
-구현(두 엔진이 같은 함수를 이름만 바꿔 씁니다: 값은 float64/string/bool/`[]interface{}`/`map[interface{}]interface{}`/nil뿐이라 공유 가능. 새 에러는 `errs`에 코드+세 카탈로그) → ③ `tests/std_names_test.go`의 `stdCases`에 기대값(+동작은 `tests/std_library_test.go`) → ④ `go run ./cmd/stdgen -haja
-../haja-docs/src/utils/haja/stdNames.ts -kanade ../kanade-docs/src/utils/kanade/stdNames.ts`(`-check`로 검증) →
+구현(두 엔진이 같은 함수를 이름만 바꿔 씁니다: 값은 float64/string/bool/`[]interface{}`/`map[interface{}]interface{}`/nil뿐이라 공유 가능. 새 에러는 `errs`에 코드+세 카탈로그) → ③ `tests/std_names_test.go`의 `stdCases`에 기대값(+동작은 `tests/std_library_test.go`) → ④ `go run ./cmd/stdgen -hari
+../hari-docs/src/utils/hari/stdNames.ts -kanade ../kanade-docs/src/utils/kanade/stdNames.ts`(`-check`로 검증) →
 ⑤ docs TS 엔진(`stdImpls.ts`의 `nativeImpls`)에 구현하고 `compare_tests.ts`에 '표준:' 케이스 추가.
 운영체제가 필요한 모듈(파일, 소켓)은 `std.Module{NativeOnly: true}`로 표시합니다: Go 엔진 둘은 평소처럼 등록하고(구현도 `stdimpl` 한 곳), `stdgen`이 `stdNames.ts`에 `nativeOnly: true`를 내보내면 브라우저 엔진이 구현 없이 모듈만 기억했다가 임포트 때 `ImportNativeOnly`("브라우저에서 사용할 수 없어요")를 냅니다. 이 표시가 붙은 함수는 TS `stdImpls.ts`에 구현하지 않고 `compare_tests.ts`의 '표준:' 케이스도 만들지 않습니다(브라우저에서 그 에러가 나는지만 확인).
 `[소켓]`(`socket.*`, `stdimpl/net.go`)과 `[HTTP]`(`http.*`, `stdimpl/http.go`)은 `[파일]` 다음의 NativeOnly 모듈입니다. 소켓은 값이 숫자뿐이라 **번호**(`stdimpl.sockets` 표)로 다루고, 듣기는 기본으로 `127.0.0.1`에서만 받습니다.
@@ -330,7 +330,7 @@ DelimLen, TypeOpen/TypeClose.
 
 ## 구문 오류는 파서가 `Diagnostics()`로 보고하고 `Errors()`에도 들어감
 
-`parser/haja`(카나데 파서도 이걸 씀)는 알 수 없는 토큰을 만나면 `Diagnostic`(줄, 글자 열, 길이)을 기록하고 계속 파싱합니다.
+`parser/hari`(카나데 파서도 이걸 씀)는 알 수 없는 토큰을 만나면 `Diagnostic`(줄, 글자 열, 길이)을 기록하고 계속 파싱합니다.
 `Errors()`는 그 진단을 영어 문장으로 포함하고, `LocalizedErrors(loc)`는 사용자 언어로 돌려줍니다(CLI가 씀).
 문구는 `errs`의 `SyntaxError.*` 코드라 에러 카탈로그·TS 생성 파일과 같은 어휘입니다. 입력 끝에서 나온 진단은 앞선 진짜
 잘못된 토큰의 후폭풍이면 숨기고, 단독일 때만 한 번 보고합니다(`Diagnostics()`). 그래서 문법이 틀린 파일은 이제
@@ -341,9 +341,9 @@ DelimLen, TypeOpen/TypeClose.
 
 언어 서버가 제안하는 낱말은 `lsp/language.go`의 세 표가 원본입니다: `keywords`(렉서에서 KW_ 토큰 하나로 읽히는 낱말 —
 `TestKeywordsLexAsKeywords`가 검증), `comparisons`(COMPARE 토큰), `words`(같은 뜻이지만 자기 토큰이 없는 문법 낱말: 돌려주는,
-우리, 値 등). 키워드를 추가하면 ① 호버 설명(`hoverdocs.go`의 해당 KW_ 토큰 타입) ② VS Code 문법(`vscode-haja/syntaxes/*.tmLanguage.json`)
+우리, 値 등). 키워드를 추가하면 ① 호버 설명(`hoverdocs.go`의 해당 KW_ 토큰 타입) ② VS Code 문법(`vscode-hari/syntaxes/*.tmLanguage.json`)
 ③ 생성 파일을 함께 맞춰야 하고, 빠지면 테스트(호버 문서·문법 드리프트·생성 파일 최신 여부)가 잡습니다.
-docs 저장소의 브라우저 에디터용 `lspKeywords.ts`는 `go run ./cmd/lspgen -haja ../haja-docs/src/utils/haja/lspKeywords.ts
+docs 저장소의 브라우저 에디터용 `lspKeywords.ts`는 `go run ./cmd/lspgen -hari ../hari-docs/src/utils/hari/lspKeywords.ts
 -kanade ../kanade-docs/src/utils/kanade/lspKeywords.ts`로 생성합니다(`-check`로 최신 여부 확인).
 
 ## `입력받자`는 입력 소스에서 한 줄을 읽음
@@ -355,7 +355,7 @@ docs 저장소의 브라우저 에디터용 `lspKeywords.ts`는 `go run ./cmd/ls
 
 ## 속도: 재는 법과 이미 들어간 최적화
 
-`bench/*.hj`(피보나치·중첩 반복·목록·문자열·클래스·사전)를 `tests/bench_test.go`의 `BenchmarkPrograms`가 두 엔진에서 돌립니다(파싱·컴파일은 재는 시간 밖, 출력은 버림): `go test ./tests -run XXX -bench Programs -benchtime 4x`. 느려 보이면 `-cpuprofile`로 `go tool pprof -top`부터 보세요 — 짐작으로 고친 최적화 중 실제로 느려진 것도 있었습니다(호출 인자를 스택 뷰로 넘긴 바이트코드 CALL). 최적화를 넣은 뒤에는 `go test ./...`와 두 docs의 `compare_tests.ts`(엔진 간 출력 비교)로 의미가 안 바뀌었는지 확인하세요.
+`bench/*.hr`(피보나치·중첩 반복·목록·문자열·클래스·사전)를 `tests/bench_test.go`의 `BenchmarkPrograms`가 두 엔진에서 돌립니다(파싱·컴파일은 재는 시간 밖, 출력은 버림): `go test ./tests -run XXX -bench Programs -benchtime 4x`. 느려 보이면 `-cpuprofile`로 `go tool pprof -top`부터 보세요 — 짐작으로 고친 최적화 중 실제로 느려진 것도 있었습니다(호출 인자를 스택 뷰로 넘긴 바이트코드 CALL). 최적화를 넣은 뒤에는 `go test ./...`와 두 docs의 `compare_tests.ts`(엔진 간 출력 비교)로 의미가 안 바뀌었는지 확인하세요.
 
 - **`num.Box`**: 작은 정수 float64를 `interface{}`로 만들 때마다 8바이트를 할당하던 것을 [-1024, 1<<20)의 값은 미리 만든 표에서 돌려줍니다. 산술 결과·`NumberLiteral.Boxed`·범위 반복 변수가 씁니다.
 - **트리워커**: 리터럴은 노드에 미리 계산해 둡니다(`NumberLiteral.Boxed`, `StringLiteral.Cooked`, `TemplateLiteral.Parts`). 함수·반복 범위는 `newScope`/`freeScope`(작은 free list)로 재사용하므로, **범위를 만든 뒤 아무도 그 `Environment`를 붙잡지 않아야** 합니다(클로저 값이 없는 지금은 성립). 호출 인자는 `Interpreter.argStack`에 쌓고 프로그램 안에서 선언한 함수(`*ast.FunctionDeclaration`)에만 뷰로 넘깁니다(매개변수 바인딩이 복사) — 다른 호출 대상은 인자를 붙잡을 수 있어 복사본을 받습니다. 최상위 함수는 `topFunction`(이름 색인), 클래스 멤버는 클래스별 Symbol 표(`classMembers`)로 찾고, `evaluate`/`Execute`에 `defer`를 넣지 마세요(모든 식 평가가 느려집니다).
@@ -388,8 +388,8 @@ Runtime 스펙 2.2: `[타입]`이 붙은 선언은 값이 그 타입인지 검�
 
 런타임 스펙 1.1: 반복문(반복할 때마다), `오류가 발생했다면` 처리기, 함수 호출이 새 범위를 열고, `만약`·`따라 나누자` 블록은 열지 않습니다. 트리워커는 `NewEnvironment`, 바이트코드는 프레임(선언 순서대로 쌓는 슬라이스)을 되감는 `PUSH_SCOPE`/`POP_SCOPE`(`.hn` 형식은 그대로, 옵코드만 뒤에 추가)로 같은 결과를 냅니다: `PUSH_SCOPE`는 숨은 변수(`__tmpN_scope`)에 "지금 변수가 몇 개인가"를 적어 두고, `POP_SCOPE`는 그 뒤에 선언된 변수를 표식까지 통째로 버립니다. 표식이 변수라서 `반복을 끝내자`나 예외로 건너뛰어도 안쪽 표식이 바깥 표식을 어지럽히지 않고, 바깥 표식을 버리면 안쪽 것도 함께 사라집니다. 반복문 본문에 선언할 수 있는 노드가 없으면(`mayDeclare`) 옵코드를 아예 내지 않습니다. 최상위에서는 변수가 `vm.globals`에 있어서 `declaringFrame`이 그쪽을 씁니다. 반복 변수(`횟수`, `아이템`)와 숨은 끝값·색인은 바깥 표식 하나(`__tmpN_outer`)에 묶여 반복이 끝나면 사라집니다. `tests/scope_test.go`가 지키고 브라우저 엔진도 같은 결과입니다(예전에는 바이트코드만 변수를 함수 끝까지 들고 있어서, 트리워커에서는 오류가 나는 프로그램이 바이트코드에서 조용히 돌았습니다).
 
-`[클래스]인 <함수>()`는 타입이 붙은 함수 호출입니다. 파서(`parsePrimary`의 TYPE_IN 갈래)는 TYPE_IN 낱말이 멤버 접근 조사와 같을 때만(카나데의 `の`) "TYPE의 <정적메서드>()"로 읽습니다. 하자의 정적 호출은 `[클래스]의 <함수>()`(조사 `의`)이고 `인`은 언제나 타입 표시입니다(`tests/typed_call_test.go`). TS 파서 둘도 같습니다.
+`[클래스]인 <함수>()`는 타입이 붙은 함수 호출입니다. 파서(`parsePrimary`의 TYPE_IN 갈래)는 TYPE_IN 낱말이 멤버 접근 조사와 같을 때만(카나데의 `の`) "TYPE의 <정적메서드>()"로 읽습니다. 하리의 정적 호출은 `[클래스]의 <함수>()`(조사 `의`)이고 `인`은 언제나 타입 표시입니다(`tests/typed_call_test.go`). TS 파서 둘도 같습니다.
 
-산술 연산자는 일반 수학 순서입니다: `parser/haja`의 `parseBinary`(TS는 두 docs의 `parser.ts`)가 `* / %`를 `+ -`보다 먼저 묶고 같은 단계는 왼쪽부터 묶습니다(예전에는 전부 왼쪽에서 오른쪽이라 `2 + 3 * 4`가 20이었습니다). 파서는 하나라서 트리워커·바이트코드·카나데가 함께 바뀌고, 비교(`같다`, `크다`)와 `그리고`/`또는`은 산술을 다 읽은 뒤에 붙는 별개의 구조라 그대로입니다. `tests/precedence_test.go`와 `compare_tests.ts`의 '연산: 우선순위'가 지킵니다.
+산술 연산자는 일반 수학 순서입니다: `parser/hari`의 `parseBinary`(TS는 두 docs의 `parser.ts`)가 `* / %`를 `+ -`보다 먼저 묶고 같은 단계는 왼쪽부터 묶습니다(예전에는 전부 왼쪽에서 오른쪽이라 `2 + 3 * 4`가 20이었습니다). 파서는 하나라서 트리워커·바이트코드·카나데가 함께 바뀌고, 비교(`같다`, `크다`)와 `그리고`/`또는`은 산술을 다 읽은 뒤에 붙는 별개의 구조라 그대로입니다. `tests/precedence_test.go`와 `compare_tests.ts`의 '연산: 우선순위'가 지킵니다.
 
 인터페이스와 추상 클래스(`밑설계하자`/`下設計しよう`, 파서가 `LangProfile.IsAbstractClassVerb`로 `ClassDeclaration.IsAbstract`를 채움)는 `새로운`으로 만들 수 없고(`InstantiationError`), 문자열 글자 재대입은 `ImmutableAssignmentError`입니다(스펙 3.1.1, 5.4). 트리워커·바이트코드(`ClassInfo.IsAbstract`)·브라우저 엔진 모두 같습니다.

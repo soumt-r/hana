@@ -9,7 +9,7 @@
 // names of the packages whose native library the program loads. The libraries
 // themselves are files named libraries/<package><extension>: written beside the
 // executable by Install, or, when embedded, carried in the payload too. Package
-// code written in Haja is already compiled into the program, so nothing else is
+// code written in Hari is already compiled into the program, so nothing else is
 // needed. The trailer is
 //
 //	magic (8 bytes) | payload size (uint64, little endian) | payload id (8 bytes)

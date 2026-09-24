@@ -10,7 +10,7 @@ import (
 const goodManifest = `{
   "name": "example/mypkg",
   "version": "1.2.0",
-  "entry": {"haja": "haja/index.hj", "kanade": "kanade/index.knd"},
+  "entry": {"hari": "hari/index.hr", "kanade": "kanade/index.knd"},
   "native": {
     "windows-amd64": {"file": "native/mypkg-windows-amd64.dll", "sha256": "0000000000000000000000000000000000000000000000000000000000000000"},
     "linux-arm64": {"file": "native/libmypkg.so", "url": "https://example.com/libmypkg.so"}
@@ -39,14 +39,14 @@ func TestParseAGoodManifest(t *testing.T) {
 
 func TestEntryPathFallsBackToTheConvention(t *testing.T) {
 	var none *Manifest
-	if got := none.EntryPath("haja", ".hj"); got != filepath.Join("haja", "index.hj") {
+	if got := none.EntryPath("hari", ".hr"); got != filepath.Join("hari", "index.hr") {
 		t.Errorf("no manifest: %q", got)
 	}
 	m, _ := Parse([]byte(`{"entry": {"kanade": "src/main.knd"}}`))
 	if got := m.EntryPath("kanade", ".knd"); got != filepath.Join("src", "main.knd") {
 		t.Errorf("declared entry: %q", got)
 	}
-	if got := m.EntryPath("haja", ".hj"); got != filepath.Join("haja", "index.hj") {
+	if got := m.EntryPath("hari", ".hr"); got != filepath.Join("hari", "index.hr") {
 		t.Errorf("undeclared language keeps the convention: %q", got)
 	}
 }
@@ -56,9 +56,9 @@ func TestInvalidManifests(t *testing.T) {
 		"not json":            `{`,
 		"unknown field":       `{"nome": "x"}`,
 		"unknown language":    `{"entry": {"ruby": "a.rb"}}`,
-		"absolute entry":      `{"entry": {"haja": "/etc/x.hj"}}`,
-		"entry leaves folder": `{"entry": {"haja": "../x.hj"}}`,
-		"empty entry":         `{"entry": {"haja": ""}}`,
+		"absolute entry":      `{"entry": {"hari": "/etc/x.hr"}}`,
+		"entry leaves folder": `{"entry": {"hari": "../x.hr"}}`,
+		"empty entry":         `{"entry": {"hari": ""}}`,
 		"bad platform":        `{"native": {"windows": {"file": "a.dll"}}}`,
 		"native leaves":       `{"native": {"linux-amd64": {"file": "../a.so"}}}`,
 		"bad hash":            `{"native": {"linux-amd64": {"file": "a.so", "sha256": "abc"}}}`,
