@@ -17,7 +17,7 @@
 
 <p align="center">
   <b>Hana</b> runs two programming languages written in Korean and Japanese:<br>
-  <b>Hari</b> (ハジャ) and <b>Kanade</b> (カナデ). One Go binary.<br>
+  <b>Hari</b> (ハリ) and <b>Kanade</b> (カナデ). One Go binary.<br>
   <sub>名前の<b>ハナ</b>は、韓国語の「1つ(하나)」と、日本語の「花(はな)」の両方の意味を持ちます。</sub>
 </p>
 
@@ -25,7 +25,7 @@
 
 <table>
 <tr>
-<th align="center">ハジャ (Hari) · 韓国語</th>
+<th align="center">ハリ (Hari) · 韓国語</th>
 <th align="center">カナデ (Kanade) · 日本語</th>
 </tr>
 <tr>
@@ -33,11 +33,11 @@
 
 ```hari
 <인사>를 만들자 ([문자열]인 '이름'):
-    틀"안녕, {'이름'}!"을 출력하자
+    틀"안녕, {'이름'}!"을 출력하리
 
-'이름들'을 [(문자열)목록]인 ["하리", "카나데"]로 정하자
-'이름들'의 '이름'마다 반복하자:
-    <인사>('이름')을 실행하자
+'이름들'을 [(문자열)목록]인 ["하리", "카나데"]로 정하리
+'이름들'의 '이름'마다 반복하리:
+    <인사>('이름')을 실행하리
 ```
 
 </td>
@@ -47,7 +47,7 @@
 〈挨拶〉を作ろう(【文字列】の『名前』):
     枠「こんにちは、{『名前』}！」を出力しよう
 
-『名前たち』を【(文字列)リスト】の【「ハジャ」,「カナデ」】にしよう
+『名前たち』を【(文字列)リスト】の【「ハリ」,「カナデ」】にしよう
 『名前たち』の『名前』ごとに繰り返そう:
     〈挨拶〉(『名前』)を実行しよう
 ```
@@ -78,7 +78,7 @@ go build -o hana .                       # Windowsでは hana.exe ができま�
 go build -ldflags="-s -w" -trimpath -o hana-runtime ./cmd/hana-runtime
 ```
 
-ドキュメント: [カナデ ドキュメント](https://kanade.soumt.moe) · [ハジャ ドキュメント](https://hari.soumt.moe)
+ドキュメント: [カナデ ドキュメント](https://kanade.soumt.moe) · [ハリ ドキュメント](https://hari.soumt.moe)
 
 ## コマンド
 
@@ -101,7 +101,7 @@ go build -ldflags="-s -w" -trimpath -o hana-runtime ./cmd/hana-runtime
 
 ## 言語と標準モジュール
 
-Hariは`'나이'를 [숫자]인 20으로 정하자`のように型を角括弧で書き、助詞（`을`、`를`、`로`、`의`など）が文法の一部になっている言語です。Kanadeは同じ構造を日本語の語順で書きます。
+Hariは`'나이'를 [숫자]인 20으로 정하리`のように型を角括弧で書き、助詞（`을`、`를`、`로`、`의`など）が文法の一部になっている言語です。Kanadeは同じ構造を日本語の語順で書きます。
 
 インポートなしで使えるのは構文といくつかの型変換だけで、残りは`【モジュール】から〈道具〉を持ってこよう`で持ってきます。
 

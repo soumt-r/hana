@@ -17,7 +17,7 @@
 
 <p align="center">
   <b>Hana</b> runs two programming languages written in Korean and Japanese:<br>
-  <b>Hari</b> (하자) and <b>Kanade</b> (カナデ). One Go binary.<br>
+  <b>Hari</b> (하리) and <b>Kanade</b> (カナデ). One Go binary.<br>
   <sub>이름 <b>하나</b>는 숫자 하나(one)와 花(はな, 꽃)를 함께 뜻해요.</sub>
 </p>
 
@@ -47,7 +47,7 @@
 〈挨拶〉を作ろう(【文字列】の『名前』):
     枠「こんにちは、{『名前』}！」を出力しよう
 
-『名前たち』を【(文字列)リスト】の【「ハジャ」,「カナデ」】にしよう
+『名前たち』を【(文字列)リスト】の【「ハリ」,「カナデ」】にしよう
 『名前たち』の『名前』ごとに繰り返そう:
     〈挨拶〉(『名前』)を実行しよう
 ```
@@ -78,13 +78,13 @@ go build -o hana .                       # 윈도우에서는 hana.exe가 만들
 go build -ldflags="-s -w" -trimpath -o hana-runtime ./cmd/hana-runtime
 ```
 
-문서: [하자 문서](https://hari.soumt.moe) · [カナデ ドキュメント](https://kanade.soumt.moe)
+문서: [하리 문서](https://hari.soumt.moe) · [カナデ ドキュメント](https://kanade.soumt.moe)
 
 ## 명령
 
 | 명령 | 하는 일 |
 | --- | --- |
-| `hana run <파일>` | `.hr`(하자), `.knd`(카나데), `.hn`(컴파일된 바이트코드)를 실행해요 |
+| `hana run <파일>` | `.hr`(하리), `.knd`(카나데), `.hn`(컴파일된 바이트코드)를 실행해요 |
 | `hana build <파일>` | 바이트코드(`.hn`)로 컴파일해서 저장해요 |
 | `hana disasm <파일>` | 바이트코드를 디스어셈블한 결과를 보여줘요 |
 | `hana pack <파일>` | 프로그램을 실행 파일 하나로 묶어요. 다른 운영체제용도 만들 수 있어요(`--target linux-amd64`) |
@@ -172,7 +172,7 @@ go test ./tests -run XXX -bench Programs -benchtime 4x     # bench/*.hr를 두 �
 
 문서 사이트는 별도 저장소예요. 사이트의 실행 버튼은 이 저장소의 엔진을 TypeScript로 옮긴 브라우저 엔진을 써요.
 
-- 하자: [soumt-r/hari-document](https://github.com/soumt-r/hari-document)
+- 하리: [soumt-r/hari-document](https://github.com/soumt-r/hari-document)
 - 카나데: [soumt-r/kanade-document](https://github.com/soumt-r/kanade-document)
 
 두 저장소를 `hari-docs`, `kanade-docs`라는 폴더 이름으로 `hana` 옆에 나란히 두면 다음이 동작해요.

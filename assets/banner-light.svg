@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 320" width="1280" height="320" role="img" aria-label="hana - Haja and Kanade">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 320" width="1280" height="320" role="img" aria-label="hana - Hari and Kanade">
   <title>hana</title>
   <defs>
     <radialGradient id="glow" cx="190" cy="160" r="420" gradientUnits="userSpaceOnUse">
@@ -30,5 +30,5 @@
   </g>
   <circle cx="754" cy="192" r="7" fill="#ff5c8a"/>
 
-  <text x="342" y="258" font-family="'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo','Noto Sans JP','Yu Gothic','Hiragino Sans',sans-serif" font-size="22" letter-spacing="0.5" fill="#8a6f82">하자 · カナデ — 한국어와 일본어로 쓰는 프로그래밍 언어</text>
+  <text x="342" y="258" font-family="'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo','Noto Sans JP','Yu Gothic','Hiragino Sans',sans-serif" font-size="22" letter-spacing="0.5" fill="#8a6f82">하리 · カナデ — 한국어와 일본어로 쓰는 프로그래밍 언어</text>
 </svg>
