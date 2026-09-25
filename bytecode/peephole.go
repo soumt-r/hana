@@ -16,6 +16,7 @@ package bytecode
 //	BIN, SET_VAR x                  -> the same BIN storing into x
 //	BIN, JUMP_IF_FALSE t            -> the same BIN jumping to t when the result is false
 //	op, SET_VAR x                   -> BIN{L: stack, R: stack} storing into x (likewise JUMP_IF_FALSE)
+//	BIN i+c -> i, JUMP t (t: BIN i<N ; if false) -> FOR_STEP (a counting loop's back edge, fuseLoopSteps)
 //
 // A sequence is only fused when no jump lands in the middle of it, and every jump
 // target is moved to where its instruction went. Whatever the fused instruction cannot
@@ -76,6 +77,10 @@ func jumpTargets(ins []Instruction) map[int]bool {
 			if b := in.Operand.(*BinOperand); b.Jump >= 0 {
 				targets[b.Jump] = true
 			}
+		case FOR_STEP:
+			f := in.Operand.(*ForStepOperand)
+			targets[f.Body] = true
+			targets[f.Test.Jump] = true
 		}
 	}
 	return targets
@@ -144,9 +149,15 @@ func optimizeChunk(c *Chunk) {
 	}
 	moved[len(old)] = len(out)
 
-	if len(out) == len(old) {
-		return
+	if len(out) != len(old) {
+		retarget(out, moved)
 	}
+	fuseLoopSteps(out)
+	c.Instructions = out
+}
+
+// retarget moves every jump target in out from its old instruction index to its new one.
+func retarget(out []Instruction, moved []int) {
 	for k := range out {
 		switch out[k].Op {
 		case JUMP, JUMP_IF_FALSE, JUMP_IF_TRUE:
@@ -160,7 +171,46 @@ func optimizeChunk(c *Chunk) {
 			if b := out[k].Operand.(*BinOperand); b.Jump >= 0 {
 				b.Jump = moved[b.Jump]
 			}
+		case FOR_STEP:
+			// Test is the BIN at the loop's head, which moves its own Jump.
+			f := out[k].Operand.(*ForStepOperand)
+			f.Body = moved[f.Body]
 		}
 	}
-	c.Instructions = out
+}
+
+// fuseLoopSteps turns the back edge of a counting loop into one FOR_STEP. After the
+// fusing above, `1부터 N까지 반복하자` ends each pass with
+//
+//	k:    BIN ADD var i, const 1 -> i
+//	k+1:  JUMP -> t
+//	t:    BIN LTE var i, const N ; if false -> end   (N may also be a variable)
+//
+// and FOR_STEP at k does all three: add, compare, and go to t+1 or end. The JUMP stays
+// where it is, so no instruction moves; FOR_STEP falls back to it when it cannot take
+// the fast path (see the VM), and a jump that lands on it still works.
+func fuseLoopSteps(out []Instruction) {
+	for k := 0; k+1 < len(out); k++ {
+		if out[k].Op != BIN || out[k+1].Op != JUMP {
+			continue
+		}
+		inc := out[k].Operand.(*BinOperand)
+		if inc.Op != ADD || inc.L.Kind != ArgVar || inc.R.Kind != ArgConst || inc.Set != inc.L.Index || inc.Jump >= 0 {
+			continue
+		}
+		t := out[k+1].Operand.(int)
+		if t < 0 || t >= len(out) || out[t].Op != BIN {
+			continue
+		}
+		test := out[t].Operand.(*BinOperand)
+		switch test.Op {
+		case LT, LTE, GT, GTE:
+		default:
+			continue
+		}
+		if test.L.Kind != ArgVar || test.L.Index != inc.L.Index || test.R.Kind == ArgStack || test.Set >= 0 || test.Jump < 0 {
+			continue
+		}
+		out[k] = Instruction{Op: FOR_STEP, Operand: &ForStepOperand{Inc: inc, Test: test, Body: t + 1}}
+	}
 }

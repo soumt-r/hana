@@ -324,8 +324,18 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 		case bytecode.POP:
 			pop()
 
+		case bytecode.FOR_STEP:
+			if next, ok := vm.forStep(instr, chunk, syms, locals); ok {
+				pc = next
+				continue
+			}
+			// Not a plain number loop: do Inc as the BIN it was and go on to the JUMP.
+			fallthrough
 		case bytecode.BIN:
-			op := instr.Operand.(*bytecode.BinOperand)
+			op, isBin := instr.Operand.(*bytecode.BinOperand)
+			if !isBin {
+				op = instr.Operand.(*bytecode.ForStepOperand).Inc
+			}
 			var left, right interface{}
 			var missing string
 			switch op.R.Kind {
@@ -1389,6 +1399,69 @@ func (vm *VM) binaryWithEquals(op bytecode.Opcode, left, right interface{}) (int
 		return vm.callEqualsMethod(obj, right, op == bytecode.NEQ)
 	}
 	return vm.binaryOp(op, left, right)
+}
+
+// forStep is FOR_STEP's fast path: when the counter and the end are numbers and the
+// counter's variable takes the new number as it is, it adds the step, stores it,
+// compares, and returns the instruction to go to. Otherwise it changes nothing and
+// reports false, and the caller runs Inc as a BIN, then the JUMP and Test as before.
+func (vm *VM) forStep(instr *bytecode.Instruction, chunk *bytecode.Chunk, syms []symbol.Symbol, locals *frame) (int, bool) {
+	op := instr.Operand.(*bytecode.ForStepOperand)
+	sym := syms[op.Inc.L.Index]
+	var s *varSlot
+	if locals != nil {
+		s = probe(locals, sym, &instr.Hint[0])
+	}
+	if s == nil {
+		s = probe(vm.globalsFor(locals), sym, &instr.Hint[1])
+	}
+	if s == nil || s.isConst {
+		return 0, false
+	}
+	cur, ok := s.val.(float64)
+	if !ok {
+		return 0, false
+	}
+	step, ok := chunk.Constants[op.Inc.R.Index].(float64)
+	if !ok {
+		return 0, false
+	}
+	var end float64
+	if op.Test.R.Kind == bytecode.ArgConst {
+		if end, ok = chunk.Constants[op.Test.R.Index].(float64); !ok {
+			return 0, false
+		}
+	} else {
+		endSym := syms[op.Test.R.Index]
+		if endSym == sym {
+			return 0, false
+		}
+		v, found := vm.loadVar(instr, locals, endSym, 2)
+		if end, ok = v.(float64); !found || !ok {
+			return 0, false
+		}
+	}
+	next := cur + step
+	boxed := num.Box(next)
+	if s.typ != "" && !typecheck.QuickAccepts(&vm.Types, s.typ, boxed) {
+		return 0, false
+	}
+	s.val = boxed
+	var goOn bool
+	switch op.Test.Op {
+	case bytecode.LT:
+		goOn = next < end
+	case bytecode.LTE:
+		goOn = next <= end
+	case bytecode.GT:
+		goOn = next > end
+	default: // GTE
+		goOn = next >= end
+	}
+	if goOn {
+		return op.Body, true
+	}
+	return op.Test.Jump, true
 }
 
 // probe finds sym in f, trying the slot the instruction found it in last time (*hint)

@@ -214,6 +214,12 @@ const (
 	INIT_MODULE // Operand: *ModuleInit — run a module's top-level code, once: the first
 	// INIT_MODULE of a name runs it in the module's own frame (where its variables
 	// live and its functions look for theirs); later ones do nothing. Appended after TO_ITERABLE.
+
+	FOR_STEP // Operand: *ForStepOperand — the back edge of a counting loop: Inc (a BIN
+	// adding a constant to the counter and storing it back), then the JUMP after it, then
+	// the Test BIN that JUMP goes to, done in one step. Made by Optimize, never by the
+	// compiler. What it cannot do quickly it does as Inc alone and goes on to the JUMP,
+	// exactly as before it was fused. Appended after INIT_MODULE.
 )
 
 // ArgKind says where a BIN operand comes from.
@@ -239,6 +245,16 @@ type BinOperand struct {
 	L, R BinArg
 	Set  int
 	Jump int
+}
+
+// ForStepOperand is FOR_STEP's operand. Inc is `counter + step -> counter` (L the
+// counter variable, R a constant); Test compares the counter (L) with the end (R, a
+// constant or a variable) and jumps to Test.Jump when false; Body is where the loop goes
+// on when Test is true (the instruction after Test).
+type ForStepOperand struct {
+	Inc  *BinOperand
+	Test *BinOperand
+	Body int
 }
 
 // ListSetOperand is SET_LIST_VAR's and CHECK_LIST_FIELD's operand.
