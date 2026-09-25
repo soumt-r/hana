@@ -26,6 +26,7 @@ type Compiler struct {
 	program     *Program
 	breakJumps  [][]int  // stack of pending break-JUMP indices, one slice per enclosing loop
 	loopScopes  []string // per enclosing loop: the marker of its per-iteration scope, "" when the body declares nothing
+	loopTries   []int    // per enclosing loop: len(tryScopes) when it started — the tries a break leaves are the ones above
 	tempCounter int
 	errors      []string
 	tryScopes   []*tryScope // stack of enclosing try statements, innermost last
@@ -610,7 +611,11 @@ func (c *Compiler) compileStatement(chunk *Chunk, stmt ast.Statement) {
 		chunk.emit(RETURN, nil)
 
 	case *ast.BreakStatement:
-		c.emitTryExits(chunk)
+		if n := len(c.loopTries); n > 0 {
+			c.emitTryExitsTo(chunk, c.loopTries[n-1])
+		} else {
+			c.emitTryExits(chunk) // a break outside any loop: registerBreak reports it
+		}
 		if n := len(c.loopScopes); n > 0 && c.loopScopes[n-1] != "" {
 			chunk.emit(POP_SCOPE, chunk.addName(c.loopScopes[n-1]))
 		}
@@ -834,6 +839,7 @@ func (c *Compiler) compileForRange(chunk *Chunk, s *ast.ForRangeStatement) {
 	counter := c.loopCounter(s.Body, loopVar, tmp)
 	c.compileExpression(chunk, s.Start)
 	c.compileExpression(chunk, s.End)
+	chunk.emit(CHECK_RANGE, nil)
 	chunk.emit(SET_VAR, chunk.addName(endName))
 	c.declareCounter(chunk, counter, loopVar) // takes the start
 
@@ -1145,7 +1151,13 @@ func (c *Compiler) compileTry(chunk *Chunk, s *ast.TryStatement) {
 // unrelated error be wrongly caught by a handler that's no longer active,
 // and (b) run every enclosing 마무리는 항상.
 func (c *Compiler) emitTryExits(chunk *Chunk) {
-	for i := len(c.tryScopes) - 1; i >= 0; i-- {
+	c.emitTryExitsTo(chunk, 0)
+}
+
+// emitTryExitsTo leaves the enclosing try statements above depth only: a break leaves
+// the tries entered inside its loop, not the ones the loop itself sits in.
+func (c *Compiler) emitTryExitsTo(chunk *Chunk, depth int) {
+	for i := len(c.tryScopes) - 1; i >= depth; i-- {
 		scope := c.tryScopes[i]
 		if scope.inProtectedBlock {
 			chunk.emit(TRY_POP, nil)
@@ -1164,6 +1176,7 @@ func (c *Compiler) newTempName() string {
 func (c *Compiler) pushLoop(scope string) {
 	c.breakJumps = append(c.breakJumps, nil)
 	c.loopScopes = append(c.loopScopes, scope)
+	c.loopTries = append(c.loopTries, len(c.tryScopes))
 }
 
 // bodyScope names the per-iteration scope marker of a loop body, or "" when
@@ -1240,6 +1253,7 @@ func (c *Compiler) popLoopAndPatchBreaks(chunk *Chunk) {
 	pending := c.breakJumps[top]
 	c.breakJumps = c.breakJumps[:top]
 	c.loopScopes = c.loopScopes[:top]
+	c.loopTries = c.loopTries[:top]
 	target := chunk.nextIndex()
 	for _, idx := range pending {
 		chunk.patchOperand(idx, target)

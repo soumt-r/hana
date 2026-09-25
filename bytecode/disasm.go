@@ -71,6 +71,7 @@ var opcodeNames = map[Opcode]string{
 	BIN:               "BIN",
 	FOR_STEP:          "FOR_STEP",
 	DECLARE_VAR:       "DECLARE_VAR",
+	CHECK_RANGE:       "CHECK_RANGE",
 }
 
 // binText renders a BIN's operand (also the two halves of a FOR_STEP's).

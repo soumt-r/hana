@@ -226,6 +226,10 @@ const (
 	// already visible: the new one hides it until its scope ends (POP_SCOPE). How a loop
 	// variable or a handler's error variable gets its own binding (Runtime spec 1.1).
 	// Appended after FOR_STEP.
+
+	CHECK_RANGE // No operand — the two values on top of the stack (a range's start and
+	// end, left there) must both be numbers, else RangeMustBeNumbers, as the tree-walker
+	// raises before the loop starts. Appended after DECLARE_VAR.
 )
 
 // ArgKind says where a BIN operand comes from.
