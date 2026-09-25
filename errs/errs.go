@@ -229,6 +229,9 @@ const (
 	// RecursionError
 	CallTooDeep Code = "RecursionError.CallTooDeep" // limit
 
+	// IllegalBreakError (Runtime spec 4.4: a break run outside any loop)
+	IllegalBreak Code = "IllegalBreakError.IllegalBreak"
+
 	// SyntaxError (reported by the parser; see parser/hari Diagnostic)
 	SyntaxUnexpectedToken Code = "SyntaxError.UnexpectedToken" // line, column, token
 	SyntaxUnexpectedEnd   Code = "SyntaxError.UnexpectedEnd"   // line
@@ -335,7 +338,7 @@ var allCodes = []Code{
 	ListEmpty, ListIndexOutOfRange, StringIndexOutOfRange,
 	DictKeyNotFound, StaticMemberNotFound,
 	ArgCountExact, TooManyArguments, MissingArgument,
-	ConstantAssignment,
+	ConstantAssignment, IllegalBreak,
 	PrivateMethodAccess, PrivateFieldAccess, ProtectedMethodAccess, ProtectedFieldAccess,
 	InterfaceNotImplemented,
 	DivideByZero,

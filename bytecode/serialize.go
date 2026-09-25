@@ -52,6 +52,7 @@ func init() {
 	gob.Register(&ModuleInit{})
 	gob.Register(&ListSetOperand{})
 	gob.Register(&BinOperand{})
+	gob.Register(&ForStepOperand{})
 	gob.Register(&Chunk{}) // RUN_FINALLY's operand is a bare *Chunk
 }
 

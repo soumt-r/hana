@@ -108,6 +108,155 @@ func TestBlockScopes(t *testing.T) {
     '안'을 출력하자
 <세기>()를 실행하자
 `, "", "'안' 변수를 찾을 수 없어요"},
+
+		// A loop or handler variable is declared in the loop's (handler's) own scope, so a
+		// variable of the same name outside is hidden, not changed, and is back afterwards.
+		// The bytecode VM used to assign the outer variable instead.
+		{"a range variable hides an outer variable of the same name", `
+'가'를 100으로 정하자
+1부터 2까지 반복하자 ('가'):
+    '가'를 이어출력하자
+'가'를 출력하자
+`, "12100", ""},
+		{"a range's ends read the outer variable the loop variable hides", `
+'가'를 3으로 정하자
+1부터 '가'까지 반복하자 ('가'):
+    '가'를 이어출력하자
+'가'부터 1까지 반복하자 ('가'):
+    '가'를 이어출력하자
+'가'를 출력하자
+`, "1233213", ""},
+		{"a hidden variable's constness and type do not bind the loop variable", `
+'가'를 "글"로 고정하자
+1부터 2까지 반복하자 ('가'):
+    '가'를 이어출력하자
+'가'를 출력하자
+`, "12글", ""},
+		{"a loop variable that hides a constant can be changed", `
+'가'를 "글"로 고정하자
+1부터 2까지 반복하자 ('가'):
+    '가'에 10을 더하자
+    '가'를 이어출력하자
+'가'를 출력하자
+`, "1112글", ""},
+		{"a list item that hides a constant list can be pushed to", `
+'목'을 [1]로 고정하자
+[[5]]의 '목'마다 반복하자:
+    '목'에 6을 추가하자
+    '목'을 이어출력하자
+'목'을 출력하자
+`, "[5, 6][1]", ""},
+		{"the outer constant is still a constant after the loop", `
+'가'를 1로 고정하자
+1부터 2까지 반복하자 ('가'):
+    '가'에 10을 더하자
+'가'에 1을 더하자
+`, "", "상수 '가'의 값은 변경할 수 없어요"},
+		{"a loop variable the body assigns still hides the outer one", `
+'가'를 100으로 정하자
+1부터 2까지 반복하자 ('가'):
+    '가'에 10을 더하자
+    '가'를 이어출력하자
+'가'를 출력하자
+`, "1112100", ""},
+		{"a range to a variable end hides the outer variable", `
+'가'를 100으로 정하자
+'끝'을 2로 정하자
+1부터 '끝'까지 반복하자 ('가'):
+    '가'를 이어출력하자
+'가'를 출력하자
+`, "12100", ""},
+		{"nested loops with the same variable", `
+1부터 2까지 반복하자 ('가'):
+    1부터 2까지 반복하자 ('가'):
+        '가'를 이어출력하자
+    '가'를 이어출력하자
+"."를 출력하자
+`, "121122.", ""},
+		{"a list item hides an outer variable of the same name", `
+'과일'을 "원래"로 정하자
+'과일들'을 ["사과", "배"]로 정하자
+'과일들'의 '과일'마다 반복하자:
+    '과일'을 이어출력하자
+'과일'을 출력하자
+`, "사과배원래", ""},
+		{"a handler's error variable hides an outer variable of the same name", `
+'에러'를 "원래"로 정하자
+일단 해보자:
+    새로운 [오류]("실패")를 발생시키자
+오류가 발생했다면 ('에러'):
+    '에러'의 '메시지'를 이어출력하자
+'에러'를 출력하자
+`, "실패원래", ""},
+		{"a loop variable hides a parameter in a function", `
+<보기>를 만들자 ('가'):
+    1부터 2까지 반복하자 ('가'):
+        '가'를 이어출력하자
+    '가'를 출력하자
+<보기>("매개변수")를 실행하자
+`, "12매개변수", ""},
+		{"breaking out of the loop brings the outer variable back", `
+'가'를 100으로 정하자
+1부터 5까지 반복하자 ('가'):
+    만약 ('가' == 2) 라면:
+        반복을 끝내자
+    '가'를 이어출력하자
+'가'를 출력하자
+`, "1100", ""},
+		{"a top level with many variables", `
+'v1'을 1로 정하자
+'v2'를 2로 정하자
+'v3'을 3으로 정하자
+'v4'를 4로 정하자
+'v5'를 5로 정하자
+'v6'을 6으로 정하자
+'v7'을 7로 정하자
+'v8'을 8로 정하자
+'v9'를 9로 정하자
+'v10'을 10으로 정하자
+'v11'을 11로 정하자
+'v12'를 12로 정하자
+'v13'을 13으로 정하자
+1부터 2까지 반복하자 ('v5'):
+    'v5'를 이어출력하자
+    '안'을 'v5'로 정하자
+'v5'를 출력하자
+`, "125", ""},
+
+		// An error that leaves a loop for a 일단 해보자 around it ends the loop's scope too.
+		{"an error out of a loop ends the loop's scope", `
+'가'를 100으로 정하자
+일단 해보자:
+    1부터 3까지 반복하자 ('가'):
+        '임시'를 5로 정하자
+        새로운 [오류]("멈춤")를 발생시키자
+오류가 발생했다면 ('e'):
+    'e'의 '메시지'를 이어출력하자
+'가'를 이어출력하자
+'임시'를 출력하자
+`, "멈춤100", "'임시' 변수를 찾을 수 없어요"},
+		{"what the try block itself declares stays after an error", `
+일단 해보자:
+    '밖'을 1로 정하자
+    1부터 3까지 반복하자 ('수'):
+        '안'을 2로 정하자
+        새로운 [오류]("멈춤")를 발생시키자
+오류가 발생했다면 ('e'):
+    '밖'을 이어출력하자
+'밖'을 출력하자
+'안'을 출력하자
+`, "11", "'안' 변수를 찾을 수 없어요"},
+		{"an error out of a function's loop, caught in the function", `
+<보기>를 만들자 ():
+    '가'를 100으로 정하자
+    일단 해보자:
+        '목록'을 [1, 2]로 정하자
+        '목록'의 '가'마다 반복하자:
+            새로운 [오류]("멈춤")를 발생시키자
+    오류가 발생했다면 ('e'):
+        '가'를 출력하자
+<보기>()를 실행하자
+`, "100", ""},
 	}
 	for _, c := range cases {
 		for engine, r := range engines(t, c.code) {

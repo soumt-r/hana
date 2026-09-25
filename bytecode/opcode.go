@@ -214,6 +214,25 @@ const (
 	INIT_MODULE // Operand: *ModuleInit — run a module's top-level code, once: the first
 	// INIT_MODULE of a name runs it in the module's own frame (where its variables
 	// live and its functions look for theirs); later ones do nothing. Appended after TO_ITERABLE.
+
+	FOR_STEP // Operand: *ForStepOperand — the back edge of a counting loop: Inc (a BIN
+	// adding a constant to the counter and storing it back), then the JUMP after it, then
+	// the Test BIN that JUMP goes to, done in one step. Made by Optimize, never by the
+	// compiler. What it cannot do quickly it does as Inc alone and goes on to the JUMP,
+	// exactly as before it was fused. Appended after INIT_MODULE.
+
+	DECLARE_VAR // Operand: int (index into Chunk.Names) — pop a value and bind it to that
+	// name in a new variable of the current scope, even when a variable of that name is
+	// already visible: the new one hides it until its scope ends (POP_SCOPE). How a loop
+	// variable or a handler's error variable gets its own binding (Runtime spec 1.1).
+	// Appended after FOR_STEP.
+
+	CHECK_RANGE // No operand — the two values on top of the stack (a range's start and
+	// end, left there) must both be numbers, else RangeMustBeNumbers, as the tree-walker
+	// raises before the loop starts. Appended after DECLARE_VAR.
+
+	ILLEGAL_BREAK // No operand — a 반복을 끝내자 outside any loop: raise IllegalBreakError
+	// when it runs (Runtime spec 4.4). Appended after CHECK_RANGE.
 )
 
 // ArgKind says where a BIN operand comes from.
@@ -239,6 +258,24 @@ type BinOperand struct {
 	L, R BinArg
 	Set  int
 	Jump int
+}
+
+// ForStepOperand is FOR_STEP's operand. Inc is `counter + step -> counter` (L the
+// counter variable, R the step: a constant or a variable). The loop's head is one of two
+// shapes, and Test is its last BIN, which jumps to Test.Jump (out of the loop) when false:
+//
+//   - Span false: Test is `counter <cmp> End` (LT, LTE, GT or GTE).
+//   - Span true: the head is `End - counter`, `* step`, `>= 0` (three BINs; Test is the
+//     last), how a range whose ends are not both literals goes either way.
+//
+// End is a constant or a variable. Body is where the loop goes on when the head is true
+// (the instruction after the head).
+type ForStepOperand struct {
+	Inc  *BinOperand
+	Test *BinOperand
+	Span bool
+	End  BinArg
+	Body int
 }
 
 // ListSetOperand is SET_LIST_VAR's and CHECK_LIST_FIELD's operand.

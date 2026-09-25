@@ -11,6 +11,19 @@ type Environment struct {
 	constants map[symbol.Symbol]bool // 상수로 선언된 변수 추적 (처음 쓸 때 만듦)
 	parent    *Environment
 	this      *HariObject
+	loop      bool // a loop pass's scope: a 반복을 끝내자 below it has a loop to leave
+}
+
+// inLoop reports whether a 반복을 끝내자 run in e is inside a loop. Scopes chain
+// lexically (a function body's parent is its module's globals, not the caller's scope),
+// so a loop around the call does not count (Runtime spec 4.4).
+func (e *Environment) inLoop() bool {
+	for ; e != nil; e = e.parent {
+		if e.loop {
+			return true
+		}
+	}
+	return false
 }
 
 type varEntry struct {
@@ -42,6 +55,13 @@ func (i *Interpreter) newScope(parent *Environment) *Environment {
 		return e
 	}
 	return NewEnvironment(parent)
+}
+
+// newLoopScope is newScope for one pass of a loop.
+func (i *Interpreter) newLoopScope(parent *Environment) *Environment {
+	e := i.newScope(parent)
+	e.loop = true
+	return e
 }
 
 func (i *Interpreter) freeScope(e *Environment) {
@@ -128,12 +148,14 @@ func (e *Environment) DeclareTypeSym(sym symbol.Symbol, annotation string) {
 	}
 }
 
+// isConst reports whether the variable sym names from here was declared 고정하자: the
+// nearest scope that has sym decides, so a loop or handler variable that hides an outer
+// constant of the same name is not a constant (Runtime spec 1.1).
 func (e *Environment) isConst(sym symbol.Symbol) bool {
-	if e.constants != nil && e.constants[sym] {
-		return true
-	}
-	if e.parent != nil {
-		return e.parent.isConst(sym)
+	for env := e; env != nil; env = env.parent {
+		if env.find(sym) >= 0 {
+			return env.constants != nil && env.constants[sym]
+		}
 	}
 	return false
 }

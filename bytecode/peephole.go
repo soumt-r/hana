@@ -16,6 +16,7 @@ package bytecode
 //	BIN, SET_VAR x                  -> the same BIN storing into x
 //	BIN, JUMP_IF_FALSE t            -> the same BIN jumping to t when the result is false
 //	op, SET_VAR x                   -> BIN{L: stack, R: stack} storing into x (likewise JUMP_IF_FALSE)
+//	BIN i+c -> i, JUMP t (t: BIN i<N ; if false) -> FOR_STEP (a counting loop's back edge, fuseLoopSteps)
 //
 // A sequence is only fused when no jump lands in the middle of it, and every jump
 // target is moved to where its instruction went. Whatever the fused instruction cannot
@@ -76,6 +77,10 @@ func jumpTargets(ins []Instruction) map[int]bool {
 			if b := in.Operand.(*BinOperand); b.Jump >= 0 {
 				targets[b.Jump] = true
 			}
+		case FOR_STEP:
+			f := in.Operand.(*ForStepOperand)
+			targets[f.Body] = true
+			targets[f.Test.Jump] = true
 		}
 	}
 	return targets
@@ -144,9 +149,15 @@ func optimizeChunk(c *Chunk) {
 	}
 	moved[len(old)] = len(out)
 
-	if len(out) == len(old) {
-		return
+	if len(out) != len(old) {
+		retarget(out, moved)
 	}
+	fuseLoopSteps(c, out)
+	c.Instructions = out
+}
+
+// retarget moves every jump target in out from its old instruction index to its new one.
+func retarget(out []Instruction, moved []int) {
 	for k := range out {
 		switch out[k].Op {
 		case JUMP, JUMP_IF_FALSE, JUMP_IF_TRUE:
@@ -160,7 +171,89 @@ func optimizeChunk(c *Chunk) {
 			if b := out[k].Operand.(*BinOperand); b.Jump >= 0 {
 				b.Jump = moved[b.Jump]
 			}
+		case FOR_STEP:
+			// Test is the BIN at the loop's head, which moves its own Jump.
+			f := out[k].Operand.(*ForStepOperand)
+			f.Body = moved[f.Body]
 		}
 	}
-	c.Instructions = out
+}
+
+// fuseLoopSteps turns the back edge of a counting loop into one FOR_STEP. After the
+// fusing above, `1부터 N까지 반복하자` ends each pass with
+//
+//	k:    BIN ADD var i, const 1 -> i
+//	k+1:  JUMP -> t
+//	t:    BIN LTE var i, const N ; if false -> end   (N may also be a variable)
+//
+// and FOR_STEP at k does all three: add, compare, and go to t+1 or end. A range whose
+// ends are not both literals (`1부터 'n'까지`) counts by a hidden step variable and its
+// head is three BINs instead, `end - i`, `* step`, `>= 0`; FOR_STEP (Span) does those
+// too and goes to t+3 or end. The JUMP stays where it is, so no instruction moves;
+// FOR_STEP falls back to it when it cannot take the fast path (see the VM), and a jump
+// that lands on it still works.
+func fuseLoopSteps(c *Chunk, out []Instruction) {
+	for k := 0; k+1 < len(out); k++ {
+		if out[k].Op != BIN || out[k+1].Op != JUMP {
+			continue
+		}
+		inc := out[k].Operand.(*BinOperand)
+		if inc.Op != ADD || inc.L.Kind != ArgVar || inc.R.Kind == ArgStack || inc.R == inc.L || inc.Set != inc.L.Index || inc.Jump >= 0 {
+			continue
+		}
+		t := out[k+1].Operand.(int)
+		if f := compareHead(out, t, inc); f != nil {
+			out[k] = Instruction{Op: FOR_STEP, Operand: f}
+		} else if f := spanHead(c, out, t, inc); f != nil {
+			out[k] = Instruction{Op: FOR_STEP, Operand: f}
+		}
+	}
+}
+
+// binAt is the BIN at out[i], or nil.
+func binAt(out []Instruction, i int) *BinOperand {
+	if i < 0 || i >= len(out) || out[i].Op != BIN {
+		return nil
+	}
+	return out[i].Operand.(*BinOperand)
+}
+
+// compareHead matches a loop head `counter <cmp> end ; if false -> exit` at t.
+func compareHead(out []Instruction, t int, inc *BinOperand) *ForStepOperand {
+	test := binAt(out, t)
+	if test == nil {
+		return nil
+	}
+	switch test.Op {
+	case LT, LTE, GT, GTE:
+	default:
+		return nil
+	}
+	if test.L != inc.L || test.R.Kind == ArgStack || test.R == inc.L || test.Set >= 0 || test.Jump < 0 {
+		return nil
+	}
+	return &ForStepOperand{Inc: inc, Test: test, End: test.R, Body: t + 1}
+}
+
+// spanHead matches the head compileForRange gives a range whose ends are not both
+// literals: `end - counter`, `* step`, `>= 0 ; if false -> exit` at t, t+1, t+2, where
+// step is what inc adds.
+func spanHead(c *Chunk, out []Instruction, t int, inc *BinOperand) *ForStepOperand {
+	sub, mul, test := binAt(out, t), binAt(out, t+1), binAt(out, t+2)
+	if sub == nil || mul == nil || test == nil {
+		return nil
+	}
+	if sub.Op != SUB || sub.L.Kind == ArgStack || sub.R != inc.L || sub.Set >= 0 || sub.Jump >= 0 {
+		return nil
+	}
+	if mul.Op != MUL || mul.L.Kind != ArgStack || mul.R != inc.R || mul.Set >= 0 || mul.Jump >= 0 {
+		return nil
+	}
+	if test.Op != GTE || test.L.Kind != ArgStack || test.R.Kind != ArgConst || test.Set >= 0 || test.Jump < 0 {
+		return nil
+	}
+	if zero, ok := c.Constants[test.R.Index].(float64); !ok || zero != 0 {
+		return nil
+	}
+	return &ForStepOperand{Inc: inc, Test: test, Span: true, End: sub.L, Body: t + 3}
 }

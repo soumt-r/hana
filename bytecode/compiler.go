@@ -26,6 +26,7 @@ type Compiler struct {
 	program     *Program
 	breakJumps  [][]int  // stack of pending break-JUMP indices, one slice per enclosing loop
 	loopScopes  []string // per enclosing loop: the marker of its per-iteration scope, "" when the body declares nothing
+	loopTries   []int    // per enclosing loop: len(tryScopes) when it started — the tries a break leaves are the ones above
 	tempCounter int
 	errors      []string
 	tryScopes   []*tryScope // stack of enclosing try statements, innermost last
@@ -610,7 +611,14 @@ func (c *Compiler) compileStatement(chunk *Chunk, stmt ast.Statement) {
 		chunk.emit(RETURN, nil)
 
 	case *ast.BreakStatement:
-		c.emitTryExits(chunk)
+		n := len(c.loopTries)
+		if n == 0 {
+			// Outside any loop: an IllegalBreakError when it runs (Runtime spec 4.4),
+			// raised where it stands like any other error.
+			chunk.emit(ILLEGAL_BREAK, nil)
+			break
+		}
+		c.emitTryExitsTo(chunk, c.loopTries[n-1])
 		if n := len(c.loopScopes); n > 0 && c.loopScopes[n-1] != "" {
 			chunk.emit(POP_SCOPE, chunk.addName(c.loopScopes[n-1]))
 		}
@@ -829,12 +837,14 @@ func (c *Compiler) compileForRange(chunk *Chunk, s *ast.ForRangeStatement) {
 		}
 	}
 
+	// Both ends are worked out before the loop variable exists, so an end that names
+	// a variable the loop variable will hide still reads the outer one.
 	counter := c.loopCounter(s.Body, loopVar, tmp)
 	c.compileExpression(chunk, s.Start)
-	chunk.emit(SET_VAR, chunk.addName(counter))
-
 	c.compileExpression(chunk, s.End)
+	chunk.emit(CHECK_RANGE, nil)
 	chunk.emit(SET_VAR, chunk.addName(endName))
+	c.declareCounter(chunk, counter, loopVar) // takes the start
 
 	// step = (end < start) ? -1 : 1
 	chunk.emit(LOAD_VAR, chunk.addName(endName))
@@ -891,6 +901,18 @@ func (c *Compiler) copyCounter(chunk *Chunk, counter, loopVar string) {
 	}
 }
 
+// declareCounter declares a counting loop's counter, taking the start from the stack,
+// and the loop variable when the counter is a hidden one. They are new variables of the
+// loop's scope that hide any outer variable of the same name until the loop ends
+// (Runtime spec 1.1), so the passes assign these, never the outer one.
+func (c *Compiler) declareCounter(chunk *Chunk, counter, loopVar string) {
+	chunk.emit(DECLARE_VAR, chunk.addName(counter))
+	if counter != loopVar {
+		chunk.emit(PUSH_NULL, nil)
+		chunk.emit(DECLARE_VAR, chunk.addName(loopVar))
+	}
+}
+
 // compileConstantRange is compileForRange for a loop whose start and end are numbers written
 // in the source: it counts up (or down) by one, the end included.
 func (c *Compiler) compileConstantRange(chunk *Chunk, s *ast.ForRangeStatement, loopVar, outerScope string, start, end float64) {
@@ -900,7 +922,7 @@ func (c *Compiler) compileConstantRange(chunk *Chunk, s *ast.ForRangeStatement, 
 	}
 	counter := c.loopCounter(s.Body, loopVar, c.newTempName())
 	chunk.emit(PUSH_CONST, chunk.addConstant(start))
-	chunk.emit(SET_VAR, chunk.addName(counter))
+	c.declareCounter(chunk, counter, loopVar)
 
 	c.pushLoop(c.bodyScope(s.Body))
 	loopStart := chunk.nextIndex()
@@ -954,6 +976,10 @@ func (c *Compiler) compileForEach(chunk *Chunk, s *ast.ForEachLoop) {
 	chunk.emit(SET_VAR, chunk.addName(listName))
 	chunk.emit(PUSH_CONST, chunk.addConstant(1.0))
 	chunk.emit(SET_VAR, chunk.addName(idxName))
+	// The item is a new variable of the loop's scope, hiding an outer one of the same
+	// name until the loop ends (Runtime spec 1.1); each pass assigns it.
+	chunk.emit(PUSH_NULL, nil)
+	chunk.emit(DECLARE_VAR, chunk.addName(itemName))
 
 	c.pushLoop(c.bodyScope(s.Body))
 	loopStart := chunk.nextIndex()
@@ -1082,7 +1108,10 @@ func (c *Compiler) compileTry(chunk *Chunk, s *ast.TryStatement) {
 
 	tryPushIdx := chunk.emit(TRY_PUSH, nil)
 	c.compileStatements(chunk, s.Block.Statements)
-	scope.inProtectedBlock = false // dispatchError already pops this level before jumping into a catch handler
+	// dispatchError pops this level before jumping into a catch handler, and pushes one
+	// back (catching nothing, keeping the finally) only when there is a finally: so
+	// inside a handler there is a level to leave exactly when there is a finally.
+	scope.inProtectedBlock = financeChunk != nil
 	chunk.emit(TRY_POP, nil)
 	if financeChunk != nil {
 		chunk.emit(RUN_FINALLY, financeChunk)
@@ -1095,10 +1124,11 @@ func (c *Compiler) compileTry(chunk *Chunk, s *ast.TryStatement) {
 		handlerStart := chunk.nextIndex()
 		handlerScope := c.newTempName() + "_catch" // the error variable and what the handler declares end with it
 		chunk.emit(PUSH_SCOPE, chunk.addName(handlerScope))
-		chunk.emit(SET_VAR, chunk.addName(h.Param.Value))
+		chunk.emit(DECLARE_VAR, chunk.addName(h.Param.Value)) // hides an outer variable of the same name
 		c.compileStatements(chunk, h.Body.Statements)
 		chunk.emit(POP_SCOPE, chunk.addName(handlerScope))
 		if financeChunk != nil {
+			chunk.emit(TRY_POP, nil) // the finally-only level dispatchError pushed
 			chunk.emit(RUN_FINALLY, financeChunk)
 		}
 		handlerEndJumps = append(handlerEndJumps, chunk.emit(JUMP, nil))
@@ -1128,7 +1158,13 @@ func (c *Compiler) compileTry(chunk *Chunk, s *ast.TryStatement) {
 // unrelated error be wrongly caught by a handler that's no longer active,
 // and (b) run every enclosing 마무리는 항상.
 func (c *Compiler) emitTryExits(chunk *Chunk) {
-	for i := len(c.tryScopes) - 1; i >= 0; i-- {
+	c.emitTryExitsTo(chunk, 0)
+}
+
+// emitTryExitsTo leaves the enclosing try statements above depth only: a break leaves
+// the tries entered inside its loop, not the ones the loop itself sits in.
+func (c *Compiler) emitTryExitsTo(chunk *Chunk, depth int) {
+	for i := len(c.tryScopes) - 1; i >= depth; i-- {
 		scope := c.tryScopes[i]
 		if scope.inProtectedBlock {
 			chunk.emit(TRY_POP, nil)
@@ -1147,6 +1183,7 @@ func (c *Compiler) newTempName() string {
 func (c *Compiler) pushLoop(scope string) {
 	c.breakJumps = append(c.breakJumps, nil)
 	c.loopScopes = append(c.loopScopes, scope)
+	c.loopTries = append(c.loopTries, len(c.tryScopes))
 }
 
 // bodyScope names the per-iteration scope marker of a loop body, or "" when
@@ -1209,11 +1246,9 @@ func mayDeclare(v reflect.Value, seen map[uintptr]bool) bool {
 	return false
 }
 
+// registerBreak records a break's JUMP for the innermost loop to patch (a break outside
+// any loop never gets here: it compiles to ILLEGAL_BREAK).
 func (c *Compiler) registerBreak(instrIndex int) {
-	if len(c.breakJumps) == 0 {
-		c.errorf("반복을 끝내자: 반복문 밖에서는 쓸 수 없어요 (IllegalBreakError)")
-		return
-	}
 	top := len(c.breakJumps) - 1
 	c.breakJumps[top] = append(c.breakJumps[top], instrIndex)
 }
@@ -1223,6 +1258,7 @@ func (c *Compiler) popLoopAndPatchBreaks(chunk *Chunk) {
 	pending := c.breakJumps[top]
 	c.breakJumps = c.breakJumps[:top]
 	c.loopScopes = c.loopScopes[:top]
+	c.loopTries = c.loopTries[:top]
 	target := chunk.nextIndex()
 	for _, idx := range pending {
 		chunk.patchOperand(idx, target)

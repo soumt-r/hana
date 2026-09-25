@@ -316,6 +316,27 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 				return nil, rerr
 			}
 
+		case bytecode.DECLARE_VAR:
+			vm.declaringFrame(locals).declare(syms[instr.Operand.(int)], pop())
+		case bytecode.ILLEGAL_BREAK:
+			np, handled, rerr := raise(errs.New(errs.IllegalBreak))
+			if handled {
+				pc = np
+				continue
+			}
+			return nil, rerr
+		case bytecode.CHECK_RANGE:
+			_, startOK := stack[len(stack)-2].(float64)
+			_, endOK := stack[len(stack)-1].(float64)
+			if !startOK || !endOK {
+				np, handled, rerr := raise(errs.New(errs.RangeMustBeNumbers))
+				if handled {
+					pc = np
+					continue
+				}
+				return nil, rerr
+			}
+
 		case bytecode.PUSH_SCOPE:
 			vm.declaringFrame(locals).openScope(syms[instr.Operand.(int)])
 		case bytecode.POP_SCOPE:
@@ -324,8 +345,18 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 		case bytecode.POP:
 			pop()
 
+		case bytecode.FOR_STEP:
+			if next, ok := vm.forStep(instr, chunk, syms, locals); ok {
+				pc = next
+				continue
+			}
+			// Not a plain number loop: do Inc as the BIN it was and go on to the JUMP.
+			fallthrough
 		case bytecode.BIN:
-			op := instr.Operand.(*bytecode.BinOperand)
+			op, isBin := instr.Operand.(*bytecode.BinOperand)
+			if !isBin {
+				op = instr.Operand.(*bytecode.ForStepOperand).Inc
+			}
 			var left, right interface{}
 			var missing string
 			switch op.R.Kind {
@@ -857,7 +888,8 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 
 		case bytecode.TRY_PUSH:
 			op := instr.Operand.(*bytecode.TryOperand)
-			tryStack = append(tryStack, &tryHandler{catches: op.Catches, finally: op.FinallyChunk, stackDepth: len(stack)})
+			fr := vm.declaringFrame(locals)
+			tryStack = append(tryStack, &tryHandler{catches: op.Catches, finally: op.FinallyChunk, stackDepth: len(stack), frame: fr, frameDepth: len(fr.slots)})
 		case bytecode.TRY_POP:
 			tryStack = tryStack[:len(tryStack)-1]
 		case bytecode.RUN_FINALLY:
@@ -1391,10 +1423,88 @@ func (vm *VM) binaryWithEquals(op bytecode.Opcode, left, right interface{}) (int
 	return vm.binaryOp(op, left, right)
 }
 
+// forStep is FOR_STEP's fast path: when the counter and the end are numbers and the
+// counter's variable takes the new number as it is, it adds the step, stores it,
+// compares, and returns the instruction to go to. Otherwise it changes nothing and
+// reports false, and the caller runs Inc as a BIN, then the JUMP and Test as before.
+func (vm *VM) forStep(instr *bytecode.Instruction, chunk *bytecode.Chunk, syms []symbol.Symbol, locals *frame) (int, bool) {
+	op := instr.Operand.(*bytecode.ForStepOperand)
+	sym := syms[op.Inc.L.Index]
+	var s *varSlot
+	if locals != nil {
+		s = probe(locals, sym, &instr.Hint[0])
+	}
+	if s == nil {
+		s = probe(vm.globalsFor(locals), sym, &instr.Hint[1])
+	}
+	if s == nil || s.isConst {
+		return 0, false
+	}
+	cur, ok := s.val.(float64)
+	if !ok {
+		return 0, false
+	}
+	// A step or end kept in the counter's own variable would change with it: leave
+	// that to the plain instructions.
+	step, ok := vm.forStepNumber(instr, chunk, syms, locals, op.Inc.R, sym, 4)
+	if !ok {
+		return 0, false
+	}
+	end, ok := vm.forStepNumber(instr, chunk, syms, locals, op.End, sym, 2)
+	if !ok {
+		return 0, false
+	}
+	next := cur + step
+	boxed := num.Box(next)
+	if s.typ != "" && !typecheck.QuickAccepts(&vm.Types, s.typ, boxed) {
+		return 0, false
+	}
+	s.val = boxed
+	var goOn bool
+	switch {
+	case op.Span:
+		// the same arithmetic, in the same order, as the head's three BINs (the
+		// conversion keeps each step rounded on its own, as the BINs are)
+		goOn = float64(float64(end-next)*step) >= 0
+	case op.Test.Op == bytecode.LT:
+		goOn = next < end
+	case op.Test.Op == bytecode.LTE:
+		goOn = next <= end
+	case op.Test.Op == bytecode.GT:
+		goOn = next > end
+	default: // GTE
+		goOn = next >= end
+	}
+	if goOn {
+		return op.Body, true
+	}
+	return op.Test.Jump, true
+}
+
+// forStepNumber reads a FOR_STEP operand (a constant or a variable other than the
+// counter) as a number; false when it is not one or cannot be read.
+func (vm *VM) forStepNumber(instr *bytecode.Instruction, chunk *bytecode.Chunk, syms []symbol.Symbol, locals *frame, a bytecode.BinArg, counter symbol.Symbol, hint int) (float64, bool) {
+	var v interface{}
+	if a.Kind == bytecode.ArgConst {
+		v = chunk.Constants[a.Index]
+	} else {
+		sym := syms[a.Index]
+		if sym == counter {
+			return 0, false
+		}
+		var found bool
+		if v, found = vm.loadVar(instr, locals, sym, hint); !found {
+			return 0, false
+		}
+	}
+	f, ok := v.(float64)
+	return f, ok
+}
+
 // probe finds sym in f, trying the slot the instruction found it in last time (*hint)
 // before searching, and remembers the slot it finds. nil if f does not have it.
 func probe(f *frame, sym symbol.Symbol, hint *int32) *varSlot {
-	if h := int(*hint); h < len(f.slots) && f.slots[h].sym == sym {
+	if h := int(*hint); h < len(f.slots) && f.slots[h].sym == sym && !f.slots[h].hidden {
 		return &f.slots[h]
 	}
 	if i := f.find(sym); i >= 0 {

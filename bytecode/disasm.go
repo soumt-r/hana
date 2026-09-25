@@ -69,6 +69,31 @@ var opcodeNames = map[Opcode]string{
 	CHECK_LIST_FIELD:  "CHECK_LIST_FIELD",
 	CHECK_CONST_VAR:   "CHECK_CONST_VAR",
 	BIN:               "BIN",
+	FOR_STEP:          "FOR_STEP",
+	DECLARE_VAR:       "DECLARE_VAR",
+	CHECK_RANGE:       "CHECK_RANGE",
+	ILLEGAL_BREAK:     "ILLEGAL_BREAK",
+}
+
+// binText renders a BIN's operand (also the two halves of a FOR_STEP's).
+func binText(chunk *Chunk, b *BinOperand) string {
+	arg := func(a BinArg) string {
+		switch a.Kind {
+		case ArgVar:
+			return "var " + chunk.Names[a.Index]
+		case ArgConst:
+			return fmt.Sprintf("const %#v", chunk.Constants[a.Index])
+		}
+		return "stack"
+	}
+	out := fmt.Sprintf("%s %s, %s", opcodeNames[b.Op], arg(b.L), arg(b.R))
+	if b.Set >= 0 {
+		out += " -> " + chunk.Names[b.Set]
+	}
+	if b.Jump >= 0 {
+		out += fmt.Sprintf(" ; if false -> %d", b.Jump)
+	}
+	return out
 }
 
 // Disassemble renders chunk as human-readable text: one line per
@@ -154,7 +179,7 @@ func operandString(chunk *Chunk, instr Instruction) string {
 			return fmt.Sprintf("%d ; %s", idx, chunk.Names[idx])
 		}
 		return ""
-	case LOAD_VAR, SET_VAR, SET_CONST, PUSH_FUNC_REF, PUSH_SCOPE, POP_SCOPE:
+	case LOAD_VAR, SET_VAR, SET_CONST, PUSH_FUNC_REF, PUSH_SCOPE, POP_SCOPE, DECLARE_VAR:
 		idx := instr.Operand.(int)
 		return fmt.Sprintf("%d ; %s", idx, chunk.Names[idx])
 	case SET_VAR_TYPED:
@@ -165,24 +190,13 @@ func operandString(chunk *Chunk, instr Instruction) string {
 		}
 		return fmt.Sprintf("%s : [%s]%s", chunk.Names[op.NameIndex], op.Type, kind)
 	case BIN:
-		b := instr.Operand.(*BinOperand)
-		arg := func(a BinArg) string {
-			switch a.Kind {
-			case ArgVar:
-				return "var " + chunk.Names[a.Index]
-			case ArgConst:
-				return fmt.Sprintf("const %#v", chunk.Constants[a.Index])
-			}
-			return "stack"
+		return binText(chunk, instr.Operand.(*BinOperand))
+	case FOR_STEP:
+		op := instr.Operand.(*ForStepOperand)
+		if op.Span {
+			return fmt.Sprintf("%s ; then (end - counter) * step >= 0 ; if false -> %d, if true -> %d", binText(chunk, op.Inc), op.Test.Jump, op.Body)
 		}
-		out := fmt.Sprintf("%s %s, %s", opcodeNames[b.Op], arg(b.L), arg(b.R))
-		if b.Set >= 0 {
-			out += " -> " + chunk.Names[b.Set]
-		}
-		if b.Jump >= 0 {
-			out += fmt.Sprintf(" ; if false -> %d", b.Jump)
-		}
-		return out
+		return fmt.Sprintf("%s ; then %s, if true -> %d", binText(chunk, op.Inc), binText(chunk, op.Test), op.Body)
 	case SET_LIST_VAR, CHECK_LIST_FIELD:
 		op := instr.Operand.(*ListSetOperand)
 		return fmt.Sprintf("%s ; change %d", chunk.Names[op.NameIndex], op.Change)
