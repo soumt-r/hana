@@ -36,9 +36,14 @@ var catalog = map[string]message{
 	"run.flag.allowFile": {"[파일] 모듈로 파일과 폴더에 접근하는 것을 허용합니다 (기본 허용, --allow-file=false로 막기)", "【ファイル】モジュールによるファイルとフォルダへのアクセスを許可します（既定は許可、--allow-file=falseで禁止）"},
 	"run.flag.allowNet":  {"[소켓]과 [HTTP] 모듈로 네트워크에 접근하는 것을 허용합니다 (기본 허용, --allow-net=false로 막기)", "【ソケット】と【HTTP】モジュールによるネットワークへのアクセスを許可します（既定は許可、--allow-net=falseで禁止）"},
 	"run.flag.timing":    {"파싱/실행 시간을 표시합니다", "パース／実行にかかった時間を表示します"},
-	"run.flag.bc":        {"트리워킹 대신 바이트코드 컴파일러+VM으로 실행합니다 (.knd도 지원). .hn 파일에는 영향 없음(항상 바이트코드)", "ツリーウォークの代わりにバイトコードコンパイラ＋VMで実行します（.kndにも対応）。.hnファイルには影響しません（常にバイトコード）"},
+	"run.flag.bc":        {"바이트코드로만 실행합니다: 바이트코드가 지원하지 않는 기능이 있으면 트리워커로 바꾸지 않고 컴파일 오류로 끝냅니다 (기본은 바이트코드, 안 되면 트리워커)", "バイトコードだけで実行します：バイトコードが対応していない機能があれば、ツリーウォークに切り替えずコンパイルエラーで終わります（既定はバイトコード、無理ならツリーウォーク）"},
+	"run.flag.tree":      {"바이트코드 대신 트리워커로 실행합니다", "バイトコードの代わりにツリーウォークで実行します"},
+	"run.bcAndTree":      {"--bc와 --tree는 함께 쓸 수 없어요.", "--bcと--treeは一緒に使えません。"},
 
 	"timing.title":        {"⏱  실행 시간", "⏱  実行時間"},
+	"timing.engine":       {"엔진", "エンジン"},
+	"timing.bytecode":     {"바이트코드", "バイトコード"},
+	"timing.tree":         {"트리워커", "ツリーウォーク"},
 	"timing.parse":        {"파싱", "パース"},
 	"timing.parseCompile": {"파싱+컴파일", "パース＋コンパイル"},
 	"timing.load":         {"불러오기", "読み込み"},
@@ -127,7 +132,7 @@ var catalog = map[string]message{
 	"pkg.err.ScriptChanged":      {"%[1]s %[2]s의 설치 스크립트가 승인했던 것과 달라요. 새 스크립트를 확인한 뒤 hana add %[1]s --allow-scripts로 다시 승인하세요", "%[1]s %[2]sのインストールスクリプトが承認したものと異なります。新しいスクリプトを確認してから、hana add %[1]s --allow-scriptsで再承認してください"},
 	"pkg.err.ScriptFailed":       {"%s의 설치 스크립트가 실패했어요: %s", "%sのインストールスクリプトが失敗しました: %s"},
 	"pkg.err.NotInProject":       {"%s은(는) 이 프로젝트의 패키지가 아니에요", "%sはこのプロジェクトのパッケージではありません"},
-	"pkg.err.AuthFailed": {"git이 %s을(를) 가져오지 못했어요. 로그인이 필요한 비공개 저장소이거나 저장소가 없어요 (%s). git에 로그인해 두거나 ssh 키를 등록하고, ssh로 받으려면 HANA_GIT_PROTOCOL=ssh를 설정하세요", "gitが%sを取得できませんでした。ログインが必要な非公開リポジトリか、リポジトリが存在しません（%s）。gitにログインしておくかsshキーを登録し、sshで取得するにはHANA_GIT_PROTOCOL=sshを設定してください"},
+	"pkg.err.AuthFailed":         {"git이 %s을(를) 가져오지 못했어요. 로그인이 필요한 비공개 저장소이거나 저장소가 없어요 (%s). git에 로그인해 두거나 ssh 키를 등록하고, ssh로 받으려면 HANA_GIT_PROTOCOL=ssh를 설정하세요", "gitが%sを取得できませんでした。ログインが必要な非公開リポジトリか、リポジトリが存在しません（%s）。gitにログインしておくかsshキーを登録し、sshで取得するにはHANA_GIT_PROTOCOL=sshを設定してください"},
 	"pkg.err.NotPath":            {"%q은(는) github.com/주인/저장소 같은 패키지 경로가 아니에요", "%qはgithub.com/owner/repoのようなパッケージパスではありません"},
 }
 
@@ -241,7 +246,7 @@ func applyLocale() {
 
 	for cmd, flags := range map[*cobra.Command]map[string]string{
 		rootCmd:  {"locale": "flag.locale"},
-		runCmd:   {"allow-file": "run.flag.allowFile", "allow-net": "run.flag.allowNet", "timing": "run.flag.timing", "bc": "run.flag.bc"},
+		runCmd:   {"allow-file": "run.flag.allowFile", "allow-net": "run.flag.allowNet", "timing": "run.flag.timing", "bc": "run.flag.bc", "tree": "run.flag.tree"},
 		buildCmd: {"output": "build.flag.output"},
 		initCmd:  {"lang": "init.flag.lang"},
 		addCmd:   {"allow-scripts": "add.flag.allowScripts"},

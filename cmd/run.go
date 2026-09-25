@@ -36,7 +36,12 @@ var runCmd = &cobra.Command{
 		debug.SetGCPercent(runGCPercent)
 		filename := args[0]
 		timing, _ := cmd.Flags().GetBool("timing")
-		useBytecode, _ := cmd.Flags().GetBool("bc")
+		onlyBytecode, _ := cmd.Flags().GetBool("bc")
+		useTree, _ := cmd.Flags().GetBool("tree")
+		if onlyBytecode && useTree {
+			fmt.Println(T("run.bcAndTree"))
+			os.Exit(1)
+		}
 		if allow, _ := cmd.Flags().GetBool("allow-file"); !allow {
 			stdimpl.FileAccess = stdimpl.DenyFiles
 		}
@@ -83,8 +88,12 @@ var runCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		var runDuration time.Duration
-		if useBytecode {
+		// The bytecode VM is the default: it is the faster engine. A program it cannot
+		// compile (something only the tree-walker supports, like dynamic reflection)
+		// runs on the tree-walker instead, unless --bc asked for bytecode only.
+		// --tree always uses the tree-walker.
+		var bcProg *bytecode.Program
+		if !useTree {
 			compileStart := time.Now()
 			var compiler *bytecode.Compiler
 			if isKanade {
@@ -92,16 +101,23 @@ var runCmd = &cobra.Command{
 			} else {
 				compiler = bytecode.NewCompiler()
 			}
-			bcProg := compiler.Compile(prog)
+			compiled := compiler.Compile(prog)
 			parseDuration += time.Since(compileStart)
-			if len(compiler.Errors()) > 0 {
+			switch {
+			case len(compiler.Errors()) == 0:
+				bcProg = compiled
+			case onlyBytecode:
 				fmt.Println(errs.LabelText(loc, errs.LabelCompileFailed) + ":")
 				for _, msg := range compiler.Errors() {
 					fmt.Printf("  - %s\n", msg)
 				}
 				os.Exit(1)
 			}
+		}
+		useBytecode := bcProg != nil
 
+		var runDuration time.Duration
+		if useBytecode {
 			bcLang := bytecode.LangHari
 			if isKanade {
 				bcLang = bytecode.LangKanade
@@ -133,11 +149,15 @@ var runCmd = &cobra.Command{
 
 		if timing {
 			total := parseDuration + runDuration
-			parseLabel := T("timing.parse")
+			parseLabel, engine := T("timing.parse"), T("timing.tree")
+			if !useTree {
+				parseLabel = T("timing.parseCompile") // compiled even when it fell back
+			}
 			if useBytecode {
-				parseLabel = T("timing.parseCompile")
+				engine = T("timing.bytecode")
 			}
 			fmt.Fprintf(os.Stderr, "\n%s\n", T("timing.title"))
+			fmt.Fprintf(os.Stderr, "   %s:  %s\n", T("timing.engine"), engine)
 			fmt.Fprintf(os.Stderr, "   %s:  %v\n", parseLabel, parseDuration)
 			fmt.Fprintf(os.Stderr, "   %s:  %v\n", T("timing.run"), runDuration)
 			fmt.Fprintf(os.Stderr, "   %s:  %v\n", T("timing.total"), total)
@@ -190,6 +210,7 @@ func init() {
 	runCmd.Flags().Bool("allow-net", true, "")
 	runCmd.Flags().BoolP("timing", "t", false, "")
 	runCmd.Flags().Bool("bc", false, "")
+	runCmd.Flags().Bool("tree", false, "")
 	rootCmd.AddCommand(runCmd)
 }
 
