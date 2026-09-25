@@ -576,9 +576,8 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 			if fn != nil {
 				// a function of the program binds the arguments into its own frame, which
 				// copies them, so they can be read where they lie on the stack
-				args := stack[len(stack)-op.Argc:]
-				result, err = vm.callFunction(fn, args)
-				clear(args)
+				// (the arguments are not cleared off: the next push overwrites them)
+				result, err = vm.callFunction(fn, stack[len(stack)-op.Argc:])
 				stack = stack[:len(stack)-op.Argc]
 			} else if native, ok := vm.natives[name]; ok {
 				args := make([]interface{}, op.Argc)
@@ -979,7 +978,7 @@ func (vm *VM) callFunction(fn *bytecode.Function, args []interface{}) (interface
 // checkedReturn is what a call gives back: an error stays an error, and a value
 // has to fit the type the function declared it returns (if it declared one).
 func (vm *VM) checkedReturn(fn *bytecode.Function, res interface{}, err error) (interface{}, error) {
-	if err != nil || fn.ReturnType == "" {
+	if err != nil || fn.ReturnType == "" || typecheck.QuickAccepts(&vm.Types, fn.ReturnType, res) {
 		return res, err
 	}
 	if err := typecheck.CheckReturn(&vm.Types, fn.ReturnType, fn.Name, res, vm.host()); err != nil {
@@ -998,6 +997,15 @@ func (vm *VM) bindArgs(fn *bytecode.Function, args []interface{}, fr *frame) err
 	params, syms := fn.Params, fn.ParamSymbols()
 	if len(args) > len(params) {
 		return errs.New(errs.TooManyArguments, len(params), len(args))
+	}
+	if len(args) == len(params) {
+		// the common case: every parameter has its argument
+		for i := range params {
+			if err := vm.bindParam(fr, syms[i], &params[i], args[i]); err != nil {
+				return err
+			}
+		}
+		return nil
 	}
 	for i := range params {
 		p := &params[i]

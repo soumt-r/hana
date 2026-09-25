@@ -81,7 +81,6 @@ func (vm *VM) bindParam(fr *frame, sym symbol.Symbol, p *bytecode.Param, val int
 			return err
 		}
 	}
-	s := fr.put(sym, val)
-	s.typ = p.Type
+	fr.bindParam(sym, val, p.Type)
 	return nil
 }
