@@ -1422,24 +1422,15 @@ func (vm *VM) forStep(instr *bytecode.Instruction, chunk *bytecode.Chunk, syms [
 	if !ok {
 		return 0, false
 	}
-	step, ok := chunk.Constants[op.Inc.R.Index].(float64)
+	// A step or end kept in the counter's own variable would change with it: leave
+	// that to the plain instructions.
+	step, ok := vm.forStepNumber(instr, chunk, syms, locals, op.Inc.R, sym, 4)
 	if !ok {
 		return 0, false
 	}
-	var end float64
-	if op.Test.R.Kind == bytecode.ArgConst {
-		if end, ok = chunk.Constants[op.Test.R.Index].(float64); !ok {
-			return 0, false
-		}
-	} else {
-		endSym := syms[op.Test.R.Index]
-		if endSym == sym {
-			return 0, false
-		}
-		v, found := vm.loadVar(instr, locals, endSym, 2)
-		if end, ok = v.(float64); !found || !ok {
-			return 0, false
-		}
+	end, ok := vm.forStepNumber(instr, chunk, syms, locals, op.End, sym, 2)
+	if !ok {
+		return 0, false
 	}
 	next := cur + step
 	boxed := num.Box(next)
@@ -1448,12 +1439,16 @@ func (vm *VM) forStep(instr *bytecode.Instruction, chunk *bytecode.Chunk, syms [
 	}
 	s.val = boxed
 	var goOn bool
-	switch op.Test.Op {
-	case bytecode.LT:
+	switch {
+	case op.Span:
+		// the same arithmetic, in the same order, as the head's three BINs (the
+		// conversion keeps each step rounded on its own, as the BINs are)
+		goOn = float64(float64(end-next)*step) >= 0
+	case op.Test.Op == bytecode.LT:
 		goOn = next < end
-	case bytecode.LTE:
+	case op.Test.Op == bytecode.LTE:
 		goOn = next <= end
-	case bytecode.GT:
+	case op.Test.Op == bytecode.GT:
 		goOn = next > end
 	default: // GTE
 		goOn = next >= end
@@ -1462,6 +1457,26 @@ func (vm *VM) forStep(instr *bytecode.Instruction, chunk *bytecode.Chunk, syms [
 		return op.Body, true
 	}
 	return op.Test.Jump, true
+}
+
+// forStepNumber reads a FOR_STEP operand (a constant or a variable other than the
+// counter) as a number; false when it is not one or cannot be read.
+func (vm *VM) forStepNumber(instr *bytecode.Instruction, chunk *bytecode.Chunk, syms []symbol.Symbol, locals *frame, a bytecode.BinArg, counter symbol.Symbol, hint int) (float64, bool) {
+	var v interface{}
+	if a.Kind == bytecode.ArgConst {
+		v = chunk.Constants[a.Index]
+	} else {
+		sym := syms[a.Index]
+		if sym == counter {
+			return 0, false
+		}
+		var found bool
+		if v, found = vm.loadVar(instr, locals, sym, hint); !found {
+			return 0, false
+		}
+	}
+	f, ok := v.(float64)
+	return f, ok
 }
 
 // probe finds sym in f, trying the slot the instruction found it in last time (*hint)

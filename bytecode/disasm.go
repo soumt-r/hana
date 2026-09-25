@@ -190,6 +190,9 @@ func operandString(chunk *Chunk, instr Instruction) string {
 		return binText(chunk, instr.Operand.(*BinOperand))
 	case FOR_STEP:
 		op := instr.Operand.(*ForStepOperand)
+		if op.Span {
+			return fmt.Sprintf("%s ; then (end - counter) * step >= 0 ; if false -> %d, if true -> %d", binText(chunk, op.Inc), op.Test.Jump, op.Body)
+		}
 		return fmt.Sprintf("%s ; then %s, if true -> %d", binText(chunk, op.Inc), binText(chunk, op.Test), op.Body)
 	case SET_LIST_VAR, CHECK_LIST_FIELD:
 		op := instr.Operand.(*ListSetOperand)

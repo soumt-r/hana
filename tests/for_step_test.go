@@ -20,6 +20,63 @@ func TestForStep(t *testing.T) {
 		name, code, out, err string
 		fused                bool // the program's main chunk must have a FOR_STEP
 	}{
+		{"a range to a variable", `
+'n'을 5로 정하자
+1부터 'n'까지 반복하자 ('수'):
+    '수'를 이어출력하자
+`, "12345", "", true},
+		{"a range down to a variable", `
+'n'을 -2로 정하자
+2부터 'n'까지 반복하자 ('수'):
+    '수'를 이어출력하자
+    " "를 이어출력하자
+`, "2 1 0 -1 -2 ", "", true},
+		{"a range to a fraction", `
+'n'을 3.5로 정하자
+'시작'을 0.25로 정하자
+'시작'부터 'n'까지 반복하자 ('수'):
+    '수'를 이어출력하자
+    " "를 이어출력하자
+`, "0.25 1.25 2.25 3.25 ", "", true},
+		{"a range that runs once", `
+'n'을 7로 정하자
+'n'부터 'n'까지 반복하자 ('수'):
+    '수'를 이어출력하자
+`, "7", "", true},
+		{"a range whose end is not a number", `
+'n'을 "다섯"으로 정하자
+1부터 'n'까지 반복하자 ('수'):
+    '수'를 이어출력하자
+`, "", "TypeError", true},
+		{"a range whose body declares variables", `
+'n'을 4로 정하자
+'합'을 [숫자]인 0으로 정하자
+1부터 'n'까지 반복하자 ('수'):
+    '제곱'을 [숫자]인 '수' * '수'로 정하자
+    '합'에 '제곱'을 더하자
+'합'을 출력하자
+`, "30", "", true},
+		{"a range whose body assigns the loop variable", `
+'n'을 3으로 정하자
+1부터 'n'까지 반복하자 ('수'):
+    '수'를 이어출력하자
+    '수'에 10을 더하자
+`, "123", "", true},
+		{"a while loop with a variable step", `
+'i'를 [숫자]인 0으로 정하자
+'걸음'을 [숫자]인 3으로 정하자
+('i' <= 10) 인 동안 반복하자:
+    'i'를 이어출력하자
+    " "를 이어출력하자
+    'i'에 '걸음'을 더하자
+`, "0 3 6 9 ", "", true},
+		{"a while loop that adds the counter to itself", `
+'i'를 [숫자]인 1로 정하자
+('i' < 20) 인 동안 반복하자:
+    'i'를 이어출력하자
+    " "를 이어출력하자
+    'i'에 'i'를 더하자
+`, "1 2 4 8 16 ", "", false},
 		{"counting up", `
 1부터 5까지 반복하자 ('수'):
     '수'를 이어출력하자

@@ -248,12 +248,20 @@ type BinOperand struct {
 }
 
 // ForStepOperand is FOR_STEP's operand. Inc is `counter + step -> counter` (L the
-// counter variable, R a constant); Test compares the counter (L) with the end (R, a
-// constant or a variable) and jumps to Test.Jump when false; Body is where the loop goes
-// on when Test is true (the instruction after Test).
+// counter variable, R the step: a constant or a variable). The loop's head is one of two
+// shapes, and Test is its last BIN, which jumps to Test.Jump (out of the loop) when false:
+//
+//   - Span false: Test is `counter <cmp> End` (LT, LTE, GT or GTE).
+//   - Span true: the head is `End - counter`, `* step`, `>= 0` (three BINs; Test is the
+//     last), how a range whose ends are not both literals goes either way.
+//
+// End is a constant or a variable. Body is where the loop goes on when the head is true
+// (the instruction after the head).
 type ForStepOperand struct {
 	Inc  *BinOperand
 	Test *BinOperand
+	Span bool
+	End  BinArg
 	Body int
 }
 
