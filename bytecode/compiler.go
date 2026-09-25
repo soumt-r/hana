@@ -611,11 +611,14 @@ func (c *Compiler) compileStatement(chunk *Chunk, stmt ast.Statement) {
 		chunk.emit(RETURN, nil)
 
 	case *ast.BreakStatement:
-		if n := len(c.loopTries); n > 0 {
-			c.emitTryExitsTo(chunk, c.loopTries[n-1])
-		} else {
-			c.emitTryExits(chunk) // a break outside any loop: registerBreak reports it
+		n := len(c.loopTries)
+		if n == 0 {
+			// Outside any loop: an IllegalBreakError when it runs (Runtime spec 4.4),
+			// raised where it stands like any other error.
+			chunk.emit(ILLEGAL_BREAK, nil)
+			break
 		}
+		c.emitTryExitsTo(chunk, c.loopTries[n-1])
 		if n := len(c.loopScopes); n > 0 && c.loopScopes[n-1] != "" {
 			chunk.emit(POP_SCOPE, chunk.addName(c.loopScopes[n-1]))
 		}
@@ -1105,7 +1108,10 @@ func (c *Compiler) compileTry(chunk *Chunk, s *ast.TryStatement) {
 
 	tryPushIdx := chunk.emit(TRY_PUSH, nil)
 	c.compileStatements(chunk, s.Block.Statements)
-	scope.inProtectedBlock = false // dispatchError already pops this level before jumping into a catch handler
+	// dispatchError pops this level before jumping into a catch handler, and pushes one
+	// back (catching nothing, keeping the finally) only when there is a finally: so
+	// inside a handler there is a level to leave exactly when there is a finally.
+	scope.inProtectedBlock = financeChunk != nil
 	chunk.emit(TRY_POP, nil)
 	if financeChunk != nil {
 		chunk.emit(RUN_FINALLY, financeChunk)
@@ -1122,6 +1128,7 @@ func (c *Compiler) compileTry(chunk *Chunk, s *ast.TryStatement) {
 		c.compileStatements(chunk, h.Body.Statements)
 		chunk.emit(POP_SCOPE, chunk.addName(handlerScope))
 		if financeChunk != nil {
+			chunk.emit(TRY_POP, nil) // the finally-only level dispatchError pushed
 			chunk.emit(RUN_FINALLY, financeChunk)
 		}
 		handlerEndJumps = append(handlerEndJumps, chunk.emit(JUMP, nil))
@@ -1239,11 +1246,9 @@ func mayDeclare(v reflect.Value, seen map[uintptr]bool) bool {
 	return false
 }
 
+// registerBreak records a break's JUMP for the innermost loop to patch (a break outside
+// any loop never gets here: it compiles to ILLEGAL_BREAK).
 func (c *Compiler) registerBreak(instrIndex int) {
-	if len(c.breakJumps) == 0 {
-		c.errorf("반복을 끝내자: 반복문 밖에서는 쓸 수 없어요 (IllegalBreakError)")
-		return
-	}
 	top := len(c.breakJumps) - 1
 	c.breakJumps[top] = append(c.breakJumps[top], instrIndex)
 }

@@ -230,6 +230,9 @@ const (
 	CHECK_RANGE // No operand — the two values on top of the stack (a range's start and
 	// end, left there) must both be numbers, else RangeMustBeNumbers, as the tree-walker
 	// raises before the loop starts. Appended after DECLARE_VAR.
+
+	ILLEGAL_BREAK // No operand — a 반복을 끝내자 outside any loop: raise IllegalBreakError
+	// when it runs (Runtime spec 4.4). Appended after CHECK_RANGE.
 )
 
 // ArgKind says where a BIN operand comes from.

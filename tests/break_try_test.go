@@ -109,6 +109,109 @@ func TestBreakAndTry(t *testing.T) {
 <세기>()를 출력하자
 `, "12함수끝", ""},
 
+		// Runtime spec 4.4: a 반복을 끝내자 run outside any loop is an IllegalBreakError.
+		// The loops around a call do not count: the function's body is not in them.
+		{"a break at the top level", `
+"가"를 이어출력하자
+반복을 끝내자
+"나"를 이어출력하자
+`, "가", "'반복을 끝내자'는 반복 안에서만 쓸 수 있어요"},
+		{"a break outside a loop that never runs", `
+만약 (1 == 2) 라면:
+    반복을 끝내자
+"끝"을 출력하자
+`, "끝", ""},
+		{"a break in a function does not leave the caller's loop", `
+<끊기>를 만들자 ():
+    "f"를 이어출력하자
+    반복을 끝내자
+1부터 3까지 반복하자 ('수'):
+    '수'를 이어출력하자
+    일단 해보자:
+        <끊기>()를 실행하자
+    오류가 발생했다면 ('e'):
+        "!"를 이어출력하자
+"끝"을 출력하자
+`, "1f!2f!3f!끝", ""},
+		{"a break outside a loop can be caught where it runs", `
+일단 해보자:
+    반복을 끝내자
+오류가 발생했다면 ('e'):
+    'e'의 '메시지'를 출력하자
+`, "IllegalBreakError: '반복을 끝내자'는 반복 안에서만 쓸 수 있어요.", ""},
+		{"a break in a handler outside a loop", `
+일단 해보자:
+    새로운 [오류]("가")를 발생시키자
+오류가 발생했다면 ('e'):
+    반복을 끝내자
+`, "", "'반복을 끝내자'는 반복 안에서만 쓸 수 있어요"},
+
+		// An error inside a handler still runs the try's finally on its way up.
+		{"an error in a handler runs the finally", `
+일단 해보자:
+    새로운 [오류]("가")를 발생시키자
+오류가 발생했다면 ('e'):
+    새로운 [오류]("나")를 발생시키자
+마무리는 항상:
+    "F"를 이어출력하자
+`, "F", "나"},
+		{"an error in a handler, the finally, then an outer handler", `
+일단 해보자:
+    일단 해보자:
+        새로운 [오류]("가")를 발생시키자
+    오류가 발생했다면 ('e'):
+        새로운 [오류]("나")를 발생시키자
+    마무리는 항상:
+        "F안"을 이어출력하자
+오류가 발생했다면 ('e'):
+    'e'의 '메시지'를 이어출력하자
+마무리는 항상:
+    "F밖"을 이어출력하자
+"끝"을 출력하자
+`, "F안나F밖끝", ""},
+		{"a finally that fails after a failed handler", `
+일단 해보자:
+    일단 해보자:
+        새로운 [오류]("가")를 발생시키자
+    오류가 발생했다면 ('e'):
+        새로운 [오류]("나")를 발생시키자
+    마무리는 항상:
+        새로운 [오류]("다")를 발생시키자
+오류가 발생했다면 ('e'):
+    'e'의 '메시지'를 출력하자
+`, "다", ""},
+		{"a handler that completes runs the finally once", `
+일단 해보자:
+    새로운 [오류]("가")를 발생시키자
+오류가 발생했다면 ('e'):
+    "잡음"을 이어출력하자
+마무리는 항상:
+    "F"를 이어출력하자
+새로운 [오류]("밖")를 발생시키자
+`, "잡음F", "밖"},
+		{"a return from a handler runs the finally once", `
+<값>을 만들자 ():
+    일단 해보자:
+        새로운 [오류]("가")를 발생시키자
+    오류가 발생했다면 ('e'):
+        "돌려줌"을 돌려주자
+    마무리는 항상:
+        "F"를 이어출력하자
+<값>()를 출력하자
+새로운 [오류]("밖")를 발생시키자
+`, "F돌려줌", "밖"},
+		{"a break from a handler runs the finally once", `
+1부터 3까지 반복하자 ('수'):
+    일단 해보자:
+        새로운 [오류]("가")를 발생시키자
+    오류가 발생했다면 ('e'):
+        반복을 끝내자
+    마무리는 항상:
+        "F"를 이어출력하자
+"끝"을 출력하자
+새로운 [오류]("밖")를 발생시키자
+`, "F끝", "밖"},
+
 		{"a range whose end is not a number", `
 'n'을 "다섯"으로 정하자
 1부터 'n'까지 반복하자 ('수'):

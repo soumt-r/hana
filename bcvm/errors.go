@@ -42,6 +42,12 @@ func (vm *VM) dispatchError(err error, tryStack *[]*tryHandler, stack *[]interfa
 			if cb.TypeName == "" || (matchable && vm.classIsOrExtends(typeName, cb.TypeName)) {
 				*stack = (*stack)[:h.stackDepth]
 				h.frame.unwindScopes(h.frameDepth)
+				if h.finally != nil {
+					// The handler runs under a level that catches nothing but still has the
+					// finally: an error in the handler runs it on the way up (Runtime spec
+					// 4.2). The handler's end pops it (compileTry).
+					*tryStack = append(*tryStack, &tryHandler{finally: h.finally, stackDepth: h.stackDepth, frame: h.frame, frameDepth: h.frameDepth})
+				}
 				push(vm.errorObjectFor(err))
 				return cb.HandlerPc, true, nil
 			}

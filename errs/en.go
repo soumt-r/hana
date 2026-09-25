@@ -133,6 +133,7 @@ var enCatalog = Catalog{
 	NullOperand:           "Operator '%s' cannot take a null value.",
 	UnknownOperator:       "The operator '%s' is not supported here.",
 	CallTooDeep:           "Calls are nested too deeply (more than %d levels).",
+	IllegalBreak:          "A break can only be used inside a loop.",
 	SyntaxUnexpectedToken: "Unexpected '%[3]s' at line %[1]d, column %[2]d.",
 	SyntaxUnexpectedEnd:   "Unexpected end of input at line %[1]d.",
 

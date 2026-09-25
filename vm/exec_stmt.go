@@ -142,6 +142,9 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 		i.retBuf.Value = val
 		return nil, &i.retBuf
 	case *ast.BreakStatement:
+		if !env.inLoop() {
+			return nil, errs.New(errs.IllegalBreak)
+		}
 		return nil, &BreakValue{}
 	case *ast.ImportStatement:
 		return i.executeImport(s, env)
@@ -236,7 +239,7 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 			itemSym := symbol.Intern(itemName)
 			for _, item := range items {
 				// 반복문 환경 생성 (옵션)
-				loopEnv := i.newScope(env)
+				loopEnv := i.newLoopScope(env)
 				// 원래 Hari 스펙에서는 '꺼낸 값' 같은 특수 키워드나 명시적 순회 변수가 필요하지만
 				// ForEachLoop의 순회 변수를 현재 AST가 지원하지 않으므로, 임시로 '아이템'이라고 지정
 				loopEnv.DeclareSym(itemSym, item)
@@ -268,7 +271,7 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 				break
 			}
 
-			loopEnv := i.newScope(env)
+			loopEnv := i.newLoopScope(env)
 			for _, bs := range s.Body.Statements {
 				_, err := i.Execute(bs, loopEnv)
 				if err != nil {
@@ -311,7 +314,7 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 			if (step > 0 && v > endNum) || (step < 0 && v < endNum) {
 				break
 			}
-			loopEnv := i.newScope(env)
+			loopEnv := i.newLoopScope(env)
 			loopEnv.DeclareSym(varSym, num.Box(v))
 			for _, bs := range s.Body.Statements {
 				_, err := i.Execute(bs, loopEnv)

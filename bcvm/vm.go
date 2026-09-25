@@ -318,6 +318,13 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 
 		case bytecode.DECLARE_VAR:
 			vm.declaringFrame(locals).declare(syms[instr.Operand.(int)], pop())
+		case bytecode.ILLEGAL_BREAK:
+			np, handled, rerr := raise(errs.New(errs.IllegalBreak))
+			if handled {
+				pc = np
+				continue
+			}
+			return nil, rerr
 		case bytecode.CHECK_RANGE:
 			_, startOK := stack[len(stack)-2].(float64)
 			_, endOK := stack[len(stack)-1].(float64)

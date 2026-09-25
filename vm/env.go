@@ -11,6 +11,19 @@ type Environment struct {
 	constants map[symbol.Symbol]bool // 상수로 선언된 변수 추적 (처음 쓸 때 만듦)
 	parent    *Environment
 	this      *HariObject
+	loop      bool // a loop pass's scope: a 반복을 끝내자 below it has a loop to leave
+}
+
+// inLoop reports whether a 반복을 끝내자 run in e is inside a loop. Scopes chain
+// lexically (a function body's parent is its module's globals, not the caller's scope),
+// so a loop around the call does not count (Runtime spec 4.4).
+func (e *Environment) inLoop() bool {
+	for ; e != nil; e = e.parent {
+		if e.loop {
+			return true
+		}
+	}
+	return false
 }
 
 type varEntry struct {
@@ -42,6 +55,13 @@ func (i *Interpreter) newScope(parent *Environment) *Environment {
 		return e
 	}
 	return NewEnvironment(parent)
+}
+
+// newLoopScope is newScope for one pass of a loop.
+func (i *Interpreter) newLoopScope(parent *Environment) *Environment {
+	e := i.newScope(parent)
+	e.loop = true
+	return e
 }
 
 func (i *Interpreter) freeScope(e *Environment) {
