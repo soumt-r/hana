@@ -25,13 +25,16 @@ type frame struct {
 // name (Runtime spec 1.1: it lives in the loop's own scope and hides the outer one):
 // the outer slot is then hidden, and the new one remembers it in shadows (its
 // position + 1) so that dropping the new one with its scope brings the outer back.
+//
+// The fields are ordered so the struct packs into 48 bytes (56 in declaration-comment
+// order): every call writes one per parameter and clears them all on return.
 type varSlot struct {
 	sym     symbol.Symbol
+	shadows int32
 	val     interface{}
 	typ     string
 	isConst bool
 	hidden  bool
-	shadows int32
 	marker  bool // a PUSH_SCOPE marker (see openScope)
 }
 
@@ -104,6 +107,17 @@ func (f *frame) put(sym symbol.Symbol, val interface{}) *varSlot {
 		}
 	}
 	return &f.slots[n-1]
+}
+
+// bindParam binds a parameter in a call's frame. Parameters are bound first, into a
+// fresh frame, and their names differ, so while the frame is small the slot is just
+// appended — no search for an existing one (put's find) on every call.
+func (f *frame) bindParam(sym symbol.Symbol, val interface{}, typ string) {
+	if f.index != nil || len(f.slots) >= frameIndexThreshold {
+		f.put(sym, val).typ = typ
+		return
+	}
+	f.slots = append(f.slots, varSlot{sym: sym, val: val, typ: typ})
 }
 
 // declare binds sym to val in a new slot even when the frame already has sym, hiding
