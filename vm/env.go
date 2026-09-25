@@ -128,12 +128,14 @@ func (e *Environment) DeclareTypeSym(sym symbol.Symbol, annotation string) {
 	}
 }
 
+// isConst reports whether the variable sym names from here was declared 고정하자: the
+// nearest scope that has sym decides, so a loop or handler variable that hides an outer
+// constant of the same name is not a constant (Runtime spec 1.1).
 func (e *Environment) isConst(sym symbol.Symbol) bool {
-	if e.constants != nil && e.constants[sym] {
-		return true
-	}
-	if e.parent != nil {
-		return e.parent.isConst(sym)
+	for env := e; env != nil; env = env.parent {
+		if env.find(sym) >= 0 {
+			return env.constants != nil && env.constants[sym]
+		}
 	}
 	return false
 }

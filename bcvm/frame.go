@@ -20,11 +20,19 @@ type frame struct {
 
 // varSlot is one variable: its value, the [타입] it was declared with (Runtime
 // spec 2.2; "" = none) and whether it was declared 고정하자/固定しよう.
+//
+// A loop or handler variable is declared anew even when the frame already has the
+// name (Runtime spec 1.1: it lives in the loop's own scope and hides the outer one):
+// the outer slot is then hidden, and the new one remembers it in shadows (its
+// position + 1) so that dropping the new one with its scope brings the outer back.
 type varSlot struct {
 	sym     symbol.Symbol
 	val     interface{}
 	typ     string
 	isConst bool
+	hidden  bool
+	shadows int32
+	marker  bool // a PUSH_SCOPE marker (see openScope)
 }
 
 // Most frames hold a handful of variables, where scanning a slice of small
@@ -63,7 +71,8 @@ func (f *frame) find(sym symbol.Symbol) int {
 		}
 		return -1
 	}
-	for i := range f.slots {
+	// from the end: the latest declaration of a name hides the earlier ones
+	for i := len(f.slots) - 1; i >= 0; i-- {
 		if f.slots[i].sym == sym {
 			return i
 		}
@@ -97,13 +106,33 @@ func (f *frame) put(sym symbol.Symbol, val interface{}) *varSlot {
 	return &f.slots[n-1]
 }
 
+// declare binds sym to val in a new slot even when the frame already has sym, hiding
+// the earlier slot until closeScope drops the new one: how a loop or handler variable
+// gets its own binding in the loop's scope.
+func (f *frame) declare(sym symbol.Symbol, val interface{}) {
+	outer := f.find(sym)
+	f.slots = append(f.slots, varSlot{sym: sym, val: val})
+	n := len(f.slots)
+	if outer >= 0 {
+		f.slots[outer].hidden = true
+		f.slots[n-1].shadows = int32(outer) + 1
+	}
+	if f.index != nil {
+		f.setIndex(sym, n-1)
+	} else if n > frameIndexThreshold {
+		for i := range f.slots {
+			f.setIndex(f.slots[i].sym, i) // in order, so the latest slot of a name wins
+		}
+	}
+}
+
 // openScope records, in the hidden variable sym, the number of slots below it: what
 // closeScope cuts the frame back to. A marker left behind by an aborted iteration
 // is reused, so the position stays the same.
 func (f *frame) openScope(sym symbol.Symbol) {
 	i := f.find(sym)
 	if i < 0 {
-		f.put(sym, float64(len(f.slots)))
+		f.put(sym, float64(len(f.slots))).marker = true
 		return
 	}
 	f.slots[i].val = float64(i)
@@ -119,9 +148,32 @@ func (f *frame) closeScope(sym symbol.Symbol) {
 	if at > len(f.slots) {
 		return
 	}
-	if f.index != nil {
-		for _, s := range f.slots[at:] {
-			f.index[s.sym] = 0
+	f.dropFrom(at)
+}
+
+// unwindScopes drops the scopes still open above slot from: an error caught by a
+// 일단 해보자 that started when the frame had from slots left the loops and handlers it
+// jumped out of without their POP_SCOPE. Variables the try block declared outside any
+// such scope stay, since the try block is not a scope of its own (Runtime spec 1.1).
+func (f *frame) unwindScopes(from int) {
+	for k := from; k < len(f.slots); k++ {
+		if f.slots[k].marker {
+			f.dropFrom(k)
+			return
+		}
+	}
+}
+
+// dropFrom drops the slots from at on, bringing back what they hid.
+func (f *frame) dropFrom(at int) {
+	// Latest first, so a name dropped twice ends up pointing at the slot below them all.
+	for k := len(f.slots) - 1; k >= at; k-- {
+		s := &f.slots[k]
+		if s.shadows > 0 {
+			f.slots[s.shadows-1].hidden = false
+		}
+		if f.index != nil {
+			f.index[s.sym] = s.shadows
 		}
 	}
 	clear(f.slots[at:])

@@ -220,6 +220,12 @@ const (
 	// the Test BIN that JUMP goes to, done in one step. Made by Optimize, never by the
 	// compiler. What it cannot do quickly it does as Inc alone and goes on to the JUMP,
 	// exactly as before it was fused. Appended after INIT_MODULE.
+
+	DECLARE_VAR // Operand: int (index into Chunk.Names) — pop a value and bind it to that
+	// name in a new variable of the current scope, even when a variable of that name is
+	// already visible: the new one hides it until its scope ends (POP_SCOPE). How a loop
+	// variable or a handler's error variable gets its own binding (Runtime spec 1.1).
+	// Appended after FOR_STEP.
 )
 
 // ArgKind says where a BIN operand comes from.

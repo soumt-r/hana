@@ -70,6 +70,7 @@ var opcodeNames = map[Opcode]string{
 	CHECK_CONST_VAR:   "CHECK_CONST_VAR",
 	BIN:               "BIN",
 	FOR_STEP:          "FOR_STEP",
+	DECLARE_VAR:       "DECLARE_VAR",
 }
 
 // binText renders a BIN's operand (also the two halves of a FOR_STEP's).
@@ -176,7 +177,7 @@ func operandString(chunk *Chunk, instr Instruction) string {
 			return fmt.Sprintf("%d ; %s", idx, chunk.Names[idx])
 		}
 		return ""
-	case LOAD_VAR, SET_VAR, SET_CONST, PUSH_FUNC_REF, PUSH_SCOPE, POP_SCOPE:
+	case LOAD_VAR, SET_VAR, SET_CONST, PUSH_FUNC_REF, PUSH_SCOPE, POP_SCOPE, DECLARE_VAR:
 		idx := instr.Operand.(int)
 		return fmt.Sprintf("%d ; %s", idx, chunk.Names[idx])
 	case SET_VAR_TYPED:

@@ -829,12 +829,13 @@ func (c *Compiler) compileForRange(chunk *Chunk, s *ast.ForRangeStatement) {
 		}
 	}
 
+	// Both ends are worked out before the loop variable exists, so an end that names
+	// a variable the loop variable will hide still reads the outer one.
 	counter := c.loopCounter(s.Body, loopVar, tmp)
 	c.compileExpression(chunk, s.Start)
-	chunk.emit(SET_VAR, chunk.addName(counter))
-
 	c.compileExpression(chunk, s.End)
 	chunk.emit(SET_VAR, chunk.addName(endName))
+	c.declareCounter(chunk, counter, loopVar) // takes the start
 
 	// step = (end < start) ? -1 : 1
 	chunk.emit(LOAD_VAR, chunk.addName(endName))
@@ -891,6 +892,18 @@ func (c *Compiler) copyCounter(chunk *Chunk, counter, loopVar string) {
 	}
 }
 
+// declareCounter declares a counting loop's counter, taking the start from the stack,
+// and the loop variable when the counter is a hidden one. They are new variables of the
+// loop's scope that hide any outer variable of the same name until the loop ends
+// (Runtime spec 1.1), so the passes assign these, never the outer one.
+func (c *Compiler) declareCounter(chunk *Chunk, counter, loopVar string) {
+	chunk.emit(DECLARE_VAR, chunk.addName(counter))
+	if counter != loopVar {
+		chunk.emit(PUSH_NULL, nil)
+		chunk.emit(DECLARE_VAR, chunk.addName(loopVar))
+	}
+}
+
 // compileConstantRange is compileForRange for a loop whose start and end are numbers written
 // in the source: it counts up (or down) by one, the end included.
 func (c *Compiler) compileConstantRange(chunk *Chunk, s *ast.ForRangeStatement, loopVar, outerScope string, start, end float64) {
@@ -900,7 +913,7 @@ func (c *Compiler) compileConstantRange(chunk *Chunk, s *ast.ForRangeStatement, 
 	}
 	counter := c.loopCounter(s.Body, loopVar, c.newTempName())
 	chunk.emit(PUSH_CONST, chunk.addConstant(start))
-	chunk.emit(SET_VAR, chunk.addName(counter))
+	c.declareCounter(chunk, counter, loopVar)
 
 	c.pushLoop(c.bodyScope(s.Body))
 	loopStart := chunk.nextIndex()
@@ -954,6 +967,10 @@ func (c *Compiler) compileForEach(chunk *Chunk, s *ast.ForEachLoop) {
 	chunk.emit(SET_VAR, chunk.addName(listName))
 	chunk.emit(PUSH_CONST, chunk.addConstant(1.0))
 	chunk.emit(SET_VAR, chunk.addName(idxName))
+	// The item is a new variable of the loop's scope, hiding an outer one of the same
+	// name until the loop ends (Runtime spec 1.1); each pass assigns it.
+	chunk.emit(PUSH_NULL, nil)
+	chunk.emit(DECLARE_VAR, chunk.addName(itemName))
 
 	c.pushLoop(c.bodyScope(s.Body))
 	loopStart := chunk.nextIndex()
@@ -1095,7 +1112,7 @@ func (c *Compiler) compileTry(chunk *Chunk, s *ast.TryStatement) {
 		handlerStart := chunk.nextIndex()
 		handlerScope := c.newTempName() + "_catch" // the error variable and what the handler declares end with it
 		chunk.emit(PUSH_SCOPE, chunk.addName(handlerScope))
-		chunk.emit(SET_VAR, chunk.addName(h.Param.Value))
+		chunk.emit(DECLARE_VAR, chunk.addName(h.Param.Value)) // hides an outer variable of the same name
 		c.compileStatements(chunk, h.Body.Statements)
 		chunk.emit(POP_SCOPE, chunk.addName(handlerScope))
 		if financeChunk != nil {

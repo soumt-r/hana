@@ -316,6 +316,9 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 				return nil, rerr
 			}
 
+		case bytecode.DECLARE_VAR:
+			vm.declaringFrame(locals).declare(syms[instr.Operand.(int)], pop())
+
 		case bytecode.PUSH_SCOPE:
 			vm.declaringFrame(locals).openScope(syms[instr.Operand.(int)])
 		case bytecode.POP_SCOPE:
@@ -867,7 +870,8 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 
 		case bytecode.TRY_PUSH:
 			op := instr.Operand.(*bytecode.TryOperand)
-			tryStack = append(tryStack, &tryHandler{catches: op.Catches, finally: op.FinallyChunk, stackDepth: len(stack)})
+			fr := vm.declaringFrame(locals)
+			tryStack = append(tryStack, &tryHandler{catches: op.Catches, finally: op.FinallyChunk, stackDepth: len(stack), frame: fr, frameDepth: len(fr.slots)})
 		case bytecode.TRY_POP:
 			tryStack = tryStack[:len(tryStack)-1]
 		case bytecode.RUN_FINALLY:
@@ -1482,7 +1486,7 @@ func (vm *VM) forStepNumber(instr *bytecode.Instruction, chunk *bytecode.Chunk, 
 // probe finds sym in f, trying the slot the instruction found it in last time (*hint)
 // before searching, and remembers the slot it finds. nil if f does not have it.
 func probe(f *frame, sym symbol.Symbol, hint *int32) *varSlot {
-	if h := int(*hint); h < len(f.slots) && f.slots[h].sym == sym {
+	if h := int(*hint); h < len(f.slots) && f.slots[h].sym == sym && !f.slots[h].hidden {
 		return &f.slots[h]
 	}
 	if i := f.find(sym); i >= 0 {

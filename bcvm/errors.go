@@ -17,6 +17,10 @@ type tryHandler struct {
 	catches    []bytecode.CatchInfo
 	finally    *bytecode.Chunk
 	stackDepth int
+	// the frame variables are declared in and how many it held at TRY_PUSH: a caught
+	// error drops the loop and handler scopes it cut short (frame.unwindScopes)
+	frame      *frame
+	frameDepth int
 }
 
 // dispatchError searches tryStack (innermost/last first) for a handler
@@ -37,6 +41,7 @@ func (vm *VM) dispatchError(err error, tryStack *[]*tryHandler, stack *[]interfa
 		for _, cb := range h.catches {
 			if cb.TypeName == "" || (matchable && vm.classIsOrExtends(typeName, cb.TypeName)) {
 				*stack = (*stack)[:h.stackDepth]
+				h.frame.unwindScopes(h.frameDepth)
 				push(vm.errorObjectFor(err))
 				return cb.HandlerPc, true, nil
 			}
