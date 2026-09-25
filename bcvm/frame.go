@@ -110,12 +110,19 @@ func (f *frame) put(sym symbol.Symbol, val interface{}) *varSlot {
 }
 
 // bindParam binds a parameter in a call's frame. Parameters are bound first, into a
-// fresh frame, and their names differ, so while the frame is small the slot is just
-// appended — no search for an existing one (put's find) on every call.
+// fresh frame, so the only slots to look through are the earlier parameters' (a
+// repeated parameter name rebinds its slot, as put would: a second slot of the same
+// name would be missed by the instructions' slot hints).
 func (f *frame) bindParam(sym symbol.Symbol, val interface{}, typ string) {
 	if f.index != nil || len(f.slots) >= frameIndexThreshold {
 		f.put(sym, val).typ = typ
 		return
+	}
+	for i := range f.slots {
+		if f.slots[i].sym == sym {
+			f.slots[i].val, f.slots[i].typ = val, typ
+			return
+		}
 	}
 	f.slots = append(f.slots, varSlot{sym: sym, val: val, typ: typ})
 }
