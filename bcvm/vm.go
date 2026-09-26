@@ -1799,9 +1799,9 @@ func (vm *VM) checkListField(obj interface{}, prop string, list *value.List, cha
 func (vm *VM) binaryOp(op bytecode.Opcode, left, right interface{}) (interface{}, error) {
 	switch op {
 	case bytecode.EQ:
-		return left == right, nil
+		return value.Equal(left, right), nil
 	case bytecode.NEQ:
-		return left != right, nil
+		return !value.Equal(left, right), nil
 	}
 
 	symbol := operatorSymbol(op)

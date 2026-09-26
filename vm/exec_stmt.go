@@ -350,7 +350,7 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 						if err != nil {
 							return nil, err
 						}
-						if val == testVal {
+						if value.Equal(val, testVal) {
 							matched = true
 							break
 						}

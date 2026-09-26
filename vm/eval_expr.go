@@ -760,9 +760,9 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 				}
 			}
 			if e.Operator == "==" {
-				return left == right, nil
+				return value.Equal(left, right), nil
 			} else {
-				return left != right, nil
+				return !value.Equal(left, right), nil
 			}
 		}
 
