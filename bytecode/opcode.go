@@ -56,11 +56,14 @@ const (
 	// it does not fit).
 	LIST_POP // Operand: string ("front"/"back") — pop a list, take its front/back
 	// element off it and push that element (IndexOutOfBoundsError if it is empty).
-	LIST_CLEAR // no operand — pop a list and empty it (TypeError if it is not a
-	// list); pushes nothing. Compiles 하리/카나데's one mutating list pseudo-method
-	// (비우기/空にする — see bcLang.listClearMethod). Handled as its own opcode (not
-	// through GET_MEMBER/CALL_METHOD's generic bound-method dispatch) so a list method
-	// stays a plain native operation.
+	LIST_CLEAR // Operand: *ListClearOperand — X의 <비우기>(...) (비우기/空にする, see
+	// bcLang.listClearMethod), followed by the ordinary GET_MEMBER/CALL_METHOD of that
+	// call. When X (on the stack) is a list called with no arguments, the list is
+	// emptied (after the constant check), 비어있음 replaces it and the call is
+	// skipped (-> Skip). Anything else (an object with its own <비우기>, a string, a
+	// list given arguments) is left for the ordinary call. Handled here, not in the
+	// generic dispatch, because a bound method no longer knows which variable the
+	// list came from.
 	GET_INDEX  // pop index, pop list; push list[index] (1-based, IndexOutOfBoundsError)
 	GET_LENGTH // pop list; push float64(len(list))
 
@@ -276,6 +279,13 @@ type ForStepOperand struct {
 	Span bool
 	End  BinArg
 	Body int
+}
+
+// ListClearOperand is LIST_CLEAR's operand.
+type ListClearOperand struct {
+	ConstNameIndex int // the variable the list is in (checked for 정하여 고정하자), or -1
+	Argc           int // the call's argument count
+	Skip           int // the instruction after the call
 }
 
 // ListSetOperand is SET_LIST_VAR's and CHECK_LIST_FIELD's operand.

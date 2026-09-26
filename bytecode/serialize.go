@@ -27,7 +27,7 @@ import (
 // toolchain needs to parse.
 const (
 	hnMagic   = "HNB\x00"
-	hnVersion = 3 // v1 had no Lang byte; v2 had lists written back by value (LIST_PUSH/POP/CLEAR changed meaning when lists became references)
+	hnVersion = 4 // v1 had no Lang byte; v2 had lists written back by value (LIST_PUSH/POP/CLEAR changed meaning when lists became references); v3 had LIST_CLEAR without an operand
 )
 
 // Lang records which source language a .hn file's Program was compiled
@@ -51,6 +51,7 @@ func init() {
 	gob.Register(&TypedSetOperand{})
 	gob.Register(&ModuleInit{})
 	gob.Register(&ListSetOperand{})
+	gob.Register(&ListClearOperand{})
 	gob.Register(&BinOperand{})
 	gob.Register(&ForStepOperand{})
 	gob.Register(&Chunk{}) // RUN_FINALLY's operand is a bare *Chunk

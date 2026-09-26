@@ -79,6 +79,10 @@ type VM struct {
 	StringSplitMethod    string
 	StringContainsMethod string
 
+	// ListClearMethod is the list pseudo-method (비우기); LIST_CLEAR does its usual
+	// call, getMember binds it for a call given arguments (to report their count).
+	ListClearMethod string
+
 	// NullString/TrueString/FalseString/ObjectFormat are formatValue's
 	// display strings for nil/bool/*Object (하자: "비어있음"/"참"/"거짓"/
 	// "[%s 객체]" — mirrors vm.LangConfig's same-named fields).
@@ -120,6 +124,7 @@ func (vm *VM) UseJapaneseWords() {
 	vm.StringReplaceMethod = "入れ替え"
 	vm.StringSplitMethod = "分割"
 	vm.StringContainsMethod = "含むか確認"
+	vm.ListClearMethod = "空にする"
 	vm.NullString = "空っぽ"
 	vm.TrueString = "真"
 	vm.FalseString = "偽"
@@ -146,6 +151,7 @@ func New(program *bytecode.Program) *VM {
 		StringReplaceMethod:  "바꾸기",
 		StringSplitMethod:    "분리하기",
 		StringContainsMethod: "포함확인",
+		ListClearMethod:      "비우기",
 		NullString:           "비어있음",
 		TrueString:           "참",
 		FalseString:          "거짓",
@@ -687,16 +693,25 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 			push(val)
 
 		case bytecode.LIST_CLEAR:
-			list, ok := pop().(*value.List)
-			if !ok {
-				np, handled, rerr := raise(errs.New(errs.ListOnlyMethod))
-				if handled {
-					pc = np
-					continue
+			op := instr.Operand.(*bytecode.ListClearOperand)
+			list, ok := stack[len(stack)-1].(*value.List)
+			if !ok || op.Argc != 0 {
+				break // the ordinary call that follows
+			}
+			if op.ConstNameIndex >= 0 {
+				if err := vm.requireMutable(locals, syms[op.ConstNameIndex]); err != nil {
+					np, handled, rerr := raise(err)
+					if handled {
+						pc = np
+						continue
+					}
+					return nil, rerr
 				}
-				return nil, rerr
 			}
 			list.Items = []interface{}{}
+			stack[len(stack)-1] = nil
+			pc = op.Skip
+			continue
 
 		case bytecode.GET_INDEX:
 			idxVal := pop()
@@ -859,7 +874,16 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 			}
 			return nil, rerr
 		case bytecode.PUSH_CLASS_REF:
-			push(&classRef{ClassName: chunk.Names[instr.Operand.(int)]})
+			// [이름]: a variable of that name, else the class, else the name itself
+			// (a built-in type such as [숫자]), as vm/eval_expr.go's TypeReference.
+			idx := instr.Operand.(int)
+			if v, ok := vm.lookup(locals, syms[idx]); ok {
+				push(v)
+			} else if name := chunk.Names[idx]; vm.program.Classes[name] != nil {
+				push(&classRef{ClassName: name})
+			} else {
+				push(name)
+			}
 
 		case bytecode.INSTANCE_OF:
 			right := pop()
@@ -1137,6 +1161,9 @@ func (vm *VM) getMember(objVal interface{}, propName string, sym symbol.Symbol, 
 		return nil, errs.New(errs.StaticMemberNotFound, propName)
 
 	case *value.List:
+		if isFunc && propName == vm.ListClearMethod {
+			return &boundListClear{List: v}, nil // given arguments (LIST_CLEAR does the rest)
+		}
 		if isFunc {
 			return nil, errs.New(errs.MethodNotFound, propName)
 		}
@@ -1305,6 +1332,13 @@ func (vm *VM) callMethod(calleeVal interface{}, args []interface{}) (interface{}
 
 	case *boundStringMethod:
 		return vm.callStringMethod(bm, args)
+
+	case *boundListClear:
+		if len(args) != 0 {
+			return nil, errs.New(errs.ArgCountExact, 0)
+		}
+		bm.List.Items = []interface{}{}
+		return nil, nil
 	}
 	return nil, errs.New(errs.NotCallable)
 }

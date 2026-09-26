@@ -3,6 +3,7 @@ package bcvm
 import (
 	"github.com/soumt-r/hana/bytecode"
 	"github.com/soumt-r/hana/symbol"
+	"github.com/soumt-r/hana/value"
 )
 
 // Object is a class instance. Mirrors vm.HariObject.
@@ -49,6 +50,12 @@ type boundStaticMethod struct {
 // boundStringMethod is one of the small set of builtin pseudo-methods a
 // string exposes (자르기/바꾸기/분리하기/포함확인). Mirrors
 // vm.BoundStringMethod — see callMethod for the dispatch table.
+// boundListClear is a list's <비우기> reached through the ordinary call (see
+// LIST_CLEAR), which only happens when it was given arguments.
+type boundListClear struct {
+	List *value.List
+}
+
 type boundStringMethod struct {
 	Value  string
 	Method string

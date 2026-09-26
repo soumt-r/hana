@@ -925,11 +925,66 @@ func TestBytecodeListClearMethodOnObjectField(t *testing.T) {
 	}
 }
 
+// A string has no <비우기>: the ordinary method call reports it, as the tree-walker does.
 func TestBytecodeListClearMethodOnNonListErrors(t *testing.T) {
 	_, err := runBytecode(t, `'값'을 "문자열"로 정하자
 '값'의 <비우기>()를 실행하자
 `)
-	if err == nil || !strings.Contains(err.Error(), "TypeError") {
-		t.Errorf("error = %v, want TypeError", err)
+	if err == nil || !strings.Contains(err.Error(), "MethodNotFoundError") {
+		t.Errorf("error = %v, want MethodNotFoundError", err)
+	}
+}
+
+// A class's own <비우기> is an ordinary method, not the list one.
+func TestBytecodeClassOwnClearMethod(t *testing.T) {
+	vm, err := runBytecode(t, `[통]을 설계하자:
+    '양'을 3으로 정하자
+    <비우기>를 만들자 ():
+        '나'의 '양'을 0으로 정하자
+        "비웠다"를 출력하자
+
+'통'을 새로운 [통]()으로 정하자
+'통'의 <비우기>()를 실행하자
+('통'의 '양')을 출력하자
+`)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	want := []string{"비웠다", "0"}
+	if strings.Join(vm.Output, ",") != strings.Join(want, ",") {
+		t.Errorf("Output = %v, want %v", vm.Output, want)
+	}
+}
+
+// A list's <비우기> given arguments: they are evaluated, then the count is reported.
+func TestBytecodeListClearMethodArgCount(t *testing.T) {
+	_, err := runBytecode(t, `'목록'을 ["사과"]로 정하자
+'목록'의 <비우기>(1)를 실행하자
+`)
+	if err == nil || !strings.Contains(err.Error(), "ArgumentError") {
+		t.Errorf("error = %v, want ArgumentError", err)
+	}
+	_, err = runBytecode(t, `'목록'을 ["사과"]로 정하자
+'목록'의 <비우기>(1 / 0)를 실행하자
+`)
+	if err == nil || !strings.Contains(err.Error(), "DivideByZero") {
+		t.Errorf("error = %v, want DivideByZeroError", err)
+	}
+}
+
+// [이름] is a variable of that name, else the class, else the name itself (a
+// built-in type), as in the tree-walker.
+func TestBytecodeTypeReferenceValue(t *testing.T) {
+	vm, err := runBytecode(t, `[참]을 출력하자
+([숫자] == "숫자")를 출력하자
+'문자열'을 5로 정하자
+[문자열]을 출력하자
+`)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	want := []string{"참", "참", "5"}
+	if strings.Join(vm.Output, ",") != strings.Join(want, ",") {
+		t.Errorf("Output = %v, want %v", vm.Output, want)
 	}
 }

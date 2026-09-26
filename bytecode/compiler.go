@@ -1434,11 +1434,23 @@ func (c *Compiler) compileExpression(chunk *Chunk, expr ast.Expression) {
 			// by property name at compile time, but LIST_CLEAR itself
 			// re-checks the runtime value's type, so this can never silently
 			// misfire on some other callee that merely evaluates to a list.
-			if fr, ok := callee.Property.(*ast.FunctionReference); ok && fr.Name == c.lang.listClearMethod && len(e.Arguments) == 0 {
-				c.compileConstCheck(chunk, callee.Object)
-				c.compileExpression(chunk, callee.Object) // 현재 목록 값
-				chunk.emit(LIST_CLEAR, nil)               // 목록을 비움
-				chunk.emit(PUSH_NULL, nil)                // 이 식 자체의 결과값 (비우기는 반환값 없음)
+			// Anything that is not a list (an object with its own <비우기>, a
+			// string) goes on to the ordinary method call after LIST_CLEAR.
+			if fr, ok := callee.Property.(*ast.FunctionReference); ok && fr.Name == c.lang.listClearMethod {
+				op := &ListClearOperand{ConstNameIndex: -1, Argc: len(e.Arguments)}
+				if _, isMember := callee.Object.(*ast.MemberExpression); !isMember {
+					if nameIdx, ok := c.identifierNameIndex(chunk, callee.Object); ok {
+						op.ConstNameIndex = nameIdx
+					}
+				}
+				c.compileExpression(chunk, callee.Object)
+				chunk.emit(LIST_CLEAR, op)
+				chunk.emit(GET_MEMBER, &MemberOperand{PropNameIndex: chunk.addName(fr.Name), IsFunc: true})
+				for _, arg := range e.Arguments {
+					c.compileExpression(chunk, arg)
+				}
+				chunk.emit(CALL_METHOD, len(e.Arguments))
+				op.Skip = chunk.nextIndex()
 				return
 			}
 			// X의 <메서드>(...): compiling the MemberExpression itself (its

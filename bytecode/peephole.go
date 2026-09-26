@@ -81,6 +81,8 @@ func jumpTargets(ins []Instruction) map[int]bool {
 			f := in.Operand.(*ForStepOperand)
 			targets[f.Body] = true
 			targets[f.Test.Jump] = true
+		case LIST_CLEAR:
+			targets[in.Operand.(*ListClearOperand).Skip] = true
 		}
 	}
 	return targets
@@ -175,6 +177,9 @@ func retarget(out []Instruction, moved []int) {
 			// Test is the BIN at the loop's head, which moves its own Jump.
 			f := out[k].Operand.(*ForStepOperand)
 			f.Body = moved[f.Body]
+		case LIST_CLEAR:
+			op := out[k].Operand.(*ListClearOperand)
+			op.Skip = moved[op.Skip]
 		}
 	}
 }

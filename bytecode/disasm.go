@@ -197,6 +197,9 @@ func operandString(chunk *Chunk, instr Instruction) string {
 			return fmt.Sprintf("%s ; then (end - counter) * step >= 0 ; if false -> %d, if true -> %d", binText(chunk, op.Inc), op.Test.Jump, op.Body)
 		}
 		return fmt.Sprintf("%s ; then %s, if true -> %d", binText(chunk, op.Inc), binText(chunk, op.Test), op.Body)
+	case LIST_CLEAR:
+		op := instr.Operand.(*ListClearOperand)
+		return fmt.Sprintf("argc=%d, else -> %d", op.Argc, op.Skip)
 	case SET_LIST_VAR, CHECK_LIST_FIELD:
 		op := instr.Operand.(*ListSetOperand)
 		return fmt.Sprintf("%s ; change %d", chunk.Names[op.NameIndex], op.Change)
