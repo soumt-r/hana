@@ -246,6 +246,11 @@ func (i *Interpreter) Run() error {
 			// 스킵
 		default:
 			_, err := i.Execute(stmt, i.GlobalEnv)
+			if _, ok := err.(*ReturnValue); ok {
+				// 최상위의 돌려주자는 프로그램(모듈이면 그 모듈의 최상위 코드)을 끝낸다.
+				// 바이트코드는 main 청크의 RETURN으로 원래 그렇게 동작한다.
+				return nil
+			}
 			if err != nil {
 				return err
 			}
