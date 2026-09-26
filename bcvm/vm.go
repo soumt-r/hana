@@ -1988,6 +1988,9 @@ func (vm *VM) FormatValue(val interface{}) string {
 		return strconv.FormatFloat(v, 'f', -1, 64)
 	case *Object:
 		return fmt.Sprintf(vm.ObjectFormat, v.ClassName)
+	case *classRef:
+		// A class used as a value ([동물]) shows the way its objects do.
+		return fmt.Sprintf(vm.ObjectFormat, v.ClassName)
 	}
 	return fmt.Sprintf("%v", val)
 }

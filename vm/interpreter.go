@@ -269,6 +269,9 @@ func (i *Interpreter) FormatValue(val interface{}) string {
 		return v
 	case *HariObject:
 		return fmt.Sprintf(i.Config.ObjectFormat, v.ClassName)
+	case *ClassReference:
+		// A class used as a value ([동물]) shows the way its objects do.
+		return fmt.Sprintf(i.Config.ObjectFormat, v.ClassName)
 	case bool:
 		if v {
 			return i.Config.TrueString

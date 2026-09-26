@@ -973,17 +973,21 @@ func TestBytecodeListClearMethodArgCount(t *testing.T) {
 }
 
 // [이름] is a variable of that name, else the class, else the name itself (a
-// built-in type), as in the tree-walker.
+// built-in type), as in the tree-walker; a class shows as its objects do.
 func TestBytecodeTypeReferenceValue(t *testing.T) {
-	vm, err := runBytecode(t, `[참]을 출력하자
+	vm, err := runBytecode(t, `[상자]를 설계하자:
+    '값'을 1로 정하자
+
+[참]을 출력하자
 ([숫자] == "숫자")를 출력하자
 '문자열'을 5로 정하자
 [문자열]을 출력하자
+[상자]를 출력하자
 `)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	want := []string{"참", "참", "5"}
+	want := []string{"참", "참", "5", "[상자 객체]"}
 	if strings.Join(vm.Output, ",") != strings.Join(want, ",") {
 		t.Errorf("Output = %v, want %v", vm.Output, want)
 	}
