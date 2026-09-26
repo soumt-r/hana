@@ -464,11 +464,14 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 				if numLit, ok := mem.Property.(*ast.NumberLiteral); ok {
 					idx = int(numLit.Value) - 1
 				} else {
+					// A key that cannot be computed reports its own error (as the
+					// bytecode engine does); one that is not a number is ignored.
 					propVal, err := i.Evaluate(mem.Property, env)
-					if err == nil {
-						if num, ok := propVal.(float64); ok {
-							idx = int(num) - 1
-						}
+					if err != nil {
+						return nil, err
+					}
+					if num, ok := propVal.(float64); ok {
+						idx = int(num) - 1
 					}
 				}
 				if idx >= 0 && idx < len(list.Items) {

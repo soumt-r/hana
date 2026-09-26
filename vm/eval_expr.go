@@ -597,15 +597,18 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 				return num.Box(float64(len(list.Items))), nil
 			}
 
+			// A key that cannot be computed reports its own error (as the
+			// bytecode engine does).
 			idxObj, err := i.Evaluate(e.Property, env)
-			if err == nil {
-				if numVal, isNum := idxObj.(float64); isNum {
-					idx := int(numVal) - 1 // 1-based to 0-based
-					if idx < 0 || idx >= len(list.Items) {
-						return nil, errs.New(errs.ListIndexOutOfRange)
-					}
-					return list.Items[idx], nil
+			if err != nil {
+				return nil, err
+			}
+			if numVal, isNum := idxObj.(float64); isNum {
+				idx := int(numVal) - 1 // 1-based to 0-based
+				if idx < 0 || idx >= len(list.Items) {
+					return nil, errs.New(errs.ListIndexOutOfRange)
 				}
+				return list.Items[idx], nil
 			}
 			return nil, errs.New(errs.ListIndexMustBeNumber)
 		} else if dict, ok := obj.(map[interface{}]interface{}); ok {
@@ -668,16 +671,18 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 				return float64(utf8.RuneCountInString(strVal)), nil
 			}
 
+			// As the bytecode engine: a key that cannot be computed reports its
+			// own error, one that is not a number MemberAccessOnString.
 			idxObj, err := i.Evaluate(e.Property, env)
-			if err == nil {
-				if numVal, isNum := idxObj.(float64); isNum {
-					char, ok := conv.RuneAt(strVal, int(numVal)-1)
-					if !ok {
-						return nil, errs.New(errs.StringIndexOutOfRange)
-					}
-					return char, nil
+			if err != nil {
+				return nil, err
+			}
+			if numVal, isNum := idxObj.(float64); isNum {
+				char, ok := conv.RuneAt(strVal, int(numVal)-1)
+				if !ok {
+					return nil, errs.New(errs.StringIndexOutOfRange)
 				}
-				return nil, errs.New(errs.MemberAccessUnsupported, errs.TypeNameOf(obj))
+				return char, nil
 			}
 			return nil, errs.New(errs.MemberAccessOnString)
 		}
