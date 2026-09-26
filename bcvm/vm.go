@@ -1529,6 +1529,9 @@ func (vm *VM) loadVar(in *bytecode.Instruction, locals *frame, sym symbol.Symbol
 		if s := probe(locals, sym, &in.Hint[hint]); s != nil {
 			return s.val, true
 		}
+		if o, name, ok := thisProp(locals, sym); ok {
+			return o.Props[name], true
+		}
 	}
 	if s := probe(vm.globalsFor(locals), sym, &in.Hint[hint+1]); s != nil {
 		return s.val, true
@@ -1539,6 +1542,19 @@ func (vm *VM) loadVar(in *bytecode.Instruction, locals *frame, sym symbol.Symbol
 	return nil, false
 }
 
+// thisProp finds a variable that is a property of 나: inside a method, getter or
+// setter a name that is not a variable of the call reads and writes the object's
+// property of that name when it has one, before the module's variables (the
+// tree-walker's Environment.GetSym/AssignSym).
+func thisProp(locals *frame, sym symbol.Symbol) (*Object, string, bool) {
+	if locals == nil || locals.this == nil {
+		return nil, "", false
+	}
+	name := sym.String()
+	_, ok := locals.this.Props[name]
+	return locals.this, name, ok
+}
+
 // storeVar is the common case of SET_VAR: the variable exists, is not constant and was
 // declared without a type. It reports whether it did the store; otherwise the general
 // assignOrDeclare has to.
@@ -1546,6 +1562,11 @@ func (vm *VM) storeVar(in *bytecode.Instruction, locals *frame, sym symbol.Symbo
 	var s *varSlot
 	if locals != nil {
 		s = probe(locals, sym, &in.Hint[hint])
+		if s == nil {
+			if _, _, ok := thisProp(locals, sym); ok {
+				return false // a field of 나: assignOrDeclare writes it
+			}
+		}
 	}
 	if s == nil {
 		s = probe(vm.globalsFor(locals), sym, &in.Hint[hint+1])
@@ -1564,6 +1585,9 @@ func (vm *VM) lookup(locals *frame, sym symbol.Symbol) (interface{}, bool) {
 	if locals != nil {
 		if v, ok := locals.get(sym); ok {
 			return v, true
+		}
+		if o, name, ok := thisProp(locals, sym); ok {
+			return o.Props[name], true
 		}
 	}
 	if v, ok := vm.globalsFor(locals).get(sym); ok {
@@ -1705,6 +1729,13 @@ func (vm *VM) assignOrDeclare(locals *frame, sym symbol.Symbol, val interface{},
 	if locals != nil {
 		if i := locals.find(sym); i >= 0 {
 			owner, idx = locals, i
+		} else if o, name, ok := thisProp(locals, sym); ok {
+			// A field of 나, written as the tree-walker's Environment.AssignSym does.
+			if err := vm.checkField(o.ClassName, name, val); err != nil {
+				return err
+			}
+			o.Props[name] = val
+			return nil
 		}
 	}
 	if owner == nil {
@@ -1747,6 +1778,9 @@ func (vm *VM) requireMutable(locals *frame, sym symbol.Symbol) error {
 			}
 			return nil
 		}
+		if _, _, ok := thisProp(locals, sym); ok {
+			return nil
+		}
 	}
 	if g := vm.globalsFor(locals); g != nil {
 		if i := g.find(sym); i >= 0 && g.slots[i].isConst {
@@ -1763,6 +1797,8 @@ func (vm *VM) checkListVar(locals *frame, sym symbol.Symbol, list *value.List, c
 	if locals != nil {
 		if i := locals.find(sym); i >= 0 {
 			s = &locals.slots[i]
+		} else if o, name, ok := thisProp(locals, sym); ok {
+			return vm.checkListField(o, name, list, change)
 		}
 	}
 	if s == nil {
