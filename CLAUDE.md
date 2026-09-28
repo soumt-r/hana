@@ -188,6 +188,10 @@ DelimLen, TypeOpen/TypeClose.
 접두사로 바이트코드 전용 케이스들이 있습니다. `disasm`은 `.knd`를 항상 지원했고
 (bcstdlib을 안 건드리는 읽기 전용 작업이라), 이제 `run --bc`/`build`도 `.knd`를 지원합니다.
 
+## 연산자 메서드 (`<기호 더하기>` …): 이름표는 `magic` 패키지
+
+스펙 3.5: 좌항이 객체이고 그 클래스(부모 포함)에 연산자의 메서드가 있으면 `A + B`는 `A의 <기호 더하기>(B)`와 똑같은 메서드 호출입니다(인자·반환 타입 검사, 호출 깊이 제한 포함). `'x'에 B를 더하자`도 같은 `+`이고, 대소 비교가 조건이 되면 결과는 참/거짓이어야 합니다. 이름은 `magic.Hari`/`magic.Kanade`(연산자 기호 → 메서드 이름) 한 곳이고 트리워커(`LangConfig.OperatorMethods`, `eval_expr.go`의 BinaryExpression)와 바이트코드(`VM.OperatorMethods`, `binaryWithEquals`)가 씁니다. 브라우저 엔진(`config.ts`의 `operatorMethods`, `evalExpr.ts`)과 Haru(`lang.rs`의 `operator_methods`, `ClassInfo.operators`)는 같은 낱말을 손으로 적어 두었으니 바꿀 땐 다섯 곳을 함께 고치세요. 트리워커는 이 호출을 `callDepth`로 세야 합니다(안 세면 끝없는 재귀가 Go 스택을 넘쳐 죽음). `<기호 같다>`(`==`/`!=`)는 예전 규칙 그대로입니다: 그 클래스 **자신의** 메서드만 보고, `다르다`는 결과를 뒤집습니다. `tests/operator_methods_test.go`와 `compare_tests.ts`의 '연산자 메서드'가 지킵니다.
+
 ## 리스트 pseudo-method `<비우기>`
 
 스펙 2.6: 리스트는 기본적으로 객체지향 메서드가 아니라 네이티브 구문(추가하자/꺼내자)으로

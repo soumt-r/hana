@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"github.com/soumt-r/hana/magic"
 	"github.com/soumt-r/hana/typecheck"
 	"strings"
 
@@ -92,6 +93,11 @@ type LangConfig struct {
 	// silently never match — verified by running it through hana.exe.
 	EqualsMethodName string
 
+	// OperatorMethods names the method each arithmetic or comparison
+	// operator calls on an object on its left, by the operator's symbol
+	// (magic.Hari or magic.Kanade; spec 3.5).
+	OperatorMethods map[string]string
+
 	// ParseEmbeddedExpr lexes+parses a `{...}` template-string interpolation's
 	// inner code. It's a func, not a lexer/parser pair of strings, because
 	// the interpolated code needs the locale's *full* grammar (any
@@ -174,6 +180,7 @@ var KoreanConfig = LangConfig{
 	StringSplitMethod:    "분리하기",
 	StringContainsMethod: "포함확인",
 	EqualsMethodName:     "기호 같다",
+	OperatorMethods:      magic.Hari,
 	Locale:               errs.Korean,
 }
 
@@ -222,6 +229,7 @@ var JapaneseConfig = LangConfig{
 	// kanade-docs/src/pages/docs/oop/1-classes.md's actual method name
 	// (〈記号 同じだ〉, delimiters stripped).
 	EqualsMethodName: "記号 同じだ",
+	OperatorMethods:  magic.Kanade,
 	Locale:           errs.Japanese,
 	ParseEmbeddedExpr: func(code string) ast.Expression {
 		l := kanade_lexer.New(code)

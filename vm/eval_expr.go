@@ -777,6 +777,27 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 			return nil, errs.New(errs.UnknownOperator, e.Operator)
 		}
 
+		// Operator overloading (spec 3.5): an object on the left whose class
+		// (or an ancestor) has the operator's method runs `A의 <기호 더하기>(B)`.
+		if leftObj, ok := left.(*HariObject); ok {
+			if name, ok := i.Config.OperatorMethods[e.Operator]; ok {
+				if cls, ok := i.Classes[leftObj.ClassName]; ok {
+					sym := symbol.Intern(name)
+					if i.classMember(cls, sym).method != nil {
+						// A call, so it counts in the nesting as a call expression does.
+						i.callDepth++
+						if i.callDepth > MaxCallDepth {
+							i.callDepth--
+							return nil, errs.New(errs.CallTooDeep, MaxCallDepth)
+						}
+						val, err := i.CallFunction(&BoundMethod{Object: leftObj, FuncName: name, Sym: sym}, []interface{}{right})
+						i.callDepth--
+						return val, err
+					}
+				}
+			}
+		}
+
 		// Null-safe (Runtime spec 2.4): only the equality operators may see 비어있음.
 		if left == nil || right == nil {
 			return nil, errs.New(errs.NullOperand, e.Operator)

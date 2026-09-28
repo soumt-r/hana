@@ -9,6 +9,7 @@ import (
 	"github.com/soumt-r/hana/console"
 	"github.com/soumt-r/hana/conv"
 	"github.com/soumt-r/hana/errs"
+	"github.com/soumt-r/hana/magic"
 	"github.com/soumt-r/hana/native"
 	"github.com/soumt-r/hana/num"
 	"github.com/soumt-r/hana/pkg"
@@ -109,6 +110,10 @@ type VM struct {
 	EqualsMethod  string
 	VarQuoteOpen  string
 	VarQuoteClose string
+	// OperatorMethods names the method each arithmetic or comparison
+	// operator calls on an object on its left, by the operator's symbol
+	// (magic.Hari or magic.Kanade).
+	OperatorMethods map[string]string
 }
 
 // UseJapaneseWords switches every 하자-default runtime word (length,
@@ -133,6 +138,7 @@ func (vm *VM) UseJapaneseWords() {
 	vm.ErrorMessage = "メッセージ"
 	vm.Locale = errs.Japanese
 	vm.EqualsMethod = "記号 同じだ"
+	vm.OperatorMethods = magic.Kanade
 	vm.VarQuoteOpen = "『"
 	vm.VarQuoteClose = "』"
 	vm.Types = typecheck.Names{Number: "数字", String: "文字列", Boolean: "論理", Any: "何でも", List: "リスト", Dict: "辞書", Null: "空っぽ"}
@@ -162,6 +168,7 @@ func New(program *bytecode.Program) *VM {
 		EqualsMethod:         "기호 같다",
 		VarQuoteOpen:         "'",
 		VarQuoteClose:        "'",
+		OperatorMethods:      magic.Hari,
 	}
 }
 
@@ -1464,10 +1471,21 @@ func binaryFast(op bytecode.Opcode, left, right interface{}) (result interface{}
 	return nil, false
 }
 
-// binaryWithEquals is binaryOp plus the equality magic method of an object on the left.
+// binaryWithEquals is binaryOp plus the magic methods of an object on the
+// left: the equality one for ==/!=, and for the other operators the method
+// OperatorMethods names, called as `A의 <기호 더하기>(B)` would be
+// (inherited, arguments and result checked).
 func (vm *VM) binaryWithEquals(op bytecode.Opcode, left, right interface{}) (interface{}, error) {
-	if obj, isObj := left.(*Object); isObj && (op == bytecode.EQ || op == bytecode.NEQ) && vm.hasEqualsMethod(obj) {
-		return vm.callEqualsMethod(obj, right, op == bytecode.NEQ)
+	if obj, isObj := left.(*Object); isObj {
+		if op == bytecode.EQ || op == bytecode.NEQ {
+			if vm.hasEqualsMethod(obj) {
+				return vm.callEqualsMethod(obj, right, op == bytecode.NEQ)
+			}
+		} else if name, ok := vm.OperatorMethods[operatorSymbol(op)]; ok {
+			if fn, ok := vm.findMethod(obj.ClassName, name); ok {
+				return vm.callMethod(&boundMethod{Receiver: obj, Method: name, fn: fn}, []interface{}{right})
+			}
+		}
 	}
 	return vm.binaryOp(op, left, right)
 }
