@@ -575,6 +575,13 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 					if name == chunk.Names[op.NameIndex] {
 						op.CacheFunction(f) // a plain name always means this function
 					}
+				} else if v, ok := vm.lookup(locals, symbol.Intern(name)); ok {
+					// A variable holding a function of the program (`<함수>(…)` with a
+					// parameter '함수'), after the functions of that name, as
+					// vm/eval_expr.go's FunctionReference.
+					if fr, ok := v.(*funcRef); ok {
+						fn = vm.program.Functions[fr.Name]
+					}
 				}
 			}
 			var result interface{}
