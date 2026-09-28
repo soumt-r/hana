@@ -77,7 +77,13 @@ func (p *Parser) LocalizedErrors(loc errs.Locale) []string {
 // the wording in the document's language.
 type DiagKind string
 
-const DiagUnknownToken DiagKind = "UnknownToken"
+const (
+	DiagUnknownToken DiagKind = "UnknownToken"
+	// A function made twice in one place (Literal: its name).
+	DiagDuplicateFunction DiagKind = "DuplicateFunction"
+	// A second constructor in one class (Literal: the constructor's words).
+	DiagDuplicateConstructor DiagKind = "DuplicateConstructor"
+)
 
 // Diagnostic is a parse problem with its source position (1-based Line,
 // 0-based Col in characters). The parser recovers and keeps going, so these
@@ -120,6 +126,12 @@ func (p *Parser) lastContentLine() int {
 // Err is the typed, localizable error for this diagnostic: an unknown token,
 // or (empty literal) the parser running off the end of the input.
 func (d Diagnostic) Err() *errs.Error {
+	switch d.Kind {
+	case DiagDuplicateFunction:
+		return errs.New(errs.SyntaxDuplicateFunction, d.Line, d.Col+1, d.Literal)
+	case DiagDuplicateConstructor:
+		return errs.New(errs.SyntaxDuplicateConstructor, d.Line, d.Col+1)
+	}
 	if d.Literal == "" {
 		return errs.New(errs.SyntaxUnexpectedEnd, d.Line)
 	}
@@ -138,7 +150,43 @@ func (p *Parser) ParseProgram() *ast.Program {
 			prog.Statements = append(prog.Statements, stmt)
 		}
 	}
+	p.diags = append(p.diags, duplicates(prog.Statements, false)...)
 	return prog
+}
+
+// duplicates finds functions made twice in one place (the file, a function's
+// body, a class) and second constructors of a class, in source order: each
+// statement is checked against the ones before it, then its own body.
+// Hari has no overloading (a child class overriding a method is another place).
+func duplicates(stmts []ast.Statement, inClass bool) []Diagnostic {
+	var out []Diagnostic
+	seen := map[string]bool{}
+	constructors := 0
+	for _, s := range stmts {
+		switch d := s.(type) {
+		case *ast.FunctionDeclaration:
+			key := d.Name.Value
+			if inClass && d.IsStatic {
+				key = "static " + key // a class's own methods are apart from its objects'
+			}
+			if seen[key] {
+				out = append(out, Diagnostic{Kind: DiagDuplicateFunction, Line: d.SrcLine, Col: d.SrcCol, Length: d.SrcLen, Literal: d.Name.Value})
+			}
+			seen[key] = true
+			if d.Body != nil {
+				out = append(out, duplicates(d.Body.Statements, false)...)
+			}
+		case *ast.ConstructorDeclaration:
+			constructors++
+			if constructors > 1 {
+				out = append(out, Diagnostic{Kind: DiagDuplicateConstructor, Line: d.SrcLine, Col: d.SrcCol, Length: d.SrcLen, Literal: "constructor"})
+			}
+			out = append(out, duplicates(d.Body, false)...)
+		case *ast.ClassDeclaration:
+			out = append(out, duplicates(d.Body, true)...)
+		}
+	}
+	return out
 }
 
 func (p *Parser) parseBlock() *ast.BlockStatement {
@@ -510,6 +558,7 @@ func (p *Parser) parseFunctionDecl() ast.Statement {
 
 	nameTok := p.consume()
 	name := nameTok.Literal
+	nameLine, nameCol, nameLen := nameTok.Line, nameTok.Col, utf8.RuneCountInString(nameTok.Literal)
 	name = name[p.lang.DelimLen : len(name)-p.lang.DelimLen] // FUNCTION 델리미터 제거
 	if p.peek(0) != nil && p.peek(0).Type == "PARTICLE" {
 		p.consume()
@@ -569,7 +618,8 @@ func (p *Parser) parseFunctionDecl() ast.Statement {
 	}
 
 	block := p.parseBlock()
-	return &ast.FunctionDeclaration{Name: &ast.Identifier{Value: name}, Params: params, Body: block, AccessModifier: access, IsStatic: isStatic, ReturnType: returnType}
+	return &ast.FunctionDeclaration{Name: &ast.Identifier{Value: name}, Params: params, Body: block, AccessModifier: access, IsStatic: isStatic, ReturnType: returnType,
+		SrcLine: nameLine, SrcCol: nameCol, SrcLen: nameLen}
 }
 
 func (p *Parser) parseIf() *ast.IfStatement {
@@ -1259,7 +1309,7 @@ func (p *Parser) parsePrimary() ast.Expression {
 }
 
 func (p *Parser) parseConstructor() *ast.ConstructorDeclaration {
-	p.consume()
+	start := p.consume()
 	var params []*ast.Parameter
 	if p.peek(0) != nil && p.peek(0).Type == token.LPAREN {
 		p.consume()
@@ -1298,5 +1348,6 @@ func (p *Parser) parseConstructor() *ast.ConstructorDeclaration {
 		p.consume()
 	}
 	block := p.parseBlock()
-	return &ast.ConstructorDeclaration{Id: &ast.Identifier{Value: p.lang.ConstructorFunctionName}, Params: params, Body: block.Statements}
+	return &ast.ConstructorDeclaration{Id: &ast.Identifier{Value: p.lang.ConstructorFunctionName}, Params: params, Body: block.Statements,
+		SrcLine: start.Line, SrcCol: start.Col, SrcLen: utf8.RuneCountInString(start.Literal)}
 }

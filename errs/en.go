@@ -136,6 +136,8 @@ var enCatalog = Catalog{
 	IllegalBreak:          "A break can only be used inside a loop.",
 	SyntaxUnexpectedToken: "Unexpected '%[3]s' at line %[1]d, column %[2]d.",
 	SyntaxUnexpectedEnd:   "Unexpected end of input at line %[1]d.",
+	SyntaxDuplicateFunction:    "Line %[1]d, column %[2]d: a function named <%[3]s> is already defined here. A function name can be used once.",
+	SyntaxDuplicateConstructor: "Line %[1]d, column %[2]d: this class already has a constructor. A class can have only one.",
 
 	ImportUnsupported:    "Importing files is not supported in the web playground; only standard library modules can be imported.",
 	InputTypeUnsupported: "A value of type '%s' cannot be read as input.",

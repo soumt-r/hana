@@ -235,6 +235,11 @@ const (
 	// SyntaxError (reported by the parser; see parser/hari Diagnostic)
 	SyntaxUnexpectedToken Code = "SyntaxError.UnexpectedToken" // line, column, token
 	SyntaxUnexpectedEnd   Code = "SyntaxError.UnexpectedEnd"   // line
+	// A function (or method) made twice in the same place: in a file, a
+	// function's body or a class. Hari has no overloading; overriding a
+	// parent's method in a child class is not this.
+	SyntaxDuplicateFunction    Code = "SyntaxError.DuplicateFunction"    // line, column, name
+	SyntaxDuplicateConstructor Code = "SyntaxError.DuplicateConstructor" // line, column
 
 	// TypeError
 	NotCallable             Code = "TypeError.NotCallable"
@@ -328,7 +333,7 @@ var allCodes = []Code{
 	OperandTypeMismatch, NullOperand,
 	VariableTypeMismatch, ArgumentTypeMismatch, ReturnTypeMismatch,
 	CallTooDeep,
-	SyntaxUnexpectedToken, SyntaxUnexpectedEnd,
+	SyntaxUnexpectedToken, SyntaxUnexpectedEnd, SyntaxDuplicateFunction, SyntaxDuplicateConstructor,
 	ThisNotBound, SuperOutsideMethod, StaticOutsideMethod, VariableNotFound, ClassNotFound,
 	GlobalFunctionNotFound, StaticMethodNotFound, MethodNotFound,
 	NotCallable, NotAList, NotIterable, RangeMustBeNumbers, ListIndexMustBeNumber,

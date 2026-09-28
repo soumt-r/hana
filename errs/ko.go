@@ -137,6 +137,8 @@ var koCatalog = Catalog{
 	IllegalBreak:          "'반복을 끝내자'는 반복 안에서만 쓸 수 있어요.",
 	SyntaxUnexpectedToken: "%[1]d번째 줄 %[2]d번째 글자의 '%[3]s'를 이해할 수 없어요.",
 	SyntaxUnexpectedEnd:   "%[1]d번째 줄에서 문장이 끝나지 않았어요.",
+	SyntaxDuplicateFunction:    "%[1]d번째 줄 %[2]d번째 글자: 같은 곳에 이름이 <%[3]s>인 함수가 이미 있어요. 함수는 이름마다 하나만 만들 수 있어요.",
+	SyntaxDuplicateConstructor: "%[1]d번째 줄 %[2]d번째 글자: 이 설계에는 '처음 만들어질 때'가 이미 있어요. 설계마다 하나만 만들 수 있어요.",
 
 	ImportUnsupported:    "웹 놀이터에서는 파일 가져오기를 지원하지 않아요. 표준 라이브러리만 가져올 수 있어요.",
 	InputTypeUnsupported: "'%s' 타입은 입력으로 받을 수 없어요.",

@@ -571,6 +571,10 @@ type FunctionDeclaration struct {
 
 	// Module is the module the function was imported from, or nil (see ClassDeclaration).
 	Module interface{}
+
+	// Where the name is written (1-based line, 0-based column, length in
+	// characters), for the parser's diagnostics; not syntax.
+	SrcLine, SrcCol, SrcLen int
 }
 
 func (f *FunctionDeclaration) TokenLiteral() string { return f.Name.Value }
@@ -600,6 +604,9 @@ type ConstructorDeclaration struct {
 
 	// Module is the module the constructor was imported from, or nil (see ClassDeclaration).
 	Module interface{}
+
+	// Where it starts (see FunctionDeclaration's SrcLine).
+	SrcLine, SrcCol, SrcLen int
 }
 
 func (cd *ConstructorDeclaration) statementNode() {}

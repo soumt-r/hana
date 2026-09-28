@@ -137,6 +137,8 @@ var jaCatalog = Catalog{
 	IllegalBreak:          "「繰り返しを終わろう」は繰り返しの中でしか使えません。",
 	SyntaxUnexpectedToken: "%[1]d行目、%[2]d文字目の「%[3]s」を解釈できません。",
 	SyntaxUnexpectedEnd:   "%[1]d行目で文が途中で終わっています。",
+	SyntaxDuplicateFunction:    "%[1]d行目、%[2]d文字目: 同じところに〈%[3]s〉という関数がすでにあります。関数は名前ごとに一つしか作れません。",
+	SyntaxDuplicateConstructor: "%[1]d行目、%[2]d文字目: この設計には「最初に作られる時」がすでにあります。設計ごとに一つしか作れません。",
 
 	ImportUnsupported:    "Webプレイグラウンドではファイルのインポートに対応していません。標準ライブラリのみインポートできます。",
 	InputTypeUnsupported: "『%s』型は入力として受け取れません。",
