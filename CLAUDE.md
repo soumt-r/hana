@@ -190,7 +190,9 @@ DelimLen, TypeOpen/TypeClose.
 
 ## 연산자 메서드 (`<기호 더하기>` …): 이름표는 `magic` 패키지
 
-스펙 3.5: 좌항이 객체이고 그 클래스(부모 포함)에 연산자의 메서드가 있으면 `A + B`는 `A의 <기호 더하기>(B)`와 똑같은 메서드 호출입니다(인자·반환 타입 검사, 호출 깊이 제한 포함). `'x'에 B를 더하자`도 같은 `+`이고, 대소 비교가 조건이 되면 결과는 참/거짓이어야 합니다. 이름은 `magic.Hari`/`magic.Kanade`(연산자 기호 → 메서드 이름) 한 곳이고 트리워커(`LangConfig.OperatorMethods`, `eval_expr.go`의 BinaryExpression)와 바이트코드(`VM.OperatorMethods`, `binaryWithEquals`)가 씁니다. 브라우저 엔진(`config.ts`의 `operatorMethods`, `evalExpr.ts`)과 Haru(`lang.rs`의 `operator_methods`, `ClassInfo.operators`)는 같은 낱말을 손으로 적어 두었으니 바꿀 땐 다섯 곳을 함께 고치세요. 트리워커는 이 호출을 `callDepth`로 세야 합니다(안 세면 끝없는 재귀가 Go 스택을 넘쳐 죽음). `<기호 같다>`(`==`/`!=`)는 예전 규칙 그대로입니다: 그 클래스 **자신의** 메서드만 보고, `다르다`는 결과를 뒤집습니다. `tests/operator_methods_test.go`와 `compare_tests.ts`의 '연산자 메서드'가 지킵니다.
+스펙 3.5: 좌항이 객체이고 그 클래스(부모 포함)에 연산자의 메서드가 있으면 `A + B`는 `A의 <기호 더하기>(B)`와 똑같은 메서드 호출입니다(인자·반환 타입 검사, 호출 깊이 제한 포함). `'x'에 B를 더하자`도 같은 `+`이고, 대소 비교가 조건이 되면 결과는 참/거짓이어야 합니다. `<기호 같다>`도 같은 규칙이고(키 `"=="`), `다르다`는 참/거짓 결과를 뒤집으며 `비어있음`(아무것도 안 돌려줌)은 "같지 않음"입니다. 이름은 `magic.Hari`/`magic.Kanade`(연산자 기호 → 메서드 이름) 한 곳이고 트리워커(`LangConfig.OperatorMethods`, `vm/operators.go`의 `callOperatorMethod`)와 바이트코드(`VM.OperatorMethods`, `binaryWithEquals`)가 씁니다. 브라우저 엔진(`config.ts`의 `operatorMethods`, `evalExpr.ts`의 `callOperatorMethod`)과 Haru(`lang.rs`의 `equals_method`/`operator_methods`, `ClassInfo.equals`/`operators`)는 같은 낱말을 손으로 적어 두었으니 바꿀 땐 다섯 곳을 함께 고치세요. 트리워커는 이 호출을 `callDepth`로 세야 합니다(안 세면 끝없는 재귀가 Go 스택을 넘쳐 죽음). `tests/operator_methods_test.go`와 `compare_tests.ts`의 '연산자 메서드'가 지킵니다.
+
+함수 이름 토큰(`<…>`, 카나데 `〈…〉`)은 여는 꺾쇠 바로 뒤에서 시작하고(공백·`=`로 시작하지 않음) 한 줄 안에서 끝납니다. 그래야 `(<하나>() < <둘>())`의 가운데 `<`가 비교 연산자로 읽힙니다(예전엔 `< <둘>`까지 함수 이름 하나로 삼켜 조용히 틀린 값이 나왔음). 렉서 두 개, TS 렉서·`cm-language.ts` 두 개, Haru `lexer.rs`, VS Code 카나데 문법이 같은 규칙입니다.
 
 ## 리스트 pseudo-method `<비우기>`
 

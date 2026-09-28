@@ -686,7 +686,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 			}
 			return nil, errs.New(errs.MemberAccessOnString)
 		}
-		return nil, errs.New(errs.MemberAccessUnsupported, errs.TypeNameOf(obj))
+		return nil, errs.New(errs.MemberAccessUnsupported, typecheck.Describe(&i.Config.Types, obj, i.host()))
 	case *ast.LogicalExpression:
 		left, err := i.Evaluate(e.Left, env)
 		if err != nil {
@@ -728,41 +728,19 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 		}
 
 		if e.Operator == "==" || e.Operator == "!=" {
-			if leftObj, ok := left.(*HariObject); ok {
-				cls := i.Classes[leftObj.ClassName]
-				var funcDecl *ast.FunctionDeclaration
-				for _, stmt := range cls.Body {
-					if f, ok := stmt.(*ast.FunctionDeclaration); ok && f.Name.Value == i.Config.EqualsMethodName {
-						funcDecl = f
-						break
-					}
+			// `!=` asks the same method and turns its answer around; an
+			// answer of 비어있음 (nothing returned) means "not equal".
+			if res, found, err := i.callOperatorMethod(left, "==", right); found {
+				if err != nil {
+					return nil, err
 				}
-				if funcDecl != nil {
-					funcEnv := NewEnvironment(i.globalOf(funcDecl.Module))
-					funcEnv.this = leftObj
-					funcEnv.DeclareSym(selfClassSym, leftObj.ClassName)
-					if len(funcDecl.Params) > 0 {
-						funcEnv.DeclareSym(funcDecl.Params[0].Name.Symbol(), right)
-					}
-					for _, bs := range funcDecl.Body.Statements {
-						_, err := i.Execute(bs, funcEnv)
-						if err != nil {
-							if retErr, isRet := err.(*ReturnValue); isRet {
-								if e.Operator == "!=" {
-									if retBool, ok := retErr.Value.(bool); ok {
-										return !retBool, nil
-									}
-								}
-								return retErr.Value, nil
-							}
-							return nil, err
-						}
-					}
-					if e.Operator == "!=" {
-						return true, nil
-					}
-					return false, nil
+				if res == nil {
+					return e.Operator == "!=", nil
 				}
+				if b, ok := res.(bool); ok && e.Operator == "!=" {
+					return !b, nil
+				}
+				return res, nil
 			}
 			if e.Operator == "==" {
 				return value.Equal(left, right), nil
@@ -777,25 +755,8 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 			return nil, errs.New(errs.UnknownOperator, e.Operator)
 		}
 
-		// Operator overloading (spec 3.5): an object on the left whose class
-		// (or an ancestor) has the operator's method runs `A의 <기호 더하기>(B)`.
-		if leftObj, ok := left.(*HariObject); ok {
-			if name, ok := i.Config.OperatorMethods[e.Operator]; ok {
-				if cls, ok := i.Classes[leftObj.ClassName]; ok {
-					sym := symbol.Intern(name)
-					if i.classMember(cls, sym).method != nil {
-						// A call, so it counts in the nesting as a call expression does.
-						i.callDepth++
-						if i.callDepth > MaxCallDepth {
-							i.callDepth--
-							return nil, errs.New(errs.CallTooDeep, MaxCallDepth)
-						}
-						val, err := i.CallFunction(&BoundMethod{Object: leftObj, FuncName: name, Sym: sym}, []interface{}{right})
-						i.callDepth--
-						return val, err
-					}
-				}
-			}
+		if res, found, err := i.callOperatorMethod(left, e.Operator, right); found {
+			return res, err
 		}
 
 		// Null-safe (Runtime spec 2.4): only the equality operators may see 비어있음.

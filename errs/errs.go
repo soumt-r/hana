@@ -120,27 +120,6 @@ func AccessViolation(access string, isMethod bool, name string) *Error {
 	return New(PrivateFieldAccess, name)
 }
 
-// TypeNameOf names a runtime value's type in plain English for messages that
-// need to mention it (e.g. MemberAccessUnsupported), without leaking Go's
-// internal type names.
-func TypeNameOf(v interface{}) string {
-	switch v.(type) {
-	case nil:
-		return "null"
-	case float64:
-		return "number"
-	case string:
-		return "string"
-	case bool:
-		return "boolean"
-	case []interface{}:
-		return "list"
-	case map[interface{}]interface{}:
-		return "dict"
-	}
-	return "object"
-}
-
 // Every Code, one per distinct message. The tone/arity tests iterate
 // allCodes, so a new Code must be added here and to all three catalogs.
 const (

@@ -101,18 +101,15 @@ type VM struct {
 	ErrorMessage string
 	Locale       errs.Locale
 
-	// EqualsMethod is the magic method `==`/`!=` calls on a class instance's
-	// left operand (operator overloading; mirrors vm.LangConfig.EqualsMethodName).
 	// VarQuoteOpen/VarQuoteClose are the VAR token's quote characters, needed
 	// for dynamic reflection `<'변수'>()` — a <...> name that is itself a
 	// quoted variable means "the method named by that variable's value"
 	// (mirrors vm.LangConfig.VarQuoteOpen/Close).
-	EqualsMethod  string
 	VarQuoteOpen  string
 	VarQuoteClose string
-	// OperatorMethods names the method each arithmetic or comparison
-	// operator calls on an object on its left, by the operator's symbol
-	// (magic.Hari or magic.Kanade).
+	// OperatorMethods names the method each operator calls on an object on
+	// its left, by the operator's symbol ("==" for both == and !=;
+	// magic.Hari or magic.Kanade).
 	OperatorMethods map[string]string
 }
 
@@ -137,7 +134,6 @@ func (vm *VM) UseJapaneseWords() {
 	vm.ErrorClass = "エラー"
 	vm.ErrorMessage = "メッセージ"
 	vm.Locale = errs.Japanese
-	vm.EqualsMethod = "記号 同じだ"
 	vm.OperatorMethods = magic.Kanade
 	vm.VarQuoteOpen = "『"
 	vm.VarQuoteClose = "』"
@@ -165,7 +161,6 @@ func New(program *bytecode.Program) *VM {
 		ErrorClass:           "오류",
 		ErrorMessage:         "메시지",
 		Locale:               errs.Korean,
-		EqualsMethod:         "기호 같다",
 		VarQuoteOpen:         "'",
 		VarQuoteClose:        "'",
 		OperatorMethods:      magic.Hari,
@@ -1235,7 +1230,7 @@ func (vm *VM) getMember(objVal interface{}, propName string, sym symbol.Symbol, 
 		}
 		return char, nil
 	}
-	return nil, errs.New(errs.MemberAccessUnsupported, errs.TypeNameOf(objVal))
+	return nil, errs.New(errs.MemberAccessUnsupported, typecheck.Describe(&vm.Types, objVal, vm.host()))
 }
 
 // setMember resolves a MemberExpression assignment target at runtime,
@@ -1471,19 +1466,32 @@ func binaryFast(op bytecode.Opcode, left, right interface{}) (result interface{}
 	return nil, false
 }
 
-// binaryWithEquals is binaryOp plus the magic methods of an object on the
-// left: the equality one for ==/!=, and for the other operators the method
-// OperatorMethods names, called as `A의 <기호 더하기>(B)` would be
-// (inherited, arguments and result checked).
+// binaryWithEquals is binaryOp plus the operator methods of an object on the
+// left (spec 3.5): the method OperatorMethods names, called as
+// `A의 <기호 더하기>(B)` would be (inherited, arguments and result checked).
+// `!=` asks the `==` method and turns its answer around; an answer of
+// 비어있음 (nothing returned) means "not equal". Mirrors the tree-walker's
+// callOperatorMethod.
 func (vm *VM) binaryWithEquals(op bytecode.Opcode, left, right interface{}) (interface{}, error) {
 	if obj, isObj := left.(*Object); isObj {
-		if op == bytecode.EQ || op == bytecode.NEQ {
-			if vm.hasEqualsMethod(obj) {
-				return vm.callEqualsMethod(obj, right, op == bytecode.NEQ)
-			}
-		} else if name, ok := vm.OperatorMethods[operatorSymbol(op)]; ok {
+		eq := op == bytecode.EQ || op == bytecode.NEQ
+		key := operatorSymbol(op)
+		if eq {
+			key = "=="
+		}
+		if name, ok := vm.OperatorMethods[key]; ok {
 			if fn, ok := vm.findMethod(obj.ClassName, name); ok {
-				return vm.callMethod(&boundMethod{Receiver: obj, Method: name, fn: fn}, []interface{}{right})
+				res, err := vm.callMethod(&boundMethod{Receiver: obj, Method: name, fn: fn}, []interface{}{right})
+				if err != nil || !eq {
+					return res, err
+				}
+				if res == nil {
+					return op == bytecode.NEQ, nil
+				}
+				if b, ok := res.(bool); ok && op == bytecode.NEQ {
+					return !b, nil
+				}
+				return res, nil
 			}
 		}
 	}
@@ -1706,43 +1714,6 @@ func (vm *VM) resolveDynamicName(name string, locals *frame) string {
 		}
 	}
 	return name
-}
-
-// hasEqualsMethod reports whether obj's own class (not its ancestors —
-// vm/eval_expr.go scans only cls.Body) defines the equality magic method.
-func (vm *VM) hasEqualsMethod(obj *Object) bool {
-	cls, ok := vm.program.Classes[obj.ClassName]
-	if !ok {
-		return false
-	}
-	_, ok = cls.Methods[vm.EqualsMethod]
-	return ok
-}
-
-// callEqualsMethod runs obj's equality magic method against right, mirroring
-// vm/eval_expr.go's BinaryExpression case: the first parameter is bound
-// directly (no arity check), a returned bool is negated for `!=`, and a body
-// that ends without returning means "not equal" (so `!=` is true).
-func (vm *VM) callEqualsMethod(obj *Object, right interface{}, negate bool) (interface{}, error) {
-	fn := vm.program.Classes[obj.ClassName].Methods[vm.EqualsMethod]
-	fr := newFrame()
-	fr.module = vm.moduleFrame(fn.Module)
-	fr.this = obj
-	fr.selfClass = obj.ClassName
-	if len(fn.Params) > 0 {
-		fr.put(fn.ParamSymbols()[0], right)
-	}
-	res, err := vm.exec(fn.BodyChunk, fr)
-	if err != nil {
-		return nil, err
-	}
-	if res == nil {
-		return negate, nil
-	}
-	if b, ok := res.(bool); ok && negate {
-		return !b, nil
-	}
-	return res, nil
 }
 
 // lookupOrClass is lookup, then — if no variable has that name — a class of

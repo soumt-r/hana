@@ -85,17 +85,9 @@ type LangConfig struct {
 	// CLI's top-level print). Throwing code never consults it.
 	Locale errs.Locale
 
-	// EqualsMethodName is the magic method eval_expr.go's BinaryExpression
-	// case looks for on a *HariObject operand of == / != (operator
-	// overloading — spec 3.5's "매직 메서드"). This was hardcoded to the
-	// Korean literal "기호 같다" regardless of language until a real
-	// kanade-docs example (oop/1-classes.md's 〈記号 同じだ〉) was found to
-	// silently never match — verified by running it through hana.exe.
-	EqualsMethodName string
-
-	// OperatorMethods names the method each arithmetic or comparison
-	// operator calls on an object on its left, by the operator's symbol
-	// (magic.Hari or magic.Kanade; spec 3.5).
+	// OperatorMethods names the method each operator calls on an object on
+	// its left, by the operator's symbol ("==" for both == and !=;
+	// magic.Hari or magic.Kanade; spec 3.5).
 	OperatorMethods map[string]string
 
 	// ParseEmbeddedExpr lexes+parses a `{...}` template-string interpolation's
@@ -179,7 +171,6 @@ var KoreanConfig = LangConfig{
 	StringReplaceMethod:  "바꾸기",
 	StringSplitMethod:    "분리하기",
 	StringContainsMethod: "포함확인",
-	EqualsMethodName:     "기호 같다",
 	OperatorMethods:      magic.Hari,
 	Locale:               errs.Korean,
 }
@@ -226,11 +217,8 @@ var JapaneseConfig = LangConfig{
 	StringReplaceMethod:  "入れ替え",
 	StringSplitMethod:    "分割",
 	StringContainsMethod: "含むか確認",
-	// kanade-docs/src/pages/docs/oop/1-classes.md's actual method name
-	// (〈記号 同じだ〉, delimiters stripped).
-	EqualsMethodName: "記号 同じだ",
-	OperatorMethods:  magic.Kanade,
-	Locale:           errs.Japanese,
+	OperatorMethods:      magic.Kanade,
+	Locale:               errs.Japanese,
 	ParseEmbeddedExpr: func(code string) ast.Expression {
 		l := kanade_lexer.New(code)
 		p := kanade_parser.New(l)

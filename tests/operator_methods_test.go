@@ -167,3 +167,70 @@ func TestOperatorMethodsAreMethodCalls(t *testing.T) {
 		}
 	}
 }
+
+// `<기호 같다>` follows the same rules as the other operators: a child class
+// uses its parent's, the argument's type is checked, and `다르다` turns the
+// answer around (nothing returned means "not equal").
+func TestEqualsMethodIsInheritedAndChecked(t *testing.T) {
+	code := `[점]을 설계하자:
+    'x'를 0으로 정하자
+    처음 만들어질 때 ('x') 다음과 같이 하자:
+        '나'의 'x'를 'x'로 정하자
+    [논리]를 돌려주는 <기호 같다>를 만들자 ([점]인 '대상'):
+        ('나'의 'x'와 '대상'의 'x'가 같다)를 돌려주자
+[색점]은 [점]을 바탕으로 하고 설계하자:
+    '색'을 "빨강"으로 정하자
+[빈]을 설계하자:
+    <기호 같다>를 만들자 ('o'):
+        '없음'을 1로 정하자
+<비교>를 만들자 ('a', 'b'):
+    ('a'와 'b'가 같다)를 출력하자
+    ('a'와 'b'가 다르다)를 출력하자
+    'b'를 출력하자
+<비교>(새로운 [색점](1), 새로운 [색점](1))을 실행하자
+<비교>(새로운 [색점](1), 새로운 [색점](2))을 실행하자
+(새로운 [빈]()과 1이 같다)를 출력하자
+(새로운 [빈]()과 1이 다르다)를 출력하자
+(새로운 [점](1)과 3이 같다)를 출력하자
+`
+	for engine, r := range engines(t, code) {
+		if got, want := strings.Join(r.out, "|"), "참|거짓|[색점 객체]|거짓|참|[색점 객체]|거짓|참"; got != want {
+			t.Errorf("%s: got %q, want %q", engine, got, want)
+		}
+		if e, ok := r.err.(*errs.Error); !ok || e.Code != errs.ArgumentTypeMismatch {
+			t.Errorf("%s: got %v, want %s", engine, r.err, errs.ArgumentTypeMismatch)
+		}
+	}
+}
+
+// A function's name starts right after `<`, so `<` or `<=` followed by a space
+// before a function call is a comparison, not the start of a name.
+func TestLessThanBeforeAFunctionCall(t *testing.T) {
+	code := `<하나>를 만들자 ():
+    1을 돌려주자
+<둘>을 만들자 ():
+    2를 돌려주자
+(<하나>() < <둘>())를 출력하자
+(<둘>() <= <하나>())를 출력하자
+(<하나>() < <둘>() + 1)을 출력하자
+`
+	for engine, r := range engines(t, code) {
+		if r.err != nil {
+			t.Fatalf("%s: %v", engine, r.err)
+		}
+		if got, want := strings.Join(r.out, "|"), "참|거짓|참"; got != want {
+			t.Errorf("%s: got %q, want %q", engine, got, want)
+		}
+	}
+}
+
+// Member access on a value that has none names its type in the program's
+// language, not in English.
+func TestMemberAccessNamesTheTypeInTheLanguage(t *testing.T) {
+	for engine, r := range engines(t, "'x'를 5로 정하자\n('x'의 '길이')를 출력하자\n") {
+		msg := errs.Localize(errs.Korean, r.err)
+		if !strings.Contains(msg, "'숫자' 타입의 값에는") {
+			t.Errorf("%s: %q", engine, msg)
+		}
+	}
+}

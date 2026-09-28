@@ -40,7 +40,9 @@ var tokenSpecs = []struct {
 }{
 	{token.STRING, regexp.MustCompile(`^"(?:\\[\s\S]|[^"\\])*"`)},
 	{token.VAR, regexp.MustCompile(`^'[가-힣a-zA-Z0-9_]+'`)},
-	{"FUNCTION", regexp.MustCompile(`^<[^>]+>`)},
+	// A name starts right after `<` (not a space or `=`) and stays on its
+	// line, so `<`/`<=` before a function (`<f>() < <g>()`) is a comparison.
+	{"FUNCTION", regexp.MustCompile("^<[^ \t\r\n=>][^>\n]*>")},
 	// [모듈]이나 [타입]. 대괄호 안에 git 경로(github.com/owner/repo)도 올 수 있다.
 	{"TYPE", regexp.MustCompile(`^\[(?:\([^)]+\))?(?:[가-힣a-zA-Z_][가-힣a-zA-Z0-9_]*|[a-z0-9-]+(?:\.[a-z0-9-]+)+(?:/[A-Za-z0-9][A-Za-z0-9._-]*){2,})\]`)},
 	{token.LBRACKET, regexp.MustCompile(`^\[`)},
