@@ -1470,8 +1470,9 @@ func binaryFast(op bytecode.Opcode, left, right interface{}) (result interface{}
 // left (spec 3.5): the method OperatorMethods names, called as
 // `A의 <기호 더하기>(B)` would be (inherited, arguments and result checked).
 // `!=` asks the `==` method and turns its answer around; an answer of
-// 비어있음 (nothing returned) means "not equal". Mirrors the tree-walker's
-// callOperatorMethod.
+// 비어있음 (nothing returned) means "not equal". An arithmetic operator the
+// left does not answer asks the right's `<기호 오른쪽 더하기>` … with the left
+// (`B의 <기호 오른쪽 더하기>(A)`). Mirrors the tree-walker's callOperatorMethod.
 func (vm *VM) binaryWithEquals(op bytecode.Opcode, left, right interface{}) (interface{}, error) {
 	if obj, isObj := left.(*Object); isObj {
 		eq := op == bytecode.EQ || op == bytecode.NEQ
@@ -1492,6 +1493,13 @@ func (vm *VM) binaryWithEquals(op bytecode.Opcode, left, right interface{}) (int
 					return !b, nil
 				}
 				return res, nil
+			}
+		}
+	}
+	if obj, isObj := right.(*Object); isObj {
+		if name, ok := vm.OperatorMethods["r"+operatorSymbol(op)]; ok {
+			if fn, ok := vm.findMethod(obj.ClassName, name); ok {
+				return vm.callMethod(&boundMethod{Receiver: obj, Method: name, fn: fn}, []interface{}{left})
 			}
 		}
 	}

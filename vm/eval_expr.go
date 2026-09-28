@@ -758,6 +758,11 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 		if res, found, err := i.callOperatorMethod(left, e.Operator, right); found {
 			return res, err
 		}
+		// An arithmetic operator the left does not answer: the right's
+		// `<기호 오른쪽 더하기>` …, given the left (`B의 <기호 오른쪽 더하기>(A)`).
+		if res, found, err := i.callOperatorMethod(right, "r"+e.Operator, left); found {
+			return res, err
+		}
 
 		// Null-safe (Runtime spec 2.4): only the equality operators may see 비어있음.
 		if left == nil || right == nil {

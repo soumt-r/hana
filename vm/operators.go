@@ -5,13 +5,14 @@ import (
 	"github.com/soumt-r/hana/symbol"
 )
 
-// callOperatorMethod runs the method op names (LangConfig.OperatorMethods,
-// "==" for both == and !=) of an object on the left, as `A의 <기호 더하기>(B)`
-// would (spec 3.5): found through the class's ancestors, arguments and result
-// checked, counted in the call nesting. found is false when left is no object
-// or no class in its chain has the method.
-func (i *Interpreter) callOperatorMethod(left interface{}, op string, right interface{}) (val interface{}, found bool, err error) {
-	obj, ok := left.(*HariObject)
+// callOperatorMethod runs the method op names (LangConfig.OperatorMethods:
+// "==" for both == and !=, "r+" … for an object on the right) of target,
+// given arg, as `A의 <기호 더하기>(B)` would (spec 3.5): found through the class's
+// ancestors, arguments and result checked, counted in the call nesting.
+// found is false when target is no object or no class in its chain has the
+// method.
+func (i *Interpreter) callOperatorMethod(target interface{}, op string, arg interface{}) (val interface{}, found bool, err error) {
+	obj, ok := target.(*HariObject)
 	if !ok {
 		return nil, false, nil
 	}
@@ -33,7 +34,7 @@ func (i *Interpreter) callOperatorMethod(left interface{}, op string, right inte
 		i.callDepth--
 		return nil, true, errs.New(errs.CallTooDeep, MaxCallDepth)
 	}
-	val, err = i.CallFunction(&BoundMethod{Object: obj, FuncName: name, Sym: sym}, []interface{}{right})
+	val, err = i.CallFunction(&BoundMethod{Object: obj, FuncName: name, Sym: sym}, []interface{}{arg})
 	i.callDepth--
 	return val, true, err
 }

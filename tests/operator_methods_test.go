@@ -234,3 +234,51 @@ func TestMemberAccessNamesTheTypeInTheLanguage(t *testing.T) {
 		}
 	}
 }
+
+// An arithmetic operator whose left side has no method asks the right side:
+// `3 * B` runs `B의 <기호 오른쪽 곱하기>(3)` (inherited too). The left's own
+// method wins, comparisons have no right-side version, and `'n'에 B를 더하자`
+// goes the same way.
+func TestRightOperatorMethods(t *testing.T) {
+	code := `[벡터]를 설계하자:
+    'x'를 0으로 정하자
+    처음 만들어질 때 ('x') 다음과 같이 하자:
+        '나'의 'x'를 'x'로 정하자
+    <기호 오른쪽 곱하기>를 만들자 ('k'):
+        ('k' * '나'의 'x')를 돌려주자
+    <기호 오른쪽 빼기>를 만들자 ('k'):
+        ('k' - '나'의 'x')를 돌려주자
+    <기호 오른쪽 더하기>를 만들자 ('k'):
+        ('k' + '나'의 'x')를 돌려주자
+    <기호 오른쪽 나누기>를 만들자 ('k'):
+        ('k' / '나'의 'x')를 돌려주자
+    <기호 오른쪽 나머지>를 만들자 ('k'):
+        ('k' % '나'의 'x')를 돌려주자
+[자]는 [벡터]를 바탕으로 하고 설계하자:
+    '길이'를 0으로 정하자
+[남]을 설계하자:
+    'v'를 1로 정하자
+    <기호 곱하기>를 만들자 ('o'):
+        "남"을 돌려주자
+'v'를 새로운 [벡터](4)로 정하자
+(3 * 'v')를 출력하자
+(10 - 'v')를 출력하자
+(1 + 'v')를 출력하자
+(10 / 'v')를 출력하자
+(10 % 'v')를 출력하자
+(2 * 새로운 [자](5))를 출력하자
+(새로운 [남]() * 'v')를 출력하자
+'n'을 3으로 정하자
+'n'에 'v'를 더하자
+'n'을 출력하자
+(3 < 'v')를 출력하자
+`
+	for engine, r := range engines(t, code) {
+		if got, want := strings.Join(r.out, "|"), "12|6|5|2.5|2|10|남|7"; got != want {
+			t.Errorf("%s: got %q, want %q", engine, got, want)
+		}
+		if e, ok := r.err.(*errs.Error); !ok || e.Code != errs.OperandTypeMismatch {
+			t.Errorf("%s: got %v, want %s", engine, r.err, errs.OperandTypeMismatch)
+		}
+	}
+}

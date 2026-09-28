@@ -6,6 +6,11 @@
 // `==` and `!=` share one method, keyed "==": `!=` turns a true/false answer
 // around, and an answer of 비어있음 (the method returned nothing) means "not
 // equal".
+//
+// The arithmetic operators also have a method for an object on the right,
+// keyed "r" + the operator ("r+"): `3 * B`, when the left has no `*` method,
+// runs `B의 <기호 오른쪽 곱하기>(3)`. Comparisons have none (`3 < B` is
+// `B > 3`).
 package magic
 
 // Hari is the method name for each operator, by the operator's symbol.
@@ -20,6 +25,11 @@ var Hari = map[string]string{
 	"<":  "기호 작다",
 	">=": "기호 이상",
 	"<=": "기호 이하",
+	"r+": "기호 오른쪽 더하기",
+	"r-": "기호 오른쪽 빼기",
+	"r*": "기호 오른쪽 곱하기",
+	"r/": "기호 오른쪽 나누기",
+	"r%": "기호 오른쪽 나머지",
 }
 
 // Kanade is Hari's table in Kanade's words.
@@ -34,4 +44,9 @@ var Kanade = map[string]string{
 	"<":  "記号 小さい",
 	">=": "記号 以上",
 	"<=": "記号 以下",
+	"r+": "記号 右から足す",
+	"r-": "記号 右から引く",
+	"r*": "記号 右から掛ける",
+	"r/": "記号 右から割る",
+	"r%": "記号 右から余り",
 }
