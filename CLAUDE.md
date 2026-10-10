@@ -408,3 +408,7 @@ Runtime 스펙 2.2: `[타입]`이 붙은 선언은 값이 그 타입인지 검�
 ## 인덱싱(`'목록'의 'k'번째`)은 피연산자 하나
 
 `parseMemberAndCall`이 `의 X` 바로 뒤의 서수 조사(`LangProfile.OrdinalParticle`, 하리 `번째`·카나데 `番目`)와 하리의 장식용 `값`까지 먹습니다. 그래서 `'a'의 'k'번째 - 5`는 `(a[k]) - 5`, `'격자'의 2번째의 1번째`는 두 번 인덱싱입니다(예전엔 `번째`에서 식이 끝나 `- 5`가 조용히 사라지고 `+`·비교는 구문 오류, 두 번째 인덱스는 무시됐음). 같은 버그를 숨겼던 `finishComparison`의 "비교 연산이 안 오면 오른쪽 식을 버림"은 이제 그 식의 첫 토큰에 `UnknownToken` 진단을 냅니다. TS 파서 둘과 Haru `parser.rs`가 같고, `tests/ordinal_index_test.go`·`compare_tests.ts`의 '연산: 인덱싱 뒤의 연산'·Haru `tools/parity.sh`가 지킵니다.
+
+## 사전: `<포함확인>(키)`와 키 반복 (스펙 5.1)
+
+사전의 메서드는 `<포함확인>(키)` 하나입니다(이름은 문자열과 같은 `LangConfig.StringContainsMethod`, 사전이 키로 오면 `거짓` — `value.DictHas`). 트리워커는 `BoundDictMethod`, 바이트코드는 `getMember`의 `boundDictMethod`이고, 예전에 바이트코드가 `'사전'의 <이름>`을 `"이름"` 키로 찾던 것은 없어졌습니다. `마다 반복하자`는 사전의 **키**를 `value.SortedKeys` 순서(숫자 작은 순 → 문자열 코드포인트 순 → 거짓, 참)로, 시작할 때의 키를 복사해 돕니다(트리워커 `ForEachLoop`, 바이트코드 `TO_ITERABLE`). TS(`stdImpls.ts`의 `sortedKeys`, `BoundDictMethod`)와 Haru(`DictObj::sorted_keys`, `call_method`)가 같은 규칙이고 `tests/dict_keys_test.go`·`compare_tests.ts`의 '사전: 포함확인과 키 반복'이 지킵니다. 런타임 오류에 줄 번호가 없는 것은 스펙 4.2에 적은 알려진 한계입니다.

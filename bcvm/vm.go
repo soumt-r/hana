@@ -466,6 +466,8 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 					chars = append(chars, string(r))
 				}
 				stack[len(stack)-1] = value.NewList(chars)
+			case map[interface{}]interface{}:
+				stack[len(stack)-1] = value.NewList(value.SortedKeys(v))
 			default:
 				np, handled, rerr := raise(errs.New(errs.NotIterable))
 				if handled {
@@ -1194,15 +1196,13 @@ func (vm *VM) getMember(objVal interface{}, propName string, sym symbol.Symbol, 
 		return v.Items[idx], nil
 
 	case map[interface{}]interface{}:
-		// The property is evaluated as an expression to get the key (a plain
-		// <이름> reference is just its own name) — vm/eval_expr.go's dict branch.
-		var key interface{} = propName
-		if !isFunc {
-			k, err := vm.evalIndex(indexChunk, locals)
-			if err != nil {
-				return nil, err
-			}
-			key = k
+		// <이름> is a method (<포함확인>); anything else is evaluated to get the key.
+		if isFunc {
+			return &boundDictMethod{Dict: v, Method: propName}, nil
+		}
+		key, err := vm.evalIndex(indexChunk, locals)
+		if err != nil {
+			return nil, err
 		}
 		if val, ok := v[key]; ok {
 			return val, nil
@@ -1341,6 +1341,15 @@ func (vm *VM) callMethod(calleeVal interface{}, args []interface{}) (interface{}
 
 	case *boundStringMethod:
 		return vm.callStringMethod(bm, args)
+
+	case *boundDictMethod:
+		if bm.Method != vm.StringContainsMethod {
+			return nil, errs.New(errs.MethodNotFound, bm.Method)
+		}
+		if len(args) != 1 {
+			return nil, errs.New(errs.ArgCountExact, 1)
+		}
+		return value.DictHas(bm.Dict, args[0]), nil
 
 	case *boundListClear:
 		if len(args) != 0 {

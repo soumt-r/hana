@@ -56,6 +56,12 @@ type boundListClear struct {
 	List *value.List
 }
 
+// boundDictMethod is a dictionary's <포함확인>. Mirrors vm.BoundDictMethod.
+type boundDictMethod struct {
+	Dict   map[interface{}]interface{}
+	Method string
+}
+
 type boundStringMethod struct {
 	Value  string
 	Method string
