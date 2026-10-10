@@ -36,6 +36,13 @@ type BoundStringMethod struct {
 	FuncName string
 }
 
+// BoundDictMethod is a dictionary's <포함확인> (the name is
+// LangConfig.StringContainsMethod) looked up but not yet called.
+type BoundDictMethod struct {
+	Dict     map[interface{}]interface{}
+	FuncName string
+}
+
 type BoundListMethod struct {
 	List     *value.List
 	FuncName string

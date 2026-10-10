@@ -14,3 +14,20 @@ func Equal(a, b interface{}) bool {
 	}
 	return a == b
 }
+
+// CompareStrings is <, <=, >, >= on two strings (Runtime spec 5.4): codepoint
+// order, which Go's byte order on UTF-8 already is. ok is false for any other
+// operator.
+func CompareStrings(op, a, b string) (res bool, ok bool) {
+	switch op {
+	case "<":
+		return a < b, true
+	case "<=":
+		return a <= b, true
+	case ">":
+		return a > b, true
+	case ">=":
+		return a >= b, true
+	}
+	return false, false
+}

@@ -723,6 +723,7 @@ func (p *Parser) finishComparison(cond ast.Expression) ast.Expression {
 
 	if p.peek(0) != nil && p.peek(0).Type != "COMPARE" && p.peek(0).Type != token.RPAREN && p.peek(0).Type != token.COLON && p.peek(0).Type != token.IDENT && p.peek(0).Type != token.KW_AND && p.peek(0).Type != token.KW_OR {
 		// Possibly SOV: Left Right Compare
+		start := *p.peek(0)
 		right := p.parseExpression()
 		if p.peek(0) != nil && p.peek(0).Type == "PARTICLE" {
 			p.consume()
@@ -731,7 +732,10 @@ func (p *Parser) finishComparison(cond ast.Expression) ast.Expression {
 			op := p.lang.NormalizeCompareOpSOV(p.consume().Literal)
 			cond = &ast.BinaryExpression{Left: cond, Operator: op, Right: right}
 		} else {
-			// Fallback or error, but let's assume it was just part of something else
+			// No comparison came: the right side has nowhere to go. Say so at
+			// its first token rather than dropping it — `('a'의 'k'번째 - 5)`
+			// once lost its `- 5` here and printed a wrong number.
+			p.diags = append(p.diags, Diagnostic{Kind: DiagUnknownToken, Line: start.Line, Col: start.Col, Length: utf8.RuneCountInString(start.Literal), Literal: start.Literal})
 		}
 	} else if p.peek(0) != nil && p.peek(0).Type == "COMPARE" {
 		// SVO: Left Compare Right
@@ -1104,6 +1108,17 @@ func (p *Parser) parseMemberAndCall() ast.Expression {
 			p.consume()
 			prop := p.parsePrimary()
 			expr = &ast.MemberExpression{Object: expr, Property: prop}
+			// '목록'의 'k'번째: the ordinal closes the index here, so what
+			// follows (an operator, a comparison, another 의) applies to
+			// the element. Left for the caller, it ended the expression and
+			// `'a'의 'k'번째 - 5` silently lost its `- 5`.
+			if next := p.peek(0); next != nil && next.Type == "PARTICLE" && next.Literal == p.lang.OrdinalParticle {
+				p.consume()
+				// 하리의 장식용 "값"('과일'의 5번째 값); 카나데의 "の値"는 위 갈래가 받는다.
+				if v := p.peek(0); v != nil && v.Type == token.IDENT && v.Literal == p.lang.PoppedValueWord {
+					p.consume()
+				}
+			}
 		} else if tok.Type == "PARTICLE" && tok.Literal == p.lang.MemberParticle {
 			// 카나데는 앞/뒤 마커 앞에도 조사를 붙인다("『果物』の前に..." —
 			// 하자라면 "'과일' 앞에"처럼 조사 없이 바로 씀). member-access로

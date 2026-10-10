@@ -49,6 +49,12 @@ type LangProfile struct {
 	// (하자: "의").
 	MemberParticle string
 
+	// OrdinalParticle: the PARTICLE literal that closes an index after the
+	// member particle ('목록'의 'k'번째, 하자: "번째"). The member chain eats
+	// it so the indexing is one operand: `'a'의 'k'번째 - 5` is (a[k]) - 5
+	// and `'격자'의 2번째의 1번째` indexes twice.
+	OrdinalParticle string
+
 	// TypeInWord: literal fallback recognized as a TYPE_IN marker when the
 	// lexer didn't already tag it as TYPE_IN (하자: "인").
 	TypeInWord string
@@ -137,6 +143,7 @@ var hariProfile = &LangProfile{
 	ConditionThenWords:      []string{"라면"},
 	PoppedValueWord:         "값",
 	MemberParticle:          "의",
+	OrdinalParticle:         "번째",
 	TypeInWord:              "인",
 	TemplatePrefix:          "틀\"",
 	TemplateSuffix:          "\"",

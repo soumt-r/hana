@@ -234,6 +234,10 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 			// a loop walks the list as it was when the loop began
 			items = append([]interface{}(nil), list.Items...)
 			isList = true
+		} else if dict, ok := listVal.(map[interface{}]interface{}); ok {
+			// a dictionary's keys, in value.SortedKeys order, as they were when the loop began
+			items = value.SortedKeys(dict)
+			isList = true
 		}
 		if isList {
 			itemSym := symbol.Intern(itemName)

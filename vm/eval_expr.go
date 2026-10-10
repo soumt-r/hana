@@ -388,6 +388,15 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 				return strings.Contains(bsm.Value, sub), nil
 			}
 			return nil, errs.New(errs.MethodNotFound, bsm.FuncName)
+		} else if bdm, ok := callee.(*BoundDictMethod); ok {
+			// 사전의 메서드는 <포함확인>(키) 하나: 그 키가 있는지 (스펙 5.1).
+			if bdm.FuncName == i.Config.StringContainsMethod {
+				if len(args) != 1 {
+					return nil, errs.New(errs.ArgCountExact, 1)
+				}
+				return value.DictHas(bdm.Dict, args[0]), nil
+			}
+			return nil, errs.New(errs.MethodNotFound, bdm.FuncName)
 		} else if blm, ok := callee.(*BoundListMethod); ok {
 			// 목록은 문자열과 달리 "언어 네이티브 구문"(추가하자/꺼내자 등)으로
 			// 조작하는 게 기본 설계라(스펙 2.6), 메서드 형태로 남은 건 비우기
@@ -612,6 +621,9 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 			}
 			return nil, errs.New(errs.ListIndexMustBeNumber)
 		} else if dict, ok := obj.(map[interface{}]interface{}); ok {
+			if fr, ok := e.Property.(*ast.FunctionReference); ok {
+				return &BoundDictMethod{Dict: dict, FuncName: fr.Name}, nil
+			}
 			key, err := i.Evaluate(e.Property, env)
 			if err != nil {
 				return nil, err
@@ -803,10 +815,14 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 		}
 
 		// 문자열 덧셈: 문자열끼리만. 묵시적 형변환은 없다 (Runtime spec 2.2).
-		if e.Operator == "+" {
-			if ls, ok := left.(string); ok {
-				if rs, ok := right.(string); ok {
+		// 문자열끼리의 대소 비교는 코드포인트 사전순이다 (Runtime spec 5.4).
+		if ls, ok := left.(string); ok {
+			if rs, ok := right.(string); ok {
+				if e.Operator == "+" {
 					return strcat.Join(ls, rs), nil
+				}
+				if res, ok := value.CompareStrings(e.Operator, ls, rs); ok {
+					return res, nil
 				}
 			}
 		}

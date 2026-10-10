@@ -152,7 +152,7 @@ Y를 더하자`처럼 런타임에 평가되는 경로)은 조용히 "Variable '
 
 `hana/parser/hari/langprofile.go`의 `LangProfile`이 지금까지 뽑아낸 언어별 항목 전체
 목록(새 문법 추가 시 참고): ErrorLiterals, PluralSelfWords, ConditionThenWords,
-PoppedValueWord, MemberParticle, TypeInWord, TemplatePrefix/Suffix,
+PoppedValueWord, MemberParticle, OrdinalParticle, TypeInWord, TemplatePrefix/Suffix,
 ConstructorFunctionName, FrontMarker, AccessModifierFromVerb, IsConstVerb,
 IsPrintInlineVerb, ClassifyLoop, NormalizeCompareOpSOV/SVO, ImportAsParticles,
 DelimLen, TypeOpen/TypeClose.
@@ -388,7 +388,7 @@ Runtime 스펙 2.2: `[타입]`이 붙은 선언은 값이 그 타입인지 검�
 자식/인터페이스 구현체는 부모·인터페이스 타입에 통과(업캐스팅). 트리워커는 `vm/types.go`(`assignVariable`, `declareParam`, `checkField`, `Environment.DeclareType`),
 바이트코드는 `bcvm/types.go`와 `SET_VAR_TYPED` 옵코드(+`Param.Type`, `FieldInfo.Type`)에서 같은 `typecheck`를 씁니다. 새로 변수를 쓰는 경로를 만들면 반드시
 `assignVariable`(바이트코드는 `assignOrDeclare`)을 거치게 하세요 — 안 그러면 그 경로만 타입 제약이 새어 나갑니다. 타입 이름은 `LangConfig.Types`(`typecheck.Names`).
-브라우저 엔진은 `typecheck.ts`/`types.ts`로 미러링하고 `compare_tests.ts`가 Go와 문구까지 비교합니다. 연산자도 같은 스펙을 따릅니다: 묵시적 형변환 금지(`10 + "안녕"`은 `OperandTypeMismatch`, `+`는 문자열끼리만 잇기),
+브라우저 엔진은 `typecheck.ts`/`types.ts`로 미러링하고 `compare_tests.ts`가 Go와 문구까지 비교합니다. 연산자도 같은 스펙을 따릅니다: 묵시적 형변환 금지(`10 + "안녕"`은 `OperandTypeMismatch`, `+`는 문자열끼리만 잇기, 문자열끼리의 `< > <= >=`는 코드포인트 사전순 — `value.CompareStrings`, 스펙 5.4),
 `비어있음` 피연산자는 `NullOperand`(동등 비교 `같다/다르다`만 예외). 트리워커·브라우저 엔진이 모르는 연산자(`x 이다 참` 같은 오타)를 만나면 조용히 `비어있음`을 내지 않고 `UnknownOperator`를 냅니다(바이트코드는 컴파일 때 거절). 함수 반환 타입은 **적으면 검사하고 안 적어도 됩니다**: `typecheck.CheckReturn`(`ReturnTypeMismatch`)을 트리워커 `Interpreter.runFunctionBody`, 바이트코드 `Function.ReturnType`+`VM.checkedReturn`(함수·인스턴스 메서드·정적 메서드), TS `types.ts`의 `checkReturn`이 부릅니다(`tests/return_type_test.go`, `compare_tests.ts`의 '타입: 반환'). `비어있음`(반환 없이 끝남 포함)은 통과합니다.
 
 조건도 같은 방침입니다: `만약`·`동안 반복`의 조건과 `그리고`/`또는`의 양쪽 피연산자는 `참`/`거짓`이어야 하고 그 밖의 값은 `ConditionNotBoolean`(`TypeError`)입니다 — 예전엔 조용히 거짓이 되어 `(('x' % 2) == 0)` 같은 파서 버그를 가렸습니다. 트리워커는 `Interpreter.requireBool`, 바이트코드는 `VM.requireBool`(`JUMP_IF_*`/`NOT`)과 `CHECK_BOOL`(그리고/또는의 우항, `.hn` 형식은 그대로 — 옵코드만 뒤에 추가), TS는 `types.ts`의 `requireBool`이고 `tests/condition_paren_test.go`와 `compare_tests.ts`의 '조건:'이 지킵니다.
@@ -404,3 +404,11 @@ Runtime 스펙 2.2: `[타입]`이 붙은 선언은 값이 그 타입인지 검�
 산술 연산자는 일반 수학 순서입니다: `parser/hari`의 `parseBinary`(TS는 두 docs의 `parser.ts`)가 `* / %`를 `+ -`보다 먼저 묶고 같은 단계는 왼쪽부터 묶습니다(예전에는 전부 왼쪽에서 오른쪽이라 `2 + 3 * 4`가 20이었습니다). 파서는 하나라서 트리워커·바이트코드·카나데가 함께 바뀌고, 비교(`같다`, `크다`)와 `그리고`/`또는`은 산술을 다 읽은 뒤에 붙는 별개의 구조라 그대로입니다. `tests/precedence_test.go`와 `compare_tests.ts`의 '연산: 우선순위'가 지킵니다.
 
 인터페이스와 추상 클래스(`밑설계하자`/`下設計しよう`, 파서가 `LangProfile.IsAbstractClassVerb`로 `ClassDeclaration.IsAbstract`를 채움)는 `새로운`으로 만들 수 없고(`InstantiationError`), 문자열 글자 재대입은 `ImmutableAssignmentError`입니다(스펙 3.1.1, 5.4). 트리워커·바이트코드(`ClassInfo.IsAbstract`)·브라우저 엔진 모두 같습니다.
+
+## 인덱싱(`'목록'의 'k'번째`)은 피연산자 하나
+
+`parseMemberAndCall`이 `의 X` 바로 뒤의 서수 조사(`LangProfile.OrdinalParticle`, 하리 `번째`·카나데 `番目`)와 하리의 장식용 `값`까지 먹습니다. 그래서 `'a'의 'k'번째 - 5`는 `(a[k]) - 5`, `'격자'의 2번째의 1번째`는 두 번 인덱싱입니다(예전엔 `번째`에서 식이 끝나 `- 5`가 조용히 사라지고 `+`·비교는 구문 오류, 두 번째 인덱스는 무시됐음). 같은 버그를 숨겼던 `finishComparison`의 "비교 연산이 안 오면 오른쪽 식을 버림"은 이제 그 식의 첫 토큰에 `UnknownToken` 진단을 냅니다. TS 파서 둘과 Haru `parser.rs`가 같고, `tests/ordinal_index_test.go`·`compare_tests.ts`의 '연산: 인덱싱 뒤의 연산'·Haru `tools/parity.sh`가 지킵니다.
+
+## 사전: `<포함확인>(키)`와 키 반복 (스펙 5.1)
+
+사전의 메서드는 `<포함확인>(키)` 하나입니다(이름은 문자열과 같은 `LangConfig.StringContainsMethod`, 사전이 키로 오면 `거짓` — `value.DictHas`). 트리워커는 `BoundDictMethod`, 바이트코드는 `getMember`의 `boundDictMethod`이고, 예전에 바이트코드가 `'사전'의 <이름>`을 `"이름"` 키로 찾던 것은 없어졌습니다. `마다 반복하자`는 사전의 **키**를 `value.SortedKeys` 순서(숫자 작은 순 → 문자열 코드포인트 순 → 거짓, 참)로, 시작할 때의 키를 복사해 돕니다(트리워커 `ForEachLoop`, 바이트코드 `TO_ITERABLE`). TS(`stdImpls.ts`의 `sortedKeys`, `BoundDictMethod`)와 Haru(`DictObj::sorted_keys`, `call_method`)가 같은 규칙이고 `tests/dict_keys_test.go`·`compare_tests.ts`의 '사전: 포함확인과 키 반복'이 지킵니다. 런타임 오류에 줄 번호가 없는 것은 스펙 4.2에 적은 알려진 한계입니다.
