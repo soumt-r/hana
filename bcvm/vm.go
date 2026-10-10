@@ -1916,10 +1916,14 @@ func (vm *VM) binaryOp(op bytecode.Opcode, left, right interface{}) (interface{}
 	}
 
 	// String addition only joins strings: no implicit conversion (Runtime spec 2.2).
-	if op == bytecode.ADD {
-		if ls, ok := left.(string); ok {
-			if rs, ok := right.(string); ok {
+	// Strings compare in codepoint order (Runtime spec 5.4).
+	if ls, ok := left.(string); ok {
+		if rs, ok := right.(string); ok {
+			if op == bytecode.ADD {
 				return strcat.Join(ls, rs), nil
+			}
+			if res, ok := value.CompareStrings(symbol, ls, rs); ok {
+				return res, nil
 			}
 		}
 	}

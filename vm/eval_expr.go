@@ -803,10 +803,14 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 		}
 
 		// 문자열 덧셈: 문자열끼리만. 묵시적 형변환은 없다 (Runtime spec 2.2).
-		if e.Operator == "+" {
-			if ls, ok := left.(string); ok {
-				if rs, ok := right.(string); ok {
+		// 문자열끼리의 대소 비교는 코드포인트 사전순이다 (Runtime spec 5.4).
+		if ls, ok := left.(string); ok {
+			if rs, ok := right.(string); ok {
+				if e.Operator == "+" {
 					return strcat.Join(ls, rs), nil
+				}
+				if res, ok := value.CompareStrings(e.Operator, ls, rs); ok {
+					return res, nil
 				}
 			}
 		}

@@ -26,6 +26,7 @@ var kanadeProfile = &hari.LangProfile{
 	ConditionThenWords:      []string{"なら", "ならば"},
 	PoppedValueWord:         "値",
 	MemberParticle:          "の",
+	OrdinalParticle:         "番目",
 	TypeInWord:              "の", // kanade-docs reuses the member particle for this — see TYPE_IN's comment in lexer/kanade
 	TemplatePrefix:          "枠「",
 	TemplateSuffix:          "」",
