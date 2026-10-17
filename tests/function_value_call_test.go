@@ -38,3 +38,27 @@ func TestCallingAFunctionValueByItsVariable(t *testing.T) {
 		t.Errorf("bytecode: %s, want %s", got, want)
 	}
 }
+
+// A variable named like a built-in hides it: after `'문자로'를 5로 정하자`,
+// `<문자로>(1)` finds the number, which is no function. The tree-walker keeps
+// built-ins among the global variables; the bytecode engine used to call the
+// built-in anyway.
+func TestAVariableHidesABuiltInOfItsName(t *testing.T) {
+	code := `<그냥>을 만들자 ('n'):
+    (<문자로>('n'))를 돌려주자
+(<그냥>(7))을 출력하자
+'문자로'를 5로 정하자
+일단 해보자:
+    (<그냥>(1))을 출력하자
+오류가 발생했다면 ('e'):
+    ('e'의 '메시지')를 출력하자
+`
+	for engine, r := range engines(t, code) {
+		if r.err != nil {
+			t.Fatalf("%s: %v", engine, r.err)
+		}
+		if got, want := strings.Join(r.out, "|"), "7|MethodNotFoundError: '문자로' 함수를 찾을 수 없어요."; got != want {
+			t.Errorf("%s: got %q, want %q", engine, got, want)
+		}
+	}
+}

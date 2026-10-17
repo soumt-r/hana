@@ -572,6 +572,10 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 			op := instr.Operand.(*bytecode.CallOperand)
 			name := chunk.Names[op.NameIndex]
 			fn := op.CachedFunction()
+			// A variable of the name hides a built-in of that name (the
+			// tree-walker keeps built-ins among the global variables, so
+			// `'문자로'를 5로 정하자` replaces <문자로> there).
+			shadowed := false
 			if fn == nil {
 				name = vm.resolveDynamicName(name, locals)
 				if f, ok := vm.program.Functions[name]; ok {
@@ -586,6 +590,7 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 					if fr, ok := v.(*funcRef); ok {
 						fn = vm.program.Functions[fr.Name]
 					}
+					shadowed = true
 				}
 			}
 			var result interface{}
@@ -596,7 +601,7 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 				// (the arguments are not cleared off: the next push overwrites them)
 				result, err = vm.callFunction(fn, stack[len(stack)-op.Argc:])
 				stack = stack[:len(stack)-op.Argc]
-			} else if native, ok := vm.natives[name]; ok {
+			} else if native, ok := vm.natives[name]; ok && !shadowed {
 				args := make([]interface{}, op.Argc)
 				for i := op.Argc - 1; i >= 0; i-- {
 					args[i] = pop()
