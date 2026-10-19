@@ -834,10 +834,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 
 // unescape turns the escapes of a string literal into the characters they mean.
 func unescape(s string) string {
-	s = strings.ReplaceAll(s, "\\n", "\n")
-	s = strings.ReplaceAll(s, "\\\"", "\"")
-	s = strings.ReplaceAll(s, "\\t", "\t")
-	return strings.ReplaceAll(s, "\\\\", "\\")
+	return ast.Unescape(s)
 }
 
 // templatePart is a piece of a template literal: some text, then (when expr is not nil)

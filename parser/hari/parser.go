@@ -1162,12 +1162,14 @@ func (p *Parser) parseMemberAndCall() ast.Expression {
 func (p *Parser) parsePrimary() ast.Expression {
 	tok := p.consume()
 	if tok.Type == "OP" && tok.Literal == "-" {
-		next := p.consume()
-		if next.Type == token.INT {
+		if next := p.peek(0); next != nil && next.Type == token.INT {
+			p.consume()
 			val, _ := strconv.ParseFloat("-"+next.Literal, 64)
 			return &ast.NumberLiteral{Value: val}
 		}
-		return &ast.StringLiteral{Value: "알수없음: -"}
+		// -'x', -('a' + 1), -<함수>(): the operand with its member/call chain,
+		// read as 0 - operand.
+		return &ast.BinaryExpression{Left: &ast.NumberLiteral{Value: 0}, Operator: "-", Right: p.parseMemberAndCall()}
 	}
 	if tok.Type == token.STRING {
 		val := tok.Literal[p.lang.DelimLen : len(tok.Literal)-p.lang.DelimLen]

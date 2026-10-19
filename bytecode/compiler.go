@@ -1531,9 +1531,5 @@ func (c *Compiler) compileTemplateLiteral(chunk *Chunk, e *ast.TemplateLiteral) 
 // interpreter does at evaluation time (eval_expr.go), but once, at compile
 // time, since string/template literals are constant.
 func unescapeHariString(s string) string {
-	s = strings.ReplaceAll(s, `\n`, "\n")
-	s = strings.ReplaceAll(s, `\"`, `"`)
-	s = strings.ReplaceAll(s, `\t`, "\t")
-	s = strings.ReplaceAll(s, `\\`, `\`)
-	return s
+	return ast.Unescape(s)
 }

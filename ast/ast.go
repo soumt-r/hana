@@ -105,6 +105,41 @@ type StringLiteral struct {
 	Cooked interface{}
 }
 
+// Unescape turns the escapes of a string or template literal into the characters
+// they mean: \n, \t, \\ and the closing marks of both languages (\" for Hari,
+// \「 \」 for Kanade). It reads left to right once, so `\\n` is a backslash and an n;
+// any other backslash is kept as written. Every engine has a copy of this rule.
+func Unescape(s string) string {
+	if !strings.Contains(s, `\`) {
+		return s
+	}
+	var b strings.Builder
+	b.Grow(len(s))
+	for i := 0; i < len(s); i++ {
+		if s[i] != '\\' || i+1 == len(s) {
+			b.WriteByte(s[i])
+			continue
+		}
+		rest := s[i+1:]
+		switch {
+		case rest[0] == 'n':
+			b.WriteByte('\n')
+		case rest[0] == 't':
+			b.WriteByte('\t')
+		case rest[0] == '"' || rest[0] == '\\':
+			b.WriteByte(rest[0])
+		case strings.HasPrefix(rest, "「") || strings.HasPrefix(rest, "」"):
+			b.WriteString(rest[:len("「")])
+			i += len("「") - 1
+		default:
+			b.WriteByte('\\')
+			continue
+		}
+		i++
+	}
+	return b.String()
+}
+
 func (s *StringLiteral) TokenLiteral() string { return s.Value }
 func (s *StringLiteral) String() string       { return `"` + s.Value + `"` }
 func (s *StringLiteral) expressionNode()      {}

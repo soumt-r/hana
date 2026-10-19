@@ -56,7 +56,7 @@ var tokenSpecs = []struct {
 	// "枠「...」" isn't lexed as a bare IDENT "枠" + STRING.
 	{"TEMPLATE_STRING", regexp.MustCompile(`^枠「(?:\{[^{}]*\}|\\[\s\S]|[^」\\{])*」`)},
 	{token.STRING, regexp.MustCompile(`^「(?:\\[\s\S]|[^」\\])*」`)},
-	{token.VAR, regexp.MustCompile(`^『` + jaWord + `』`)},
+	{token.VAR, regexp.MustCompile(`^『[가-힣a-zA-Zぁ-んァ-ヶ一-龯ー0-9_]+』`)},
 	// As Hari's: the name starts right after `〈` and stays on its line.
 	{"FUNCTION", regexp.MustCompile("^〈[^ \t\r\n=〉][^〉\n]*〉")},
 	// TYPE: 【(genericArgs)Name】 — generic arg list keeps ASCII

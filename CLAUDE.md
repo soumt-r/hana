@@ -403,6 +403,8 @@ Runtime 스펙 2.2: `[타입]`이 붙은 선언은 값이 그 타입인지 검�
 
 산술 연산자는 일반 수학 순서입니다: `parser/hari`의 `parseBinary`(TS는 두 docs의 `parser.ts`)가 `* / %`를 `+ -`보다 먼저 묶고 같은 단계는 왼쪽부터 묶습니다(예전에는 전부 왼쪽에서 오른쪽이라 `2 + 3 * 4`가 20이었습니다). 파서는 하나라서 트리워커·바이트코드·카나데가 함께 바뀌고, 비교(`같다`, `크다`)와 `그리고`/`또는`은 산술을 다 읽은 뒤에 붙는 별개의 구조라 그대로입니다. `tests/precedence_test.go`와 `compare_tests.ts`의 '연산: 우선순위'가 지킵니다.
 
+단항 마이너스는 `parsePrimary`가 읽습니다: 바로 뒤가 숫자면 음수 리터럴, 아니면 뒤의 피연산자(멤버·호출 사슬 포함, `parseMemberAndCall`)를 `0 - 피연산자`로 만듭니다(예전엔 `-'x'`가 `"알수없음: -"` 글자가 됐음). 문자열·틀의 이스케이프는 `ast.Unescape` 한 곳(`\n \t \\ \" \「 \」`, 왼쪽부터 한 번 읽기, 그 밖의 역슬래시는 그대로)이고 TS `evalExpr.ts`의 `unescapeString`과 Haru `compiler.rs`의 `unescape`가 같은 규칙입니다. 카나데 변수 이름(`『…』`)은 하리처럼 숫자로 시작해도 됩니다(`『1位』`). `tests/unary_escape_test.go`와 두 docs `compare_tests.ts`의 '단항 마이너스'·'이스케이프'가 지킵니다.
+
 인터페이스와 추상 클래스(`밑설계하자`/`下設計しよう`, 파서가 `LangProfile.IsAbstractClassVerb`로 `ClassDeclaration.IsAbstract`를 채움)는 `새로운`으로 만들 수 없고(`InstantiationError`), 문자열 글자 재대입은 `ImmutableAssignmentError`입니다(스펙 3.1.1, 5.4). 트리워커·바이트코드(`ClassInfo.IsAbstract`)·브라우저 엔진 모두 같습니다.
 
 ## 인덱싱(`'목록'의 'k'번째`)은 피연산자 하나
