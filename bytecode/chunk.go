@@ -75,6 +75,7 @@ type Function struct {
 	Access     string
 	ReturnType string // the [타입]을 돌려주는 annotation as written ("" = none); the returned value is checked against it
 	Module     string // the module the function was imported from ("" = the program's own); its top-level variables are the function's globals
+	Class      string // for a method or constructor: the class that declares it, where a 부모 call in it starts looking above ("" = the receiver's class)
 
 	paramSymbols symbolCache // the parameters' names as Symbols (see ParamSymbols)
 }

@@ -6,8 +6,8 @@ import (
 )
 
 // findInClassChain은 cls부터 시작해 BaseClass 체인을 따라 부모 쪽으로 올라가며 visit을
-// 호출합니다. visit은 현재 클래스의 Body를 받아, 찾고 있던 멤버(필드/메서드/생성자 등)를
-// 그 클래스 안에서 발견하면 true를 반환해야 합니다 — 그러면 탐색을 즉시 멈춥니다.
+// 호출하고, visit이 멤버를 찾은 클래스를 돌려줍니다(못 찾으면 nil). visit은 현재
+// 클래스를 받아, 찾고 있던 멤버(필드/메서드/생성자 등)를 그 클래스 안에서 발견하면 true를 반환해야 합니다 — 그러면 탐색을 즉시 멈춥니다.
 //
 // 어떤 클래스에서 이름은 있는데 원하는 조건(예: getter가 실제로 있는지)은 아닐 때도
 // visit이 true를 반환하면, 그 시점에 부모 탐색을 멈춥니다 — 이름이 한 번 그 클래스에서
@@ -27,8 +27,10 @@ type classMember struct {
 	fieldAccess  string
 	getter       []ast.Statement
 	setter       *ast.SetterInfo
+	fieldOwner   *ast.ClassDeclaration // the class that declares the field (its getter/setter's 부모 starts above it)
 	method       *ast.FunctionDeclaration
 	methodAccess string
+	methodOwner  *ast.ClassDeclaration // the class that declares the method
 }
 
 func (i *Interpreter) classMember(cls *ast.ClassDeclaration, sym symbol.Symbol) *classMember {
@@ -52,17 +54,18 @@ func (i *Interpreter) classMember(cls *ast.ClassDeclaration, sym symbol.Symbol) 
 	name := sym.String()
 	m := &classMember{fieldAccess: "public", methodAccess: "public"}
 	fieldDone := false
-	i.findInClassChain(cls, func(body []ast.Statement) bool {
-		for _, stmt := range body {
+	i.findInClassChain(cls, func(owner *ast.ClassDeclaration) bool {
+		for _, stmt := range owner.Body {
 			switch d := stmt.(type) {
 			case *ast.VariableDeclaration:
 				if !fieldDone && d.Name.Value == name {
 					m.fieldAccess, m.getter, m.setter = d.AccessModifier, d.Getter, d.Setter
+					m.fieldOwner = owner
 					fieldDone = true
 				}
 			case *ast.FunctionDeclaration:
 				if m.method == nil && d.Name.Value == name {
-					m.method, m.methodAccess = d, d.AccessModifier
+					m.method, m.methodAccess, m.methodOwner = d, d.AccessModifier, owner
 				}
 			}
 		}
@@ -93,16 +96,17 @@ func (i *Interpreter) registerClass(name string, cls *ast.ClassDeclaration) {
 	i.lastMembers = nil
 }
 
-func (i *Interpreter) findInClassChain(cls *ast.ClassDeclaration, visit func(body []ast.Statement) (found bool)) {
+func (i *Interpreter) findInClassChain(cls *ast.ClassDeclaration, visit func(cls *ast.ClassDeclaration) (found bool)) *ast.ClassDeclaration {
 	for cls != nil {
-		if visit(cls.Body) {
-			return
+		if visit(cls) {
+			return cls
 		}
 		if cls.BaseClass == nil {
-			return
+			return nil
 		}
 		cls = i.Classes[cls.BaseClass.Name]
 	}
+	return nil
 }
 
 // classIsOrExtends reports whether the class named className is targetName

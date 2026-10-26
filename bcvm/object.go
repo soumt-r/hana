@@ -28,6 +28,7 @@ type classRef struct {
 // Mirrors vm.SuperReference.
 type superRef struct {
 	Receiver *Object
+	From     string // the class whose method said 부모 ("" = the receiver's)
 }
 
 // boundMethod is an instance method looked up but not yet called (produced
@@ -37,6 +38,7 @@ type boundMethod struct {
 	Receiver *Object
 	Method   string
 	IsSuper  bool
+	From     string             // for a 부모 call: the class whose method made it
 	fn       *bytecode.Function // the method GET_MEMBER already resolved; nil when it has to be looked up
 }
 
@@ -102,6 +104,7 @@ type memberEntry struct {
 	fieldAccess, methodAccess string
 	getter                    *bytecode.Chunk
 	setter                    *bytecode.SetterInfo
+	fieldClass                string // the class that declares the field (its getter/setter's 부모 starts above it)
 	method                    *bytecode.Function
 }
 
@@ -146,6 +149,7 @@ func (vm *VM) lookupMember(cache map[symbol.Symbol]*memberEntry, className strin
 			for _, f := range cls.Fields {
 				if f.Name == prop {
 					e.fieldAccess, e.getter, e.setter = f.Access, f.Getter, f.Setter
+					e.fieldClass = name
 					fieldDone = true
 					break
 				}

@@ -433,11 +433,13 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 			if hariObj, ok := obj.(*HariObject); ok {
 				if propId, ok := mem.Property.(*ast.Identifier); ok {
 					// Check for setter
-					setter := i.classMember(i.classOf(hariObj), propId.Symbol()).setter
+					member := i.classMember(i.classOf(hariObj), propId.Symbol())
+					setter := member.setter
 
 					if setter != nil {
 						setterEnv := NewEnvironment(i.globalOf(i.classOf(hariObj).Module))
 						setterEnv.this = hariObj
+						setterEnv.class = member.fieldOwner
 						setterEnv.DeclareSym(thisSym, hariObj)
 						setterEnv.DeclareSym(selfClassSym, hariObj.ClassName)
 						if setter.Param != nil {

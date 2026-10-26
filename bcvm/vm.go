@@ -865,7 +865,7 @@ func (vm *VM) run(chunk *bytecode.Chunk, locals *frame) (interface{}, error) {
 				}
 				return nil, rerr
 			}
-			push(&superRef{Receiver: locals.this})
+			push(&superRef{Receiver: locals.this, From: locals.class})
 		case bytecode.LOAD_STATIC_CLASS:
 			if locals != nil && locals.selfClass != "" {
 				push(&classRef{ClassName: locals.selfClass})
@@ -1109,6 +1109,7 @@ func (vm *VM) newObject(className string, args []interface{}, callerFrame *frame
 		ctorFrame.module = vm.moduleFrame(ctor.Module)
 		ctorFrame.this = obj
 		ctorFrame.selfClass = className
+		ctorFrame.class = ctor.Class
 		if err := vm.bindArgs(ctor, args, ctorFrame); err != nil {
 			return nil, err
 		}
@@ -1133,7 +1134,7 @@ func (vm *VM) getMember(objVal interface{}, propName string, sym symbol.Symbol, 
 		if !isFunc {
 			return nil, errs.New(errs.SuperMemberMustBeMethod)
 		}
-		return &boundMethod{Receiver: v.Receiver, Method: propName, IsSuper: true}, nil
+		return &boundMethod{Receiver: v.Receiver, Method: propName, IsSuper: true, From: v.From}, nil
 
 	case *Object:
 		entry := vm.memberOf(v, sym)
@@ -1157,6 +1158,7 @@ func (vm *VM) getMember(objVal interface{}, propName string, sym symbol.Symbol, 
 			getterFrame.module = vm.moduleFrame(vm.classModule(v.ClassName))
 			getterFrame.this = v
 			getterFrame.selfClass = v.ClassName
+			getterFrame.class = entry.fieldClass
 			return vm.exec(getter, getterFrame)
 		}
 		return v.Props[propName], nil
@@ -1244,11 +1246,13 @@ func (vm *VM) getMember(objVal interface{}, propName string, sym symbol.Symbol, 
 func (vm *VM) setMember(objVal interface{}, propName string, sym symbol.Symbol, val interface{}, indexChunk *bytecode.Chunk, locals *frame) error {
 	switch v := objVal.(type) {
 	case *Object:
-		if setter := vm.memberOf(v, sym).setter; setter != nil {
+		if entry := vm.memberOf(v, sym); entry.setter != nil {
+			setter := entry.setter
 			setterFrame := newFrame()
 			setterFrame.module = vm.moduleFrame(vm.classModule(v.ClassName))
 			setterFrame.this = v
 			setterFrame.selfClass = v.ClassName
+			setterFrame.class = entry.fieldClass
 			if setter.ParamName != "" {
 				setterFrame.put(symbol.Intern(setter.ParamName), val)
 			}
@@ -1300,13 +1304,18 @@ func (vm *VM) setMember(objVal interface{}, propName string, sym symbol.Symbol, 
 func (vm *VM) callMethod(calleeVal interface{}, args []interface{}) (interface{}, error) {
 	switch bm := calleeVal.(type) {
 	case *boundMethod:
+		// A 부모 call starts above the class that declares the method making it, not above
+		// the receiver's class: otherwise, three or more classes deep, a middle class's
+		// 부모 call comes back to that same middle class forever.
 		startClass := bm.Receiver.ClassName
 		if bm.IsSuper {
-			cls, ok := vm.program.Classes[startClass]
-			if !ok || cls.BaseClass == "" {
-				return nil, errs.New(errs.MethodNotFound, bm.Method)
+			if _, ok := vm.program.Classes[bm.From]; ok {
+				startClass = bm.From
 			}
-			startClass = cls.BaseClass
+			// A class with no parent looks in itself, as the tree-walker does.
+			if cls, ok := vm.program.Classes[startClass]; ok && cls.BaseClass != "" {
+				startClass = cls.BaseClass
+			}
 		}
 		fn := bm.fn
 		if fn == nil || bm.IsSuper {
@@ -1319,6 +1328,7 @@ func (vm *VM) callMethod(calleeVal interface{}, args []interface{}) (interface{}
 		methodFrame.module = vm.moduleFrame(fn.Module)
 		methodFrame.this = bm.Receiver
 		methodFrame.selfClass = bm.Receiver.ClassName
+		methodFrame.class = fn.Class
 		if err := vm.bindArgs(fn, args, methodFrame); err != nil {
 			return nil, err
 		}

@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"github.com/soumt-r/hana/ast"
 	"github.com/soumt-r/hana/errs"
 	"github.com/soumt-r/hana/symbol"
 )
@@ -11,7 +12,8 @@ type Environment struct {
 	constants map[symbol.Symbol]bool // 상수로 선언된 변수 추적 (처음 쓸 때 만듦)
 	parent    *Environment
 	this      *HariObject
-	loop      bool // a loop pass's scope: a 반복을 끝내자 below it has a loop to leave
+	class     *ast.ClassDeclaration // with this: the class whose body declares the running method; 부모 starts above it
+	loop      bool                  // a loop pass's scope: a 반복을 끝내자 below it has a loop to leave
 }
 
 // inLoop reports whether a 반복을 끝내자 run in e is inside a loop. Scopes chain

@@ -24,6 +24,7 @@ type BoundMethod struct {
 	FuncName string
 	Sym      symbol.Symbol // FuncName as a Symbol
 	IsSuper  bool
+	From     *ast.ClassDeclaration // for a 부모 call: the class whose method made it
 }
 
 type BuiltinFunction struct {
@@ -58,6 +59,7 @@ type BoundStaticMethod struct {
 
 type SuperReference struct {
 	Object *HariObject
+	From   *ast.ClassDeclaration // the class whose method said 부모
 }
 
 // ClassReference는 클래스 자체를 값으로 취급할 때 씁니다 (정적 멤버 접근, instanceof 등).

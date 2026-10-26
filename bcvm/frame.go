@@ -12,6 +12,7 @@ type frame struct {
 	index     []int32 // Symbol -> slot position + 1 (0: none); only kept once the frame is big
 	this      *Object
 	selfClass string
+	class     string // with this: the class that declares the running method or accessor; 부모 starts above it ("" = this's class)
 	// module is the frame that holds the top-level variables of the module this call's
 	// function came from: where names are looked up after the call's own, instead of the
 	// program's globals. nil for the program's own code.

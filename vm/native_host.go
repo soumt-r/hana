@@ -49,12 +49,14 @@ func (i *Interpreter) CallFunction(callee interface{}, args []interface{}) (inte
 		if !ok {
 			return nil, errs.New(errs.ClassNotFound, fn.Object.ClassName)
 		}
-		method := i.classMember(cls, fn.Sym).method
+		member := i.classMember(cls, fn.Sym)
+		method := member.method
 		if method == nil {
 			return nil, errs.New(errs.MethodNotFound, fn.FuncName)
 		}
 		env := NewEnvironment(i.globalOf(method.Module))
 		env.this = fn.Object
+		env.class = member.methodOwner
 		env.DeclareSym(thisSym, fn.Object)
 		env.DeclareSym(selfClassSym, fn.Object.ClassName)
 		return i.runFunctionBody(method, args, env)

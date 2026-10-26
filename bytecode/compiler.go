@@ -428,6 +428,7 @@ func (c *Compiler) registerClass(decl *ast.ClassDeclaration) {
 		case *ast.FunctionDeclaration:
 			fn := c.compileMethod(s.Name.Value, s.Params, s.Body, accessOrPublic(s.AccessModifier))
 			fn.ReturnType = returnTypeName(s.ReturnType)
+			fn.Class = decl.Name.Name
 			if s.IsStatic {
 				info.StaticMethods[s.Name.Value] = fn
 			} else {
@@ -441,6 +442,7 @@ func (c *Compiler) registerClass(decl *ast.ClassDeclaration) {
 				Name:      "__init__",
 				Params:    c.compileParams(s.Params),
 				BodyChunk: body,
+				Class:     decl.Name.Name,
 			}
 		}
 	}

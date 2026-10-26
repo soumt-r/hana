@@ -92,7 +92,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 		cur := env
 		for cur != nil {
 			if cur.this != nil {
-				return &SuperReference{Object: cur.this}, nil
+				return &SuperReference{Object: cur.this, From: cur.class}, nil
 			}
 			cur = cur.parent
 		}
@@ -193,8 +193,8 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 		// (Runtime 스펙 3.1.4: "자식 클래스에 생성자가 선언되어 있지 않다면, 런타임은
 		// 부모 클래스의 생성자를 자동으로 찾아서 호출해야 합니다").
 		var ctor *ast.ConstructorDeclaration
-		i.findInClassChain(cls, func(body []ast.Statement) bool {
-			for _, stmt := range body {
+		ctorOwner := i.findInClassChain(cls, func(at *ast.ClassDeclaration) bool {
+			for _, stmt := range at.Body {
 				if c, ok := stmt.(*ast.ConstructorDeclaration); ok {
 					ctor = c
 					return true
@@ -212,7 +212,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 				}
 				args[idx] = argVal
 			}
-			if err := i.runConstructor(ctor, obj, clsName, args); err != nil {
+			if err := i.runConstructor(ctor, ctorOwner, obj, clsName, args); err != nil {
 				return nil, err
 			}
 		}
@@ -417,14 +417,24 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 			var funcDecl *ast.FunctionDeclaration
 			var ctorDecl *ast.ConstructorDeclaration
 
-			// super 호출이면 바로 부모부터 탐색을 시작해, 오버라이딩되기 전의 원본을 찾는다.
+			// super 호출이면 그 호출을 한 메서드가 선언된 클래스의 부모부터 탐색을 시작해,
+			// 오버라이딩되기 전의 원본을 찾는다. 객체의 클래스에서 시작하면 세 단계 이상의
+			// 상속에서 중간 클래스의 부모 호출이 자기 자신으로 돌아온다.
 			startCls := cls
-			if bm.IsSuper && startCls != nil && startCls.BaseClass != nil {
-				startCls = i.Classes[startCls.BaseClass.Name]
+			if bm.IsSuper {
+				from := bm.From
+				if from == nil {
+					from = cls
+				}
+				startCls = from
+				if from != nil && from.BaseClass != nil {
+					startCls = i.Classes[from.BaseClass.Name]
+				}
 			}
+			var owner *ast.ClassDeclaration
 			if bm.FuncName == "__init__" {
-				i.findInClassChain(startCls, func(body []ast.Statement) bool {
-					for _, stmt := range body {
+				owner = i.findInClassChain(startCls, func(at *ast.ClassDeclaration) bool {
+					for _, stmt := range at.Body {
 						if f, ok := stmt.(*ast.FunctionDeclaration); ok && f.Name.Value == bm.FuncName {
 							funcDecl = f
 							return true
@@ -435,8 +445,9 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 					}
 					return false
 				})
-			} else {
-				funcDecl = i.classMember(startCls, bm.Sym).method
+			} else if startCls != nil {
+				m := i.classMember(startCls, bm.Sym)
+				funcDecl, owner = m.method, m.methodOwner
 			}
 			if funcDecl == nil && ctorDecl == nil {
 				return nil, errs.New(errs.MethodNotFound, bm.FuncName)
@@ -449,6 +460,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 			}
 			funcEnv := i.newScope(i.globalOf(module))
 			funcEnv.this = bm.Object
+			funcEnv.class = owner
 			funcEnv.DeclareSym(thisSym, bm.Object)
 			funcEnv.DeclareSym(selfClassSym, bm.Object.ClassName)
 
@@ -533,7 +545,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 			if !ok {
 				return nil, errs.New(errs.SuperMemberMustBeMethod)
 			}
-			return &BoundMethod{Object: super.Object, FuncName: propId.Name, Sym: propId.Symbol(), IsSuper: true}, nil
+			return &BoundMethod{Object: super.Object, FuncName: propId.Name, Sym: propId.Symbol(), IsSuper: true, From: super.From}, nil
 		}
 		if hariObj, ok := obj.(*HariObject); ok {
 			propName := ""
@@ -572,6 +584,7 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 			if getterBody != nil {
 				getterEnv := NewEnvironment(i.globalOf(i.classOf(hariObj).Module))
 				getterEnv.this = hariObj
+				getterEnv.class = member.fieldOwner
 				getterEnv.DeclareSym(thisSym, hariObj)
 				getterEnv.DeclareSym(selfClassSym, hariObj.ClassName)
 				prev := i.enterModule(i.classOf(hariObj).Module)

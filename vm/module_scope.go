@@ -202,9 +202,10 @@ func (i *Interpreter) initFields(cls *ast.ClassDeclaration, obj *HariObject, env
 
 // runConstructor binds the arguments and runs a constructor's body, in the scope
 // of the module the constructor came from.
-func (i *Interpreter) runConstructor(ctor *ast.ConstructorDeclaration, obj *HariObject, clsName string, args []interface{}) error {
+func (i *Interpreter) runConstructor(ctor *ast.ConstructorDeclaration, owner *ast.ClassDeclaration, obj *HariObject, clsName string, args []interface{}) error {
 	ctorEnv := NewEnvironment(i.globalOf(ctor.Module))
 	ctorEnv.this = obj
+	ctorEnv.class = owner
 	ctorEnv.DeclareSym(selfClassSym, clsName)
 	if err := i.bindParams(ctor.Params, args, ctorEnv); err != nil {
 		return err
