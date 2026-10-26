@@ -262,6 +262,7 @@ const (
 
 	// InterfaceImplementationError
 	InterfaceNotImplemented Code = "InterfaceImplementationError.InterfaceNotImplemented" // class, interface, method
+	AbstractNotImplemented  Code = "InterfaceImplementationError.AbstractNotImplemented"  // class, abstract class, method
 
 	// DivideByZeroError
 	DivideByZero Code = "DivideByZeroError.DivideByZero"
@@ -324,7 +325,7 @@ var allCodes = []Code{
 	ArgCountExact, TooManyArguments, MissingArgument,
 	ConstantAssignment, IllegalBreak,
 	PrivateMethodAccess, PrivateFieldAccess, ProtectedMethodAccess, ProtectedFieldAccess,
-	InterfaceNotImplemented,
+	InterfaceNotImplemented, AbstractNotImplemented,
 	DivideByZero,
 	ConvertToNumberFailed, ConvertToNumberInvalid, ConvertToCodeNeedsOneChar, ConvertToTextNeedsNumber,
 	ImportManifestInvalid, ImportNativeMissing, ImportNativeLoadFailed, NativeCallFailed,

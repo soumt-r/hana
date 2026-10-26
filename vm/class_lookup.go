@@ -109,6 +109,32 @@ func (i *Interpreter) findInClassChain(cls *ast.ClassDeclaration, visit func(cls
 	return nil
 }
 
+// unimplementedAbstract finds an abstract method (<m>가 있어야 한다) that cls's chain
+// declares and that no class between cls and the declaring one implements: the
+// declaring class's name and the method, or "" when every one is implemented.
+func (i *Interpreter) unimplementedAbstract(cls *ast.ClassDeclaration) (owner, method string) {
+	implemented := map[string]bool{}
+	seen := map[*ast.ClassDeclaration]bool{}
+	for cls != nil && !seen[cls] {
+		seen[cls] = true
+		for _, stmt := range cls.Body {
+			if m, ok := stmt.(*ast.InterfaceMethod); ok && !implemented[m.Name.Value] {
+				return cls.Name.Name, m.Name.Value
+			}
+		}
+		for _, stmt := range cls.Body {
+			if f, ok := stmt.(*ast.FunctionDeclaration); ok && !f.IsStatic {
+				implemented[f.Name.Value] = true
+			}
+		}
+		if cls.BaseClass == nil {
+			break
+		}
+		cls = i.Classes[cls.BaseClass.Name]
+	}
+	return "", ""
+}
+
 // classIsOrExtends reports whether the class named className is targetName
 // itself, or inherits from it directly or transitively via BaseClass
 // (upcasting). Shared by the `instanceof` operator and TryStatement's

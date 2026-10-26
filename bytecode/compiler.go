@@ -435,6 +435,9 @@ func (c *Compiler) registerClass(decl *ast.ClassDeclaration) {
 				info.Methods[s.Name.Value] = fn
 			}
 
+		case *ast.InterfaceMethod:
+			info.Abstract = append(info.Abstract, s.Name.Value)
+
 		case *ast.ConstructorDeclaration:
 			body := newChunk()
 			c.compileStatements(body, s.Body)

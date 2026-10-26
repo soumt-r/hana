@@ -216,6 +216,16 @@ func (i *Interpreter) Run() error {
 		}
 	}
 
+	// 추상 클래스 상속도 같은 때 검증한다 (스펙 3.5): 추상이 아닌 클래스는 체인 위에서
+	// 선언된 추상 메서드(<m>가 있어야 한다)를 자신이나 그 아래 조상에서 구현해야 한다.
+	for _, stmt := range i.ast.Statements {
+		if cls, ok := stmt.(*ast.ClassDeclaration); ok && i.Classes[cls.Name.Name] == cls && !cls.IsAbstract {
+			if owner, method := i.unimplementedAbstract(cls); method != "" {
+				return errs.New(errs.AbstractNotImplemented, cls.Name.Name, owner, method)
+			}
+		}
+	}
+
 	// 3. 실행
 	for _, stmt := range i.ast.Statements {
 		switch s := stmt.(type) {

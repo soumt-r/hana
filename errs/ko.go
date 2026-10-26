@@ -101,6 +101,7 @@ var koCatalog = Catalog{
 	ProtectedFieldAccess:  "'%s' 속성은 상속된 클래스 전용(protected)이라 외부에서 부를 수 없어요.",
 
 	InterfaceNotImplemented: "클래스 '%s'은(는) 인터페이스 '%s'의 '%s' 메서드를 구현해야 해요.",
+	AbstractNotImplemented:  "클래스 '%s'은(는) 추상 클래스 '%s'의 '%s' 메서드를 구현해야 해요.",
 
 	DivideByZero: "0으로 나눌 수 없어요.",
 

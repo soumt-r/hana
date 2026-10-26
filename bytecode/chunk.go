@@ -112,6 +112,7 @@ type ClassInfo struct {
 	Methods       map[string]*Function
 	StaticMethods map[string]*Function
 	Constructor   *Function // nil if this class doesn't declare its own
+	Abstract      []string  // the methods its body declares abstract (<m>가 있어야 한다), in order
 	Module        string    // the module the class was imported from ("" = the program's own)
 }
 

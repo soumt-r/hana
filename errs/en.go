@@ -100,6 +100,7 @@ var enCatalog = Catalog{
 	ProtectedFieldAccess:  "Property '%s' is protected and cannot be accessed from outside a subclass.",
 
 	InterfaceNotImplemented: "Class '%[1]s' must implement method '%[3]s' of interface '%[2]s'.",
+	AbstractNotImplemented:  "Class '%[1]s' must implement method '%[3]s' of abstract class '%[2]s'.",
 
 	DivideByZero: "Division by zero.",
 

@@ -101,6 +101,7 @@ var jaCatalog = Catalog{
 	ProtectedFieldAccess:  "'%s' 属性は継承されたクラス専用(protected)なので外部から呼ぶことはできません。",
 
 	InterfaceNotImplemented: "クラス '%s' はインターフェース '%s' の '%s' メソッドを実装しなければなりません。",
+	AbstractNotImplemented:  "クラス '%s' は抽象クラス '%s' の '%s' メソッドを実装しなければなりません。",
 
 	DivideByZero: "0で割ることはできません。",
 

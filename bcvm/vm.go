@@ -205,8 +205,43 @@ func (vm *VM) Run() error {
 			}
 		}
 	}
+	for clsName, cls := range vm.program.Classes {
+		if cls.IsAbstract || cls.Name != clsName {
+			continue
+		}
+		if owner, method := vm.unimplementedAbstract(cls); method != "" {
+			return errs.New(errs.AbstractNotImplemented, clsName, owner, method)
+		}
+	}
 	_, err := vm.exec(vm.program.Main, nil)
 	return err
+}
+
+// unimplementedAbstract mirrors vm.Interpreter.unimplementedAbstract: an abstract
+// method cls's chain declares that no class between cls and the declaring one
+// implements, with the declaring class's name ("" when there is none). Like the
+// tree-walker, which checks before the module's imports have run, it stays within
+// the module cls comes from.
+func (vm *VM) unimplementedAbstract(cls *bytecode.ClassInfo) (owner, method string) {
+	implemented := map[string]bool{}
+	seen := map[*bytecode.ClassInfo]bool{}
+	module := cls.Module
+	for cls != nil && !seen[cls] && cls.Module == module {
+		seen[cls] = true
+		for _, m := range cls.Abstract {
+			if !implemented[m] {
+				return cls.Name, m
+			}
+		}
+		for m := range cls.Methods {
+			implemented[m] = true
+		}
+		if cls.BaseClass == "" {
+			break
+		}
+		cls = vm.program.Classes[cls.BaseClass]
+	}
+	return "", ""
 }
 
 // exec runs chunk's instructions against a fresh operand stack. locals is
