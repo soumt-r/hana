@@ -227,6 +227,7 @@ func (i *Interpreter) initOwnFields(cls *ast.ClassDeclaration, obj *HariObject, 
 func (i *Interpreter) runConstructor(ctor *ast.ConstructorDeclaration, owner *ast.ClassDeclaration, obj *HariObject, clsName string, args []interface{}) error {
 	ctorEnv := NewEnvironment(i.globalOf(ctor.Module))
 	ctorEnv.this = obj
+	ctorEnv.DeclareSym(thisSym, obj)
 	ctorEnv.class = owner
 	ctorEnv.DeclareSym(selfClassSym, clsName)
 	if err := i.bindParams(ctor.Params, args, ctorEnv); err != nil {

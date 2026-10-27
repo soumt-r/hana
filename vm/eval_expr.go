@@ -565,14 +565,8 @@ func (i *Interpreter) evaluate(expr ast.Expression, env *Environment) (interface
 				access = member.methodAccess
 			}
 
-			if access != "public" {
-				thisObj, hasThis := env.GetSym(thisSym)
-				if !hasThis {
-					return nil, errs.AccessViolation(access, isFunc, propName)
-				}
-				if access == "private" && thisObj != hariObj {
-					return nil, errs.AccessViolation(access, isFunc, propName)
-				}
+			if err := checkAccess(access, isFunc, propName, hariObj, env); err != nil {
+				return nil, err
 			}
 
 			if isFunc {
@@ -891,4 +885,21 @@ func (i *Interpreter) parseTemplate(raw string) []templatePart {
 		parts = append(parts, templatePart{text: text, expr: innerExpr})
 	}
 	return parts
+}
+
+// checkAccess reports whether code running in env may use obj's member name,
+// read or written, given the member's access: a hidden member only from obj's
+// own methods (and constructor), a protected one from any method.
+func checkAccess(access string, isFunc bool, name string, obj *HariObject, env *Environment) error {
+	if access == "public" {
+		return nil
+	}
+	thisObj, hasThis := env.GetSym(thisSym)
+	if !hasThis {
+		return errs.AccessViolation(access, isFunc, name)
+	}
+	if access == "private" && thisObj != obj {
+		return errs.AccessViolation(access, isFunc, name)
+	}
+	return nil
 }

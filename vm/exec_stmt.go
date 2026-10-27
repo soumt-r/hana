@@ -434,6 +434,9 @@ func (i *Interpreter) Execute(stmt ast.Statement, env *Environment) (interface{}
 				if propId, ok := mem.Property.(*ast.Identifier); ok {
 					// Check for setter
 					member := i.classMember(i.classOf(hariObj), propId.Symbol())
+					if err := checkAccess(member.fieldAccess, false, propId.Value, hariObj, env); err != nil {
+						return nil, err
+					}
 					setter := member.setter
 
 					if setter != nil {

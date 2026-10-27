@@ -1191,13 +1191,8 @@ func (vm *VM) getMember(objVal interface{}, propName string, sym symbol.Symbol, 
 		if isFunc {
 			access = entry.methodAccess
 		}
-		if access != "public" {
-			if locals == nil || locals.this == nil {
-				return nil, errs.AccessViolation(access, isFunc, propName)
-			}
-			if access == "private" && locals.this != v {
-				return nil, errs.AccessViolation(access, isFunc, propName)
-			}
+		if err := checkAccess(access, isFunc, propName, v, locals); err != nil {
+			return nil, err
 		}
 		if isFunc {
 			return &boundMethod{Receiver: v, Method: propName, fn: entry.method}, nil
@@ -1292,10 +1287,30 @@ func (vm *VM) getMember(objVal interface{}, propName string, sym symbol.Symbol, 
 // setMember resolves a MemberExpression assignment target at runtime,
 // mirroring vm/exec_stmt.go's Assignment case — including that it, unlike
 // getMember, applies no access-modifier check on the write path.
+// checkAccess reports whether code running in locals may use obj's member
+// name, read or written, given the member's access: a hidden member only from
+// obj's own methods (and constructor), a protected one from any method.
+func checkAccess(access string, isFunc bool, name string, obj *Object, locals *frame) error {
+	if access == "public" {
+		return nil
+	}
+	if locals == nil || locals.this == nil {
+		return errs.AccessViolation(access, isFunc, name)
+	}
+	if access == "private" && locals.this != obj {
+		return errs.AccessViolation(access, isFunc, name)
+	}
+	return nil
+}
+
 func (vm *VM) setMember(objVal interface{}, propName string, sym symbol.Symbol, val interface{}, indexChunk *bytecode.Chunk, locals *frame) error {
 	switch v := objVal.(type) {
 	case *Object:
-		if entry := vm.memberOf(v, sym); entry.setter != nil {
+		entry := vm.memberOf(v, sym)
+		if err := checkAccess(entry.fieldAccess, false, propName, v, locals); err != nil {
+			return err
+		}
+		if entry.setter != nil {
 			setter := entry.setter
 			setterFrame := newFrame()
 			setterFrame.module = vm.moduleFrame(vm.classModule(v.ClassName))
