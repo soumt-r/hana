@@ -16,6 +16,7 @@ import (
 	"github.com/soumt-r/hana/strcat"
 	"github.com/soumt-r/hana/typecheck"
 	"github.com/soumt-r/hana/value"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -1122,20 +1123,33 @@ func (vm *VM) newObject(className string, args []interface{}, callerFrame *frame
 		return nil, errs.New(errs.InstantiateAbstract, className)
 	}
 	obj := newObject(className)
-	for _, f := range cls.Fields {
-		if f.Default == nil {
-			continue
+	// The ancestors' field initializers run first, from the top of the chain down, so
+	// every object gets its own value of each inherited field and a child's field of
+	// the same name wins (Runtime spec 3.5; mirrors vm.Interpreter.initFields).
+	var chain []*bytecode.ClassInfo
+	for c := cls; c != nil && !slices.Contains(chain, c); {
+		chain = append(chain, c)
+		if c.BaseClass == "" {
+			break
 		}
-		val, err := vm.exec(f.Default, callerFrame)
-		if err != nil {
-			return nil, err
-		}
-		if f.Type != "" {
-			if err := typecheck.Check(&vm.Types, f.Type, f.Name, val, vm.host()); err != nil {
+		c = vm.program.Classes[c.BaseClass]
+	}
+	for k := len(chain) - 1; k >= 0; k-- {
+		for _, f := range chain[k].Fields {
+			if f.Default == nil {
+				continue
+			}
+			val, err := vm.exec(f.Default, callerFrame)
+			if err != nil {
 				return nil, err
 			}
+			if f.Type != "" {
+				if err := typecheck.Check(&vm.Types, f.Type, f.Name, val, vm.host()); err != nil {
+					return nil, err
+				}
+			}
+			obj.Props[f.Name] = val
 		}
-		obj.Props[f.Name] = val
 	}
 
 	ctor, found := vm.findMethod(className, "__init__")

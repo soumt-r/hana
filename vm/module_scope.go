@@ -1,6 +1,8 @@
 package vm
 
 import (
+	"slices"
+
 	"github.com/soumt-r/hana/ast"
 	"github.com/soumt-r/hana/errs"
 	"github.com/soumt-r/hana/typecheck"
@@ -170,9 +172,29 @@ func (i *Interpreter) rememberOwner(name, owner string) {
 	i.classOwner[name] = owner
 }
 
-// initFields evaluates the field initializers of a new object, in the scope of
-// the module its class came from.
+// initFields evaluates the field initializers of a new object: its class's
+// ancestors' first, from the top of the chain down, so every object gets its own
+// value of each inherited field and a child's field of the same name wins (Runtime
+// spec 3.5). Each class's run in the scope of the module that class came from.
 func (i *Interpreter) initFields(cls *ast.ClassDeclaration, obj *HariObject, env *Environment) error {
+	var chain []*ast.ClassDeclaration
+	for c := cls; c != nil && !slices.Contains(chain, c); {
+		chain = append(chain, c)
+		if c.BaseClass == nil {
+			break
+		}
+		c = i.Classes[c.BaseClass.Name]
+	}
+	for k := len(chain) - 1; k >= 0; k-- {
+		if err := i.initOwnFields(chain[k], obj, env); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// initOwnFields evaluates the field initializers cls's own body declares.
+func (i *Interpreter) initOwnFields(cls *ast.ClassDeclaration, obj *HariObject, env *Environment) error {
 	prev := i.enterModule(cls.Module)
 	defer func() { i.scope = prev }()
 	for _, stmt := range cls.Body {
